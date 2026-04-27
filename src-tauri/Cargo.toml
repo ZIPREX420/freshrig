@@ -50,5 +50,5 @@ nix = { version = "0.29", features = ["user", "process", "fs"] }
 procfs = "0.17"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-plist = "1.7"
+plist = "1.9"
 core-foundation = "0.10"
