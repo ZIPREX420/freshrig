@@ -1,4 +1,16 @@
 export const CHANGELOG: Record<string, string> = {
+  "1.2.1": `### FreshRig v1.2.1 — Polish + Dependency Updates 🧹
+
+- **Launch-readiness audit** — top-to-bottom review caught 11 issues including a real cross-platform bug where the Profiles page was visible on Linux/macOS but errored on click (now hidden on non-Windows), and two startup-panic risks in portable mode (now fall back safely to %APPDATA%)
+- **Cross-platform copy** — README, CLAUDE.md, AboutPage, package.json, and the in-app tagline all now describe FreshRig as the cross-platform tool it became in v1.1.0/v1.2.0 (was still saying "Windows desktop app" in places)
+- **Landing page favicons** — index, download, privacy, and terms pages now show a proper browser-tab icon
+- **Privacy policy updated** — the "What FreshRig Does" section now correctly mentions WMI on Windows + /proc + lspci on Linux + system_profiler + sysctl on macOS instead of WMI alone
+- **About page accuracy** — replaced stale "Pro features coming soon" copy with the actual MIT-free + $39 one-time + 14-day trial reality
+- **Dependency updates** — sysinfo, procfs, rand, plist, reqwest, lucide-react, and vite all bumped to current versions; \`npm audit\` shows 0 vulnerabilities; \`cargo audit\` clean (no new advisories)
+- **LAUNCH_AUDIT.md** — added a 372-line repeatable playbook so future audits don't need to re-derive the methodology
+
+No new features, no breaking changes — purely polish + housekeeping. Safe upgrade for everyone.
+`,
   "1.2.0": `### FreshRig v1.2.0 — macOS Support 🍎
 
 - **macOS is here** — FreshRig now runs natively on macOS 11+ (Big Sur through Tahoe), Apple Silicon and Intel
