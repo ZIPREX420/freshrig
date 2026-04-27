@@ -3,7 +3,7 @@ import { type as osType } from "@tauri-apps/plugin-os";
 
 export const APP_NAME = "FreshRig";
 export const APP_TAGLINE = "Set up any PC in minutes — Windows, Linux, and macOS";
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "1.2.1";
 export const BUILD_FINGERPRINT = `freshrig-${APP_VERSION}-${__BUILD_TIMESTAMP__}`;
 
 /** LemonSqueezy checkout URL for Pro purchases ($39 one-time). */
