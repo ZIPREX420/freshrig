@@ -112,6 +112,11 @@ pub fn run() {
             commands::smart_monitor::save_smart_history,
             commands::smart_monitor::get_smart_trend,
             commands::smart_monitor::enable_smart_schedule,
+            // Watchdog Mode (cross-platform snapshots + diff). v2.0 Feature 2.
+            commands::watchdog::take_snapshot,
+            commands::watchdog::list_snapshots,
+            commands::watchdog::delete_snapshot,
+            commands::watchdog::diff_snapshots,
             // Windows-only commands (Linux + macOS twins below each entry):
             #[cfg(target_os = "windows")]
             commands::hardware::get_hardware_summary,

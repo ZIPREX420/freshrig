@@ -22,6 +22,7 @@ import { PrivacyPage } from "./components/privacy/PrivacyPage";
 import { NetworkPage } from "./components/network/NetworkPage";
 import { ContextMenuPage } from "./components/context_menu/ContextMenuPage";
 import { ServicesPage } from "./components/services/ServicesPage";
+import { WatchdogPage } from "./components/watchdog/WatchdogPage";
 import { SettingsPage } from "./components/settings/SettingsPage";
 import { AboutPage } from "./components/about/AboutPage";
 import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
@@ -178,6 +179,7 @@ function App() {
                 {currentView === "network" && <NetworkPage />}
                 {currentView === "contextMenu" && <ContextMenuPage />}
                 {currentView === "services" && <ServicesPage />}
+                {currentView === "watchdog" && <WatchdogPage />}
                 {currentView === "settings" && <SettingsPage onNavigate={navigate} />}
                 {currentView === "about" && <AboutPage />}
               </motion.div>

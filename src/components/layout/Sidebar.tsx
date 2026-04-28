@@ -10,6 +10,7 @@ import {
   Globe,
   Menu,
   Cog,
+  Camera,
   Settings,
   Monitor,
   Keyboard,
@@ -44,6 +45,7 @@ const primaryNav: NavItem[] = [
   { id: "network", label: "Network", icon: Globe, shortcut: "Ctrl+9" },
   { id: "contextMenu", label: "Context Menu", icon: Menu },
   { id: "services", label: "Services", icon: Cog },
+  { id: "watchdog", label: "Watchdog", icon: Camera },
 ];
 
 const secondaryNav: NavItem[] = [

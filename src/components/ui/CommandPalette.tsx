@@ -20,6 +20,7 @@ import {
   Globe,
   Menu,
   Cog,
+  Camera,
   Briefcase,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
@@ -172,6 +173,13 @@ export function CommandPalette({ onClose, onNavigate }: CommandPaletteProps) {
       category: "Pages",
       icon: Cog,
       action: () => onNavigate("services"),
+    },
+    {
+      id: "nav-watchdog",
+      label: "Go to Watchdog",
+      category: "Pages",
+      icon: Camera,
+      action: () => onNavigate("watchdog"),
     },
     {
       id: "nav-settings",
