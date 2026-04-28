@@ -42,6 +42,8 @@ pub mod network;
 #[cfg(target_os = "windows")]
 pub mod privacy;
 #[cfg(target_os = "windows")]
+pub mod privacy_drift;
+#[cfg(target_os = "windows")]
 pub mod profiles;
 #[cfg(target_os = "windows")]
 pub mod report;

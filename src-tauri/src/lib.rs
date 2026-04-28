@@ -262,6 +262,18 @@ pub fn run() {
             commands::linux::privacy::revoke_app_permission,
             #[cfg(target_os = "macos")]
             commands::macos::privacy::revoke_app_permission,
+            // Privacy Drift Detection (Windows-only — registry baseline +
+            // per-feature-update drift check). v2.0 Feature 1.
+            #[cfg(target_os = "windows")]
+            commands::privacy_drift::create_privacy_baseline,
+            #[cfg(target_os = "windows")]
+            commands::privacy_drift::check_privacy_drift,
+            #[cfg(target_os = "windows")]
+            commands::privacy_drift::reapply_privacy_baseline,
+            #[cfg(target_os = "windows")]
+            commands::privacy_drift::export_baseline,
+            #[cfg(target_os = "windows")]
+            commands::privacy_drift::import_baseline,
             #[cfg(target_os = "windows")]
             commands::report::generate_health_report,
             #[cfg(target_os = "linux")]

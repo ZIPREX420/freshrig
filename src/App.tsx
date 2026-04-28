@@ -1,10 +1,13 @@
 // Copyright (c) 2026 Seppe Willemsens (ZIPREX420). MIT License.
 import { useState, useEffect, useCallback } from "react";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/core";
 import { MotionConfig, AnimatePresence, motion } from "framer-motion";
+import { usePlatform } from "./hooks/usePlatform";
+import type { DriftEntry } from "./types/privacyDrift";
 import { AppLayout } from "./components/layout/AppLayout";
 import { UpdateBanner } from "./components/layout/UpdateBanner";
 import { WhatsNewModal } from "./components/layout/WhatsNewModal";
@@ -79,6 +82,38 @@ function App() {
       clearInterval(interval);
     };
   }, []);
+
+  // Privacy drift detection — Windows-only. Silent check ~6s after mount;
+  // toast once per session if Windows has changed any monitored privacy
+  // value since the user's baseline. Backend returns [] if no baseline
+  // exists yet (first run), so this is genuinely silent until the user
+  // captures one.
+  const { isWindows } = usePlatform();
+  useEffect(() => {
+    if (!isWindows) return;
+    if (!(window as unknown as Record<string, unknown>).__TAURI_INTERNALS__) return;
+    if (sessionStorage.getItem("freshrig.driftToastShown") === "1") return;
+    const timer = setTimeout(async () => {
+      try {
+        const drift = await invoke<DriftEntry[]>("check_privacy_drift");
+        if (drift.length === 0) return;
+        sessionStorage.setItem("freshrig.driftToastShown", "1");
+        toast(
+          `${drift.length} privacy setting${drift.length === 1 ? "" : "s"} drifted from your baseline`,
+          {
+            description: "Windows changed values you previously locked down.",
+            action: {
+              label: "View",
+              onClick: () => navigate("privacy"),
+            },
+          },
+        );
+      } catch {
+        // Silent — drift check is non-critical and shouldn't surface errors.
+      }
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [isWindows, navigate]);
 
   // Show "What's New" modal if version changed
   useEffect(() => {

@@ -29,6 +29,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Card } from "../ui/Card";
 import { ProFeatureGate } from "../ui/ProFeatureGate";
+import { PrivacyDriftPanel } from "./PrivacyDriftPanel";
 import type {
   AppPermission,
   PrivacyCategory,
@@ -36,7 +37,7 @@ import type {
   PrivacySetting,
 } from "../../types/privacy";
 
-type Tab = "settings" | "permissions" | "audit";
+type Tab = "settings" | "permissions" | "audit" | "drift";
 
 const categoryOrder: PrivacyCategory[] = [
   "Telemetry",
@@ -172,6 +173,7 @@ function PrivacyPageInner() {
           {tab === "settings" && <SettingsTab />}
           {tab === "permissions" && <PermissionsTab />}
           {tab === "audit" && <AuditTab />}
+          {tab === "drift" && <PrivacyDriftPanel />}
         </motion.div>
       </AnimatePresence>
     </div>
@@ -183,6 +185,7 @@ function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
     { id: "settings", label: "Settings", icon: Shield },
     { id: "permissions", label: "App Permissions", icon: Lock },
     { id: "audit", label: "Quick Audit", icon: BadgeCheck },
+    { id: "drift", label: "Drift Detection", icon: ShieldAlert },
   ];
   return (
     <div className="inline-flex items-center gap-1 p-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)]">
