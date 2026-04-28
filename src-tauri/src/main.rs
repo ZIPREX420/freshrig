@@ -3,5 +3,23 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+
+    // Headless task mode: invoked by the OS scheduler (Task Scheduler on
+    // Windows, systemd timer on Linux, launchd on macOS) every 6 hours
+    // to refresh the SMART history without opening the GUI window.
+    // Format: `freshrig --headless --task=smart-check`.
+    if args.iter().any(|a| a == "--headless") {
+        let task = args
+            .iter()
+            .find_map(|a| a.strip_prefix("--task="))
+            .unwrap_or("");
+        let exit_code = match task {
+            "smart-check" => freshrig_lib::run_headless_smart_check(),
+            _ => 2,
+        };
+        std::process::exit(exit_code);
+    }
+
     freshrig_lib::run();
 }

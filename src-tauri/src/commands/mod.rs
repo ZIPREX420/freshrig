@@ -1,5 +1,6 @@
-// Cross-platform modules — always compiled on both Windows and Linux.
+// Cross-platform modules — always compiled on every OS.
 pub mod presets;
+pub mod smart_monitor;
 
 // Linux-only subtree — mirrors the Windows-command surface so
 // `tauri::generate_handler!` can register the same command names on either

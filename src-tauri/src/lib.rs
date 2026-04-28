@@ -1,10 +1,14 @@
 // Copyright (c) 2026 Seppe Willemsens (ZIPREX420). MIT License.
 mod commands;
 mod data;
+mod db;
 mod models;
 mod platform;
 pub mod portable;
 mod util;
+
+// Re-exports for headless CLI entry points called from main.rs.
+pub use commands::smart_monitor::run_headless_smart_check;
 
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
@@ -101,6 +105,13 @@ pub fn run() {
             // Cross-platform commands (always registered):
             commands::presets::get_presets,
             portable::check_portable_mode,
+            // SMART Disk Monitoring (cross-platform via smartctl). v2.0 Feature 4.
+            commands::smart_monitor::check_smartctl_available,
+            commands::smart_monitor::get_smart_install_command,
+            commands::smart_monitor::read_smart_data,
+            commands::smart_monitor::save_smart_history,
+            commands::smart_monitor::get_smart_trend,
+            commands::smart_monitor::enable_smart_schedule,
             // Windows-only commands (Linux + macOS twins below each entry):
             #[cfg(target_os = "windows")]
             commands::hardware::get_hardware_summary,

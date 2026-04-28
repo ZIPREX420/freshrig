@@ -10,6 +10,7 @@ import { HealthScore } from "./HealthScore";
 import { CircuitBoard, Volume2, FileText } from "lucide-react";
 import { HardwareCard } from "./HardwareCard";
 import { ReportPage } from "../report/ReportPage";
+import { SmartHealthCard } from "./SmartHealthCard";
 
 export function Dashboard() {
   const { summary, driverIssues, loading, error, fetchHardware } = useHardwareStore();
@@ -78,6 +79,9 @@ export function Dashboard() {
 
       {/* Driver Issues (only shown if any) */}
       <DriverIssuesCard issues={driverIssues} />
+
+      {/* SMART Disk Health */}
+      <SmartHealthCard />
 
       {/* Hardware Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
