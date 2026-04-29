@@ -117,6 +117,10 @@ pub fn run() {
             commands::watchdog::list_snapshots,
             commands::watchdog::delete_snapshot,
             commands::watchdog::diff_snapshots,
+            // Encrypted Profile Sync (cross-platform age + scrypt). v2.0 Feature 3.
+            commands::profile_sync::export_profile_encrypted,
+            commands::profile_sync::import_profile_encrypted,
+            commands::profile_sync::detect_cloud_synced_profiles,
             // Windows-only commands (Linux + macOS twins below each entry):
             #[cfg(target_os = "windows")]
             commands::hardware::get_hardware_summary,

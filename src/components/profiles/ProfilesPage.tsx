@@ -7,6 +7,7 @@ import { ProfileCard } from "./ProfileCard";
 import { SaveProfileDialog } from "./SaveProfileDialog";
 import { ImportPreviewDialog } from "./ImportPreviewDialog";
 import { ImportShareCodeDialog } from "./ImportShareCodeDialog";
+import { EncryptedSyncSection } from "./EncryptedSyncSection";
 
 export function ProfilesPage() {
   const {
@@ -154,6 +155,9 @@ export function ProfilesPage() {
           </div>
         </div>
       )}
+
+      {/* Encrypted Sync (Pro) */}
+      <EncryptedSyncSection />
 
       {/* Loading */}
       {loading && (

@@ -1,5 +1,6 @@
 // Cross-platform modules — always compiled on every OS.
 pub mod presets;
+pub mod profile_sync;
 pub mod smart_monitor;
 pub mod watchdog;
 
