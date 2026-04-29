@@ -102,25 +102,26 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            // Cross-platform commands (always registered):
+            // Cross-platform commands (always registered).
+            // Ordered alphabetically by module to match `commands/mod.rs`.
             commands::presets::get_presets,
             portable::check_portable_mode,
-            // SMART Disk Monitoring (cross-platform via smartctl). v2.0 Feature 4.
+            // Encrypted Profile Sync — age + scrypt passphrase encryption.
+            commands::profile_sync::export_profile_encrypted,
+            commands::profile_sync::import_profile_encrypted,
+            commands::profile_sync::detect_cloud_synced_profiles,
+            // SMART Disk Monitoring — smartctl wrapper + history + scheduler.
             commands::smart_monitor::check_smartctl_available,
             commands::smart_monitor::get_smart_install_command,
             commands::smart_monitor::read_smart_data,
             commands::smart_monitor::save_smart_history,
             commands::smart_monitor::get_smart_trend,
             commands::smart_monitor::enable_smart_schedule,
-            // Watchdog Mode (cross-platform snapshots + diff). v2.0 Feature 2.
+            // Watchdog Mode — system snapshots + diff engine.
             commands::watchdog::take_snapshot,
             commands::watchdog::list_snapshots,
             commands::watchdog::delete_snapshot,
             commands::watchdog::diff_snapshots,
-            // Encrypted Profile Sync (cross-platform age + scrypt). v2.0 Feature 3.
-            commands::profile_sync::export_profile_encrypted,
-            commands::profile_sync::import_profile_encrypted,
-            commands::profile_sync::detect_cloud_synced_profiles,
             // Windows-only commands (Linux + macOS twins below each entry):
             #[cfg(target_os = "windows")]
             commands::hardware::get_hardware_summary,
