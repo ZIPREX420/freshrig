@@ -24,6 +24,9 @@ import { useUpdateStore } from "../../stores/updateStore";
 import { useLicenseStore } from "../../stores/licenseStore";
 import { APP_NAME, APP_VERSION } from "../../config/app";
 import type { AppCategory } from "../../types/apps";
+import { BrandingSection } from "./BrandingSection";
+import { PortableSection } from "./PortableSection";
+import { IntegrationsSection } from "./IntegrationsSection";
 
 const ACCENT_PRESETS: { value: AccentColor; label: string; swatch: string }[] = [
   { value: "teal", label: "Teal", swatch: "#00d4aa" },
@@ -503,6 +506,11 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
           )}
         </div>
       </section>
+
+      {/* Pro Business sections — hidden behind ProFeatureGate inside each. */}
+      <BrandingSection />
+      <PortableSection />
+      <IntegrationsSection />
 
       {/* About link */}
       <div className="pt-2">

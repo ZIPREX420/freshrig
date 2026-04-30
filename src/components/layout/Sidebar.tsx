@@ -11,6 +11,7 @@ import {
   Menu,
   Cog,
   Camera,
+  Server,
   Settings,
   Monitor,
   Keyboard,
@@ -19,6 +20,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { APP_NAME, APP_VERSION } from "../../config/app";
 import { usePlatform } from "../../hooks/usePlatform";
+import { useLicenseStore } from "../../stores/licenseStore";
 
 interface SidebarProps {
   currentView: string;
@@ -46,6 +48,7 @@ const primaryNav: NavItem[] = [
   { id: "contextMenu", label: "Context Menu", icon: Menu },
   { id: "services", label: "Services", icon: Cog },
   { id: "watchdog", label: "Watchdog", icon: Camera },
+  { id: "fleet", label: "Fleet", icon: Server },
 ];
 
 const secondaryNav: NavItem[] = [
@@ -57,11 +60,16 @@ export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarPro
   // Optimize + Context Menu rely on Win32/WMI/shell extensions and Profiles
   // uses Windows-specific JSON profile storage — hide all three on every
   // non-Windows platform. Future platforms inherit the same hiding for free.
+  // Fleet is gated to Pro Business and hidden entirely from Free/Pro.
   const { isWindows } = usePlatform();
+  const isBusiness = useLicenseStore((s) => s.isBusiness());
   const WINDOWS_ONLY = new Set(["optimize", "contextMenu", "profiles"]);
-  const visibleNav = isWindows
-    ? primaryNav
-    : primaryNav.filter((item) => !WINDOWS_ONLY.has(item.id));
+  const BUSINESS_ONLY = new Set(["fleet"]);
+  const visibleNav = primaryNav.filter((item) => {
+    if (!isWindows && WINDOWS_ONLY.has(item.id)) return false;
+    if (!isBusiness && BUSINESS_ONLY.has(item.id)) return false;
+    return true;
+  });
 
   return (
     <aside className="flex flex-col w-[260px] shrink-0 h-full bg-[var(--bg-sidebar)] border-r border-[var(--border)] overflow-y-auto">

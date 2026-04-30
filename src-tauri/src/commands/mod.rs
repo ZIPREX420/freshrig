@@ -1,6 +1,11 @@
 // Cross-platform modules — always compiled on every OS.
+pub mod branding;
+pub mod bulk_deploy;
+pub mod fleet;
+pub mod integrations;
 pub mod presets;
 pub mod profile_sync;
+pub mod secrets;
 pub mod smart_monitor;
 pub mod watchdog;
 

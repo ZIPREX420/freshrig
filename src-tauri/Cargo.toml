@@ -41,6 +41,8 @@ sysinfo = "0.38"
 rusqlite = { version = "0.32", features = ["bundled"] }
 uuid = { version = "1", features = ["v4"] }
 age = "0.10"
+keyring = { version = "3", features = ["windows-native", "apple-native", "linux-native"] }
+lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "rustls-tls", "builder", "hostname"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winreg = "0.56"

@@ -16,6 +16,14 @@ fn main() {
             .unwrap_or("");
         let exit_code = match task {
             "smart-check" => freshrig_lib::run_headless_smart_check(),
+            "run-contracts" => freshrig_lib::run_headless_contracts(),
+            "apply-profile" => {
+                let profile_id = args
+                    .iter()
+                    .find_map(|a| a.strip_prefix("--profile-id="))
+                    .unwrap_or("");
+                freshrig_lib::run_headless_apply_profile(profile_id)
+            }
             _ => 2,
         };
         std::process::exit(exit_code);

@@ -12,10 +12,26 @@ const EXPECTED_STORE_ID: u64 = 0;
 const EXPECTED_PRODUCT_ID: u64 = 0;
 const LEMONSQUEEZY_API: &str = "https://api.lemonsqueezy.com/v1";
 
+// Variant-id allowlists for tier resolution. One LemonSqueezy product holds
+// multiple variants (Pro Monthly, Pro Annual, Business Monthly, Business
+// Annual). Fill in the real numeric variant ids before launch — until then
+// any variant counts as Pro and Business stays empty.
+const EXPECTED_PRO_VARIANT_IDS: &[u64] = &[];
+const EXPECTED_BUSINESS_VARIANT_IDS: &[u64] = &[];
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum LicenseTier {
+    Free,
+    Pro,
+    Business,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LicenseResponse {
     pub valid: bool,
+    pub tier: LicenseTier,
     pub instance_id: Option<String>,
     pub license_key: Option<String>,
     pub customer_name: Option<String>,
@@ -50,8 +66,26 @@ struct LsInstance {
 struct LsMeta {
     store_id: Option<u64>,
     product_id: Option<u64>,
+    variant_id: Option<u64>,
     customer_name: Option<String>,
     customer_email: Option<String>,
+}
+
+fn resolve_tier(variant_id: Option<u64>) -> LicenseTier {
+    let Some(vid) = variant_id else {
+        // No variant_id from LemonSqueezy → activate-but-no-tier-info. Treat
+        // as Pro (the conservative pre-Business default) so existing flows
+        // keep working.
+        return LicenseTier::Pro;
+    };
+    if EXPECTED_BUSINESS_VARIANT_IDS.contains(&vid) {
+        LicenseTier::Business
+    } else if EXPECTED_PRO_VARIANT_IDS.is_empty() || EXPECTED_PRO_VARIANT_IDS.contains(&vid) {
+        // While the allowlist is empty (pre-launch), every paid variant is Pro.
+        LicenseTier::Pro
+    } else {
+        LicenseTier::Free
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -197,6 +231,7 @@ pub async fn activate_license(
         Err(e) => {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -213,6 +248,7 @@ pub async fn activate_license(
         Err(e) => {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -226,6 +262,7 @@ pub async fn activate_license(
     if !body.activated.unwrap_or(false) {
         return Ok(LicenseResponse {
             valid: false,
+            tier: LicenseTier::Free,
             instance_id: None,
             license_key: None,
             customer_name: None,
@@ -242,6 +279,7 @@ pub async fn activate_license(
         if store_id != EXPECTED_STORE_ID {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -256,6 +294,7 @@ pub async fn activate_license(
         if product_id != EXPECTED_PRODUCT_ID {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -271,6 +310,7 @@ pub async fn activate_license(
         if s != "active" {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -283,6 +323,7 @@ pub async fn activate_license(
 
     Ok(LicenseResponse {
         valid: true,
+        tier: resolve_tier(meta.and_then(|m| m.variant_id)),
         instance_id: body.instance.map(|i| i.id),
         license_key: lk
             .and_then(|l| l.key.clone())
@@ -322,6 +363,7 @@ pub async fn validate_license(
         Err(e) => {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -338,6 +380,7 @@ pub async fn validate_license(
         Err(e) => {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -352,6 +395,7 @@ pub async fn validate_license(
     if !is_valid {
         return Ok(LicenseResponse {
             valid: false,
+            tier: LicenseTier::Free,
             instance_id: None,
             license_key: None,
             customer_name: None,
@@ -370,6 +414,7 @@ pub async fn validate_license(
         if store_id != EXPECTED_STORE_ID {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -384,6 +429,7 @@ pub async fn validate_license(
         if product_id != EXPECTED_PRODUCT_ID {
             return Ok(LicenseResponse {
                 valid: false,
+                tier: LicenseTier::Free,
                 instance_id: None,
                 license_key: None,
                 customer_name: None,
@@ -397,6 +443,7 @@ pub async fn validate_license(
     let lk = body.license_key.as_ref();
     Ok(LicenseResponse {
         valid: true,
+        tier: resolve_tier(meta.and_then(|m| m.variant_id)),
         instance_id: Some(instance_id),
         license_key: lk
             .and_then(|l| l.key.clone())

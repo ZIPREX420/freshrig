@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { invoke } from "@tauri-apps/api/core";
 import { TRIAL_DAYS } from "../config/app";
 
-export type LicenseTier = "free" | "pro";
+export type LicenseTier = "free" | "pro" | "business";
 
 const GRACE_PERIOD_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
 const TRIAL_DURATION_MS = TRIAL_DAYS * 24 * 60 * 60 * 1000;
@@ -21,6 +21,7 @@ export function isValidLicenseFormat(key: string): boolean {
 
 interface LicenseResponse {
   valid: boolean;
+  tier: LicenseTier;
   instanceId: string | null;
   licenseKey: string | null;
   customerName: string | null;
@@ -40,6 +41,7 @@ interface LicenseState {
   expiresAt: string | null;
   trialStartedAt: string | null;
   isPro: () => boolean;
+  isBusiness: () => boolean;
   isTrial: () => boolean;
   trialDaysRemaining: () => number;
   canStartTrial: () => boolean;
@@ -68,7 +70,8 @@ export const useLicenseStore = create<LicenseState>()(
 
       isPro: () => {
         const s = get();
-        if (s.tier === "pro") return true;
+        // Business inherits all Pro affordances; treat both paid tiers as Pro.
+        if (s.tier === "pro" || s.tier === "business") return true;
         if (s.trialStartedAt) {
           const start = new Date(s.trialStartedAt).getTime();
           if (Date.now() - start < TRIAL_DURATION_MS) return true;
@@ -76,9 +79,11 @@ export const useLicenseStore = create<LicenseState>()(
         return false;
       },
 
+      isBusiness: () => get().tier === "business",
+
       isTrial: () => {
         const s = get();
-        if (s.tier === "pro") return false;
+        if (s.tier === "pro" || s.tier === "business") return false;
         if (!s.trialStartedAt) return false;
         const start = new Date(s.trialStartedAt).getTime();
         return Date.now() - start < TRIAL_DURATION_MS;
@@ -122,7 +127,9 @@ export const useLicenseStore = create<LicenseState>()(
             return { ok: false, error: resp.error ?? "Activation failed" };
           }
           set({
-            tier: "pro",
+            // Backend resolves tier from the LemonSqueezy variant_id; fall
+            // back to "pro" if the response somehow omits a tier (defensive).
+            tier: resp.tier ?? "pro",
             licenseKey: resp.licenseKey ?? trimmed,
             instanceId: resp.instanceId,
             customerName: resp.customerName,
@@ -139,7 +146,7 @@ export const useLicenseStore = create<LicenseState>()(
 
       revalidate: async () => {
         const state = get();
-        if (state.tier !== "pro" || !state.licenseKey || !state.instanceId) return;
+        if (state.tier === "free" || !state.licenseKey || !state.instanceId) return;
         if (!isTauri()) return;
 
         const attemptAt = new Date().toISOString();
@@ -150,6 +157,7 @@ export const useLicenseStore = create<LicenseState>()(
           });
           if (resp.valid) {
             set({
+              tier: resp.tier ?? state.tier,
               validatedAt: new Date().toISOString(),
               lastValidationAttemptAt: attemptAt,
               customerName: resp.customerName ?? state.customerName,

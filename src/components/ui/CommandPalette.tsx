@@ -21,6 +21,7 @@ import {
   Menu,
   Cog,
   Camera,
+  Server,
   Briefcase,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
@@ -180,6 +181,13 @@ export function CommandPalette({ onClose, onNavigate }: CommandPaletteProps) {
       category: "Pages",
       icon: Camera,
       action: () => onNavigate("watchdog"),
+    },
+    {
+      id: "nav-fleet",
+      label: "Go to Fleet (Pro Business)",
+      category: "Pages",
+      icon: Server,
+      action: () => onNavigate("fleet"),
     },
     {
       id: "nav-settings",

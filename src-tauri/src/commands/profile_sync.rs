@@ -55,9 +55,7 @@ pub async fn export_profile_encrypted(
         writer
             .write_all(profile_json.as_bytes())
             .map_err(|e| format!("age write: {}", e))?;
-        writer
-            .finish()
-            .map_err(|e| format!("age finish: {}", e))?;
+        writer.finish().map_err(|e| format!("age finish: {}", e))?;
         fs::write(&output_path, buf).map_err(|e| format!("write {}: {}", output_path, e))?;
         Ok::<(), String>(())
     })

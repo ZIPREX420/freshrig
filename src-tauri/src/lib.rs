@@ -8,7 +8,35 @@ pub mod portable;
 mod util;
 
 // Re-exports for headless CLI entry points called from main.rs.
+pub use commands::fleet::run_headless_contracts;
 pub use commands::smart_monitor::run_headless_smart_check;
+
+/// Headless `--task=apply-profile --profile-id=<id>` entry point.
+/// Used by the bulk-deploy launcher (`run-deploy.bat` / `.sh`) to apply a
+/// pre-baked profile non-interactively. v0: write a marker file so the GUI
+/// pass on next launch can pick up which profile was applied. The actual
+/// apply pipeline (winget installs, debloat, etc.) lives behind WMI/winget
+/// commands that need the full Tauri app shell, so we defer the heavy
+/// work to that next launch rather than reimplementing it headless.
+pub fn run_headless_apply_profile(profile_id: &str) -> i32 {
+    if profile_id.is_empty() {
+        eprintln!("apply-profile: missing --profile-id");
+        return 2;
+    }
+    let dir = portable::get_data_dir();
+    let _ = std::fs::create_dir_all(&dir);
+    let marker = dir.join("pending-apply.json");
+    let payload = serde_json::json!({
+        "profileId": profile_id,
+        "queuedAt": commands::fleet::chrono_now(),
+    });
+    if let Err(e) = std::fs::write(&marker, payload.to_string()) {
+        eprintln!("apply-profile: write marker failed: {}", e);
+        return 1;
+    }
+    println!("apply-profile: queued {}", profile_id);
+    0
+}
 
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
@@ -106,6 +134,31 @@ pub fn run() {
             // Ordered alphabetically by module to match `commands/mod.rs`.
             commands::presets::get_presets,
             portable::check_portable_mode,
+            portable::get_portable_data_dir,
+            portable::bootstrap_portable_dir,
+            // White-Label Branding — keyring-backed shop info & logo (Pro Business).
+            commands::branding::get_branding,
+            commands::branding::set_branding,
+            commands::branding::pick_logo,
+            commands::branding::validate_logo,
+            // Bulk Profile Deployment — generate per-machine deploy bundles.
+            commands::bulk_deploy::create_deployment_bundle,
+            // Multi-Machine Fleet Dashboard + Maintenance Contracts.
+            commands::fleet::list_machines,
+            commands::fleet::add_machine,
+            commands::fleet::delete_machine,
+            commands::fleet::get_machine_detail,
+            commands::fleet::export_endpoint_summary,
+            commands::fleet::import_endpoint_summary,
+            commands::fleet::list_contracts,
+            commands::fleet::create_contract,
+            commands::fleet::delete_contract,
+            commands::fleet::run_contract_now,
+            // RepairShopr / Webhook / SMTP integrations.
+            commands::integrations::get_integrations,
+            commands::integrations::set_integrations,
+            commands::integrations::test_webhook,
+            commands::integrations::send_report_to_provider,
             // Encrypted Profile Sync — age + scrypt passphrase encryption.
             commands::profile_sync::export_profile_encrypted,
             commands::profile_sync::import_profile_encrypted,
