@@ -8,7 +8,40 @@
 
 #![allow(dead_code)]
 
-use crate::models::apps::{AppCategory, AppEntry};
+use crate::models::apps::{AppCategory, AppEntry, AppTier};
+
+/// 14 essential apps stay free; everything else is gated to Pro.
+/// macOS flavor — uses this catalog's short-form IDs (e.g. "firefox"
+/// rather than the Windows "Mozilla.Firefox"). Mirrors the Windows
+/// FREE_TIER_IDS in `data::app_catalog`.
+const FREE_TIER_IDS: &[&str] = &[
+    // Browsers
+    "firefox",
+    "brave",
+    "chrome",
+    // Gaming / Communication
+    "steam",
+    "discord",
+    // Media
+    "obs",
+    "vlc",
+    "spotify",
+    // Utilities / Productivity
+    "7zip",
+    "libreoffice",
+    // Development / Runtimes
+    "git",
+    "python",
+    "nodejs",
+];
+
+fn tier_for(id: &str) -> AppTier {
+    if FREE_TIER_IDS.contains(&id) {
+        AppTier::Free
+    } else {
+        AppTier::Pro
+    }
+}
 
 /// Homebrew bindings for a single app. Either `cask` (GUI app bundle) or
 /// `formula` (CLI tool) is set; never both at once for the catalog rows
@@ -347,6 +380,7 @@ pub fn macos_app_catalog() -> Vec<AppEntry> {
             category: e.category.clone(),
             icon_name: e.icon.into(),
             is_popular: e.popular,
+            tier: tier_for(e.id),
             estimated_size_mb: e.size_mb,
         })
         .collect()

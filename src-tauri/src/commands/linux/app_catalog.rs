@@ -6,7 +6,40 @@
 //! keyed by the running OS's catalog, so cross-platform profile import is not
 //! supported — users export on Windows, import on Windows; same for Linux.
 
-use crate::models::apps::{AppCategory, AppEntry};
+use crate::models::apps::{AppCategory, AppEntry, AppTier};
+
+/// 14 essential apps stay free; everything else is gated to Pro.
+/// Linux flavor — uses this catalog's short-form IDs (e.g. "firefox"
+/// rather than the Windows "Mozilla.Firefox"). Mirrors the Windows
+/// FREE_TIER_IDS in `data::app_catalog`.
+const FREE_TIER_IDS: &[&str] = &[
+    // Browsers
+    "firefox",
+    "brave",
+    "google-chrome",
+    // Gaming / Communication
+    "steam",
+    "discord",
+    // Media
+    "obs",
+    "vlc",
+    "spotify",
+    // Utilities / Productivity
+    "7zip",
+    "libreoffice",
+    // Development / Runtimes
+    "git",
+    "python",
+    "nodejs",
+];
+
+fn tier_for(id: &str) -> AppTier {
+    if FREE_TIER_IDS.contains(&id) {
+        AppTier::Free
+    } else {
+        AppTier::Pro
+    }
+}
 
 /// Package-manager bindings for a single app.
 #[derive(Debug, Clone, Copy)]
@@ -774,6 +807,7 @@ pub fn linux_app_catalog() -> Vec<AppEntry> {
             category: e.category.clone(),
             icon_name: e.icon.into(),
             is_popular: e.popular,
+            tier: tier_for(e.id),
             estimated_size_mb: e.size_mb,
         })
         .collect()
