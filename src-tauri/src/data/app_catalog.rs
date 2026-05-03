@@ -1,4 +1,37 @@
-use crate::models::apps::{AppCategory, AppEntry};
+use crate::models::apps::{AppCategory, AppEntry, AppTier};
+
+/// 14 essential apps stay free; everything else is gated to Pro.
+/// Centralized here so the helper below can stamp each `AppEntry`'s tier
+/// without forcing every call site to spell it out.
+const FREE_TIER_IDS: &[&str] = &[
+    // Browsers
+    "Google.Chrome",
+    "Mozilla.Firefox",
+    "BraveSoftware.BraveBrowser",
+    // Gaming / Communication
+    "Valve.Steam",
+    "Discord.Discord",
+    // Media
+    "OBSProject.OBSStudio",
+    "VideoLAN.VLC",
+    "Spotify.Spotify",
+    // Utilities / Productivity
+    "7zip.7zip",
+    "Notepad++.Notepad++",
+    "TheDocumentFoundation.LibreOffice",
+    // Development / Runtimes
+    "Git.Git",
+    "Python.Python.3.12",
+    "OpenJS.NodeJS.LTS",
+];
+
+fn tier_for(id: &str) -> AppTier {
+    if FREE_TIER_IDS.contains(&id) {
+        AppTier::Free
+    } else {
+        AppTier::Pro
+    }
+}
 
 pub fn get_default_catalog() -> Vec<AppEntry> {
     vec![
@@ -519,6 +552,7 @@ fn app(
     popular: bool,
 ) -> AppEntry {
     let estimated_size_mb = estimate_size(id);
+    let tier = tier_for(id);
     AppEntry {
         id: id.to_string(),
         name: name.to_string(),
@@ -526,6 +560,7 @@ fn app(
         category,
         icon_name: icon.to_string(),
         is_popular: popular,
+        tier,
         estimated_size_mb,
     }
 }

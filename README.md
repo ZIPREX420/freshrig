@@ -1,7 +1,8 @@
 <div align="center">
   <h1>🖥️ FreshRig</h1>
-  <p><strong>Set up any PC in minutes — Windows, Linux, and macOS.</strong></p>
-  <p>Hardware detection • Driver recommendations • App batch install • Shareable profiles</p>
+  <p><strong>The maintenance tool that reads like a tech, not a salesman.</strong></p>
+  <p>Hardware detection • Driver setup • App batch install • Privacy drift • Watchdog snapshots • SMART trend alerts</p>
+  <p><strong>Now with a Pro Business tier for repair shops and a Founder's Lifetime offer (first 500 only).</strong></p>
 
   <p>
     <a href="https://github.com/ZIPREX420/freshrig/releases/latest"><img src="https://img.shields.io/github/v/release/ZIPREX420/freshrig?style=flat-square&color=00d4aa" alt="Latest Release"></a>
@@ -12,7 +13,10 @@
 
   <p>
     <a href="https://github.com/ZIPREX420/freshrig/releases/latest">
-      <img src="https://img.shields.io/badge/Download%20for%20Windows-00d4aa?style=for-the-badge&logo=windows&logoColor=white" alt="Download">
+      <img src="https://img.shields.io/badge/Download%20Free-00d4aa?style=for-the-badge&logo=windows&logoColor=white" alt="Download">
+    </a>
+    <a href="https://ZIPREX420.github.io/freshrig/#pricing">
+      <img src="https://img.shields.io/badge/See%20Pricing-3b82f6?style=for-the-badge" alt="Pricing">
     </a>
   </p>
 </div>
@@ -21,9 +25,7 @@
 
 ## What is FreshRig?
 
-FreshRig is a **free, open-source cross-platform desktop app** that combines hardware detection, driver recommendations, and app batch installation into a single tool. Runs natively on Windows, Linux, and macOS. No more juggling between Ninite, Snappy Driver Installer, and manual downloads after a fresh install.
-
-**No existing tool does all three across all three platforms.** FreshRig does.
+FreshRig is a **cross-platform desktop app** for hardware detection, driver setup, app batch installation, and Windows-style maintenance work. Runs natively on Windows, Linux, and macOS. Open source. No telemetry.
 
 ## Platform Support
 
@@ -38,47 +40,86 @@ FreshRig is a **free, open-source cross-platform desktop app** that combines har
 
 ## ✨ Features
 
-### Free (Forever)
-- 🔍 **Hardware Dashboard** — Auto-detects your CPU, GPU, motherboard, storage, network, and audio (WMI on Windows, /proc + lspci on Linux, system_profiler + sysctl on macOS)
-- 🎯 **Driver Finder** — Detects your hardware vendors (NVIDIA, AMD, Intel, Realtek); Intel DSA installs silently via winget, NVIDIA and AMD open their official driver tools in your browser
-- 📦 **App Batch Install** — 60+ popular apps organized by category, installed silently via winget with real-time progress
-- 💾 **Shareable Profiles** — Save your app selection as a `.freshrig.json` profile, share via code or file, import on any PC
-- ⚙️ **Windows Optimization** — 23 tweaks across Safe, Moderate, and Expert tiers with mandatory restore points
-- 🚀 **Startup Manager** — View and control Windows startup programs from registry Run keys and the Startup folder, with one-click enable/disable
-- 🏥 **Health Score** — Instant readiness assessment of your system with driver issue detection
-- 🎨 **6 Accent Themes** — Teal, Blue, Purple, Orange, Rose, and Green with instant switching
-- ⌨️ **Command Palette** — Ctrl+K spotlight search for quick navigation and actions
-- 🔄 **Auto-Updater** — Built-in update checks with passive install
-- 🌙 **Premium Dark UI** — Spring-physics animations, refined cards, and polished page transitions built with Tailwind CSS
-- 🎉 **Celebration Mode** — Confetti and time-saved counter when your setup completes
+### Free (forever)
+- 🔍 **Hardware Dashboard** — Auto-detects CPU, GPU, motherboard, storage, network, audio (WMI on Windows, /proc + lspci on Linux, system_profiler + sysctl on macOS)
+- 🎯 **Drivers (read-only)** — Detects GPU/audio/network vendors and surfaces the right driver tool (Intel DSA via winget, NVIDIA App, AMD Adrenalin)
+- 📦 **15 Essentials Apps catalog** — Chrome, Firefox, Brave, 7-Zip, VLC, Notepad++, Git, Python, Node.js, Spotify, Discord, OBS Studio, Steam, LibreOffice, Microsoft Edge — batch-installed silently via winget/apt/dnf/pacman/zypper/Flatpak/Homebrew
+- 💾 **1 saved Profile** — Save your app selection, share via code or `.freshrig.json`
+- ⚙️ **Windows Optimization** — 23 tweaks across Safe / Moderate / Expert tiers with mandatory restore points
+- 🚀 **Startup Manager** — One-click enable/disable for Windows startup programs
+- 🎨 **6 accent themes**, ⌨️ **command palette (Ctrl+K)**, 🔄 **auto-updater**, 🌙 **premium dark UI**
 
-### Pro ($39 One-Time · No Subscription · 14-Day Free Trial · 3 Activations)
-- 🧹 **Disk Cleanup** — Scan temp files, browser caches, crash dumps, shader caches with per-category risk ratings and preview before cleaning
-- 🛡️ **Privacy Dashboard** — Audit camera/microphone/location permissions per app, 20+ privacy toggles with drift detection
-- 🌐 **Network Tools** — One-click DNS flush, full network reset, DNS preset switching (Cloudflare, Google, Quad9), saved WiFi password viewer
-- ⚡ **Services Manager** — Gaming / Privacy / Performance presets with never-disable guardrails on critical system services
-- 🖱️ **Context Menu Editor** — Restore Windows 11 classic right-click menu with one toggle, view and block shell extensions
-- 📄 **System Health Report** — Comprehensive PC diagnostic with hardware audit, SMART disk health, battery wear, security status, and an overall A-F grade. Export as PDF.
-- 🗓️ **Scheduled Maintenance** (coming soon)
-- 🏷️ **White-Label Branding** (coming soon)
+### Pro — $5.99/mo · $49/yr · or $149 Founder's Lifetime (first 500)
+- 📦 **Full 60+ Apps catalog** with cross-platform batch install
+- 🧹 **Disk Cleanup** with browser caches, shader caches, crash dumps
+- 🛡️ **Privacy Dashboard** with **Drift Detection** — alerts when Windows Update re-enables tracking
+- 🌐 **Network Tools** — DNS presets, full reset, saved Wi-Fi passwords
+- ⚡ **Services Manager** with Gaming / Privacy / Performance presets
+- 🖱️ **Context Menu Editor** — restore Windows 11 classic right-click
+- 📄 **PDF System Health Report** with overall A-F grade
+- 📷 **Watchdog Mode** — system snapshots + before/after diff engine
+- 🔐 **Encrypted Profile Sync** — passphrase-encrypted `.frprofile` blobs in OneDrive/Dropbox/iCloud (3 devices)
+- 💽 **SMART Disk Monitoring** — trend alerts using Backblaze's high-signal attributes
+- 🗓️ **Scheduled background tasks** — SMART checks, contract runs
 
-## 💎 Pro vs Free
+7-day free trial · no credit card required · pause-anytime subscription · cancel anytime.
 
-| Feature | Free | Pro |
-| --- | :---: | :---: |
-| Hardware Dashboard, Driver Finder, App Batch Install | ✅ | ✅ |
-| Shareable Profiles, Windows Optimization, Startup Manager | ✅ | ✅ |
-| 6 Accent Themes, Command Palette, Auto-Updater | ✅ | ✅ |
-| Disk Cleanup | — | ⭐ |
-| Privacy Dashboard | — | ⭐ |
-| Network Tools | — | ⭐ |
-| Services Manager | — | ⭐ |
-| Context Menu Editor | — | ⭐ |
-| System Health Report (PDF) | — | ⭐ |
-| Scheduled Maintenance (coming soon) | — | ⭐ |
-| White-Label Branding (coming soon) | — | ⭐ |
+### Pro Business — $14.99/mo · $149/yr · per technician
+Everything in Pro, plus:
+- 🏷️ **White-label PDF reports** — your shop logo, name, phone, custom URL
+- 🖥️ **Multi-Machine Dashboard** — manage up to **25 customer endpoints**
+- 📤 **Bulk Profile Deployment** — generate per-machine deploy bundles
+- 🔌 **USB Portable Mode** — copy a runnable FreshRig + your branding to a USB stick
+- 📒 **Customer Database** with machine history and change-log timeline
+- 🗓️ **Recurring Maintenance Contracts** — monthly / quarterly / on-demand with email reports
+- 🔗 **RepairShopr / Syncro / NinjaOne** webhook integration
+- 📜 **Commercial-use license**
 
-**Pro pricing:** $39 one-time · No subscription · 14-day free trial · 3 activations (covers reinstalls).
+Volume discounts: **5+ seats 20% off · 10+ seats 30% off · 25+ seats 40% off · 50+ seats 50% off**.
+
+### 250+ endpoints? Site license — $1,499/year flat. [Contact sales](mailto:sales@freshrig.app).
+
+## 💎 Free vs Pro vs Pro Business
+
+| Feature | Free | Pro | Pro Business |
+| --- | :---: | :---: | :---: |
+| Hardware Dashboard, Drivers (read-only), Optimize, Startup, themes, Ctrl+K | ✅ | ✅ | ✅ |
+| Apps catalog | 15 essentials | 60+ apps | 60+ apps |
+| Saved profiles | 1 | Unlimited | Unlimited |
+| Disk Cleanup, Privacy Dashboard with Drift Detection, Network Tools | — | ⭐ | ⭐ |
+| Services Manager, Context Menu Editor, PDF Report | — | ⭐ | ⭐ |
+| **Watchdog Mode** (snapshots + diff) | — | ⭐ | ⭐ |
+| **Encrypted Profile Sync** (3 devices) | — | ⭐ | ⭐ |
+| **SMART Disk Monitoring** with trends | — | ⭐ | ⭐ |
+| White-label PDF reports | — | — | 💼 |
+| Multi-Machine Dashboard (25 endpoints) | — | — | 💼 |
+| Bulk Profile Deployment | — | — | 💼 |
+| USB Portable Mode | — | — | 💼 |
+| Customer Database + Recurring Contracts | — | — | 💼 |
+| RepairShopr / Syncro / NinjaOne integration | — | — | 💼 |
+| Commercial-use license | — | — | 💼 |
+
+## 🏪 For Repair Shops
+
+FreshRig Pro Business is designed for one-tech computer repair shops and small MSPs. Plug a USB into a customer machine, generate a white-labeled PDF report, push the ticket back to RepairShopr, and bill — all without leaving the laptop.
+
+- **One technician, unlimited customer machines** (capped at 25 in the dashboard for the per-tech plan; site licensing for higher caps).
+- **Recurring contracts** drive monthly maintenance revenue without manual scheduling.
+- **No telemetry** — your customers' data never leaves the laptop unless you explicitly push it via the integration.
+
+[Read the Pro Business pitch →](https://ZIPREX420.github.io/freshrig/#pricing)
+
+## ⭐ Founder's Lifetime — first 500 only
+
+For the first 30 days of v2.0, FreshRig is offering a **$149 one-time** lifetime license:
+
+- Lifetime updates to the desktop app — every future major version included.
+- **No subscription, ever** — for these 500 customers only.
+- Excludes Encrypted Profile Sync (cloud infrastructure cost).
+
+Once the cap is hit or the 30-day window closes, the offer is gone for good. After that, Pro is subscription-only.
+
+[Claim your Founder's Lifetime →](https://ZIPREX420.github.io/freshrig/#pricing)
 
 ## 📸 Screenshots
 
@@ -103,11 +144,14 @@ npm run tauri dev
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Zustand
-- **Backend**: Rust (Tauri v2) + WMI for hardware detection
-- **Installer**: NSIS (via Tauri)
-- **Package Manager**: winget (for app installations)
+- **Backend**: Rust (Tauri v2) — WMI on Windows, /proc + procfs + lspci on Linux, system_profiler + sysctl on macOS
+- **Crypto**: `age` for Encrypted Profile Sync, `keyring` for at-rest secrets, `lettre` for SMTP
+- **Storage**: bundled SQLite via `rusqlite` (Watchdog snapshots, SMART history, fleet)
+- **Installer**: NSIS / .deb / .rpm / AppImage / .dmg (Tauri bundler)
 
-## 🔒 Security
+## 🔒 Security & Privacy
+
+No telemetry. No bundled software. No auto-renewal traps. Open registry-path documentation in [docs/](docs/) so techs can audit every change.
 
 Found a security issue? See [SECURITY.md](SECURITY.md).
 

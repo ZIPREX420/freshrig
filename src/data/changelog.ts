@@ -1,4 +1,33 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.0.0": `### FreshRig v2.0 — The Maintenance Tool That Reads Like a Tech 🛠️
+
+**Four flagship Pro features:**
+- **Privacy Drift Detection** — Snapshots privacy settings, notifies when Windows Updates re-enable tracking. One-click reapply.
+- **Watchdog Mode** — System snapshots before any change. Compare before/after. Roll back when needed.
+- **Encrypted Profile Sync** — Export profiles encrypted with your passphrase. Auto-detect them in OneDrive/Dropbox/iCloud.
+- **SMART Disk Monitoring** — Trend-based alerts using Backblaze's high-signal attributes. Tells you when to back up.
+
+**New: Pro Business tier ($14.99/mo or $149/yr per technician)**
+- White-label PDF reports
+- Multi-Machine Dashboard (up to 25 endpoints)
+- Bulk Profile Deployment
+- USB Portable Mode
+- Customer Database with machine history
+- Recurring Maintenance Contracts
+- RepairShopr/Syncro/NinjaOne webhook integration
+
+**Pricing changes:**
+- Pro is now subscription: $5.99/mo or $49/yr (32% annual discount)
+- 7-day free trial, no credit card required
+- Pause-anytime subscription option
+- Founder's Lifetime: first 500 customers get $149 one-time (no subscription, ever) — 30 days only
+
+**Free tier evolved:**
+- Apps catalog now has 15 essentials free, 60+ with Pro
+- All other Free features stay free forever
+
+**Open registry-path documentation. No telemetry. No bundled software. No auto-renewal traps.**
+`,
   "1.2.1": `### FreshRig v1.2.1 — Polish + Dependency Updates 🧹
 
 - **Launch-readiness audit** — top-to-bottom review caught 11 issues including a real cross-platform bug where the Profiles page was visible on Linux/macOS but errored on click (now hidden on non-Windows), and two startup-panic risks in portable mode (now fall back safely to %APPDATA%)

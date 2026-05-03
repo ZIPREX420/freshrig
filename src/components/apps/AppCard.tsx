@@ -12,6 +12,7 @@ import {
   X,
   Loader2,
   Clock,
+  Lock,
 } from "lucide-react";
 import type { AppEntry, InstallProgress, AppCategory } from "../../types/apps";
 
@@ -21,6 +22,13 @@ interface AppCardProps {
   progress: InstallProgress | undefined;
   onToggle: () => void;
   isInstalled?: boolean;
+  /**
+   * True when the user is on the free tier and this app's tier === "pro".
+   * The card stays visible (so the catalog still feels rich) but the toggle
+   * action is intercepted by `onToggle` in AppsPage to show an upsell modal
+   * instead of selecting the app.
+   */
+  proLocked?: boolean;
 }
 
 const iconMap: Record<string, React.ElementType> = {
@@ -47,7 +55,7 @@ const categoryColors: Record<AppCategory, string> = {
   Runtime: "bg-white/[0.06] text-[var(--text-secondary)]",
 };
 
-export function AppCard({ app, selected, progress, onToggle, isInstalled }: AppCardProps) {
+export function AppCard({ app, selected, progress, onToggle, isInstalled, proLocked }: AppCardProps) {
   const Icon = iconMap[app.iconName] ?? Globe;
   const isInstalling = progress?.status === "Installing";
   const isCompleted = progress?.status === "Completed";
@@ -59,13 +67,23 @@ export function AppCard({ app, selected, progress, onToggle, isInstalled }: AppC
     <button
       onClick={hasStatus ? undefined : onToggle}
       disabled={hasStatus}
+      title={proLocked ? "Unlock the full 60+ catalog with FreshRig Pro" : undefined}
       className={`relative w-full text-left rounded-xl border transition-colors duration-150 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ${
         selected && !hasStatus
           ? "bg-[var(--accent-subtle)] border-[var(--accent-ring)]"
-          : "bg-[var(--bg-card)] border-[var(--border)] hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)]"
+          : proLocked
+            ? "bg-[var(--bg-card)] border-[var(--border)] hover:border-amber-400/40 hover:bg-[var(--bg-card-hover)]"
+            : "bg-[var(--bg-card)] border-[var(--border)] hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)]"
       } ${hasStatus ? "cursor-default" : "cursor-pointer active:scale-[0.99] transition-transform duration-100"}`}
     >
-      {/* Installed badge */}
+      {/* Pro badge — shown when free user is looking at a Pro-tier app */}
+      {proLocked && !hasStatus && (
+        <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 text-[9px] font-semibold">
+          <Lock className="w-2.5 h-2.5" />
+          Pro
+        </div>
+      )}
+      {/* Installed badge — wins over Pro badge when both apply */}
       {isInstalled && !hasStatus && (
         <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-success/15 text-success text-[9px] font-semibold">
           <Check className="w-2.5 h-2.5" />
@@ -73,7 +91,7 @@ export function AppCard({ app, selected, progress, onToggle, isInstalled }: AppC
         </div>
       )}
 
-      <div className="p-4 flex items-start gap-3">
+      <div className={`p-4 flex items-start gap-3 ${proLocked && !hasStatus && !isInstalled ? "opacity-70" : ""}`}>
         {/* Checkbox / Status */}
         <div className="shrink-0 mt-0.5">
           {isCompleted ? (
@@ -91,6 +109,10 @@ export function AppCard({ app, selected, progress, onToggle, isInstalled }: AppC
           ) : isPending ? (
             <div className="w-5 h-5 rounded bg-bg-tertiary flex items-center justify-center">
               <Clock className="w-3.5 h-3.5 text-text-muted" />
+            </div>
+          ) : proLocked ? (
+            <div className="w-5 h-5 rounded bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+              <Lock className="w-3 h-3 text-amber-400" />
             </div>
           ) : (
             <div

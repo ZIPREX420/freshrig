@@ -16,11 +16,15 @@ import {
   ShieldAlert,
   HardDrive,
   WifiOff,
+  Crown,
+  Lock,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { listen } from "@tauri-apps/api/event";
 import { useAppStore } from "../../stores/appStore";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useLicenseStore } from "../../stores/licenseStore";
 import { AppCard } from "./AppCard";
 import { CategoryFilter } from "./CategoryFilter";
 import { InstallProgressPanel } from "./InstallProgressPanel";
@@ -29,6 +33,7 @@ import { PresetSelector } from "./PresetSelector";
 import { WingetSearchResults } from "./WingetSearchResults";
 import { AddCustomAppDialog } from "./AddCustomAppDialog";
 import { ProFeatureGate } from "../ui/ProFeatureGate";
+import { PRO_PURCHASE_URL_ANNUAL, TRIAL_DAYS } from "../../config/app";
 import type { CustomAppEntry, DownloadProgress, InstallerType } from "../../types/custom_apps";
 
 export function AppsPage() {
@@ -40,6 +45,10 @@ export function AppsPage() {
   const [showInstallConfirm, setShowInstallConfirm] = useState(false);
 
   const confirmBeforeInstalling = useSettingsStore((s) => s.settings.confirmBeforeInstalling);
+  const isPro = useLicenseStore((s) => s.isPro());
+  const startTrial = useLicenseStore((s) => s.startTrial);
+  const canStartTrial = useLicenseStore((s) => s.canStartTrial());
+  const [showProUpsell, setShowProUpsell] = useState<{ reason: "toggle" | "install"; appName?: string } | null>(null);
 
   const {
     catalog,
@@ -127,7 +136,31 @@ export function AppsPage() {
     return { totalMb, hasUnknown };
   }, [selectedIds, catalog]);
 
+  const handleToggleApp = (id: string) => {
+    if (!isPro) {
+      const app = catalog.find((a) => a.id === id);
+      if (app && app.tier === "pro") {
+        setShowProUpsell({ reason: "toggle", appName: app.name });
+        return;
+      }
+    }
+    toggleApp(id);
+  };
+
   const handleInstallClick = async () => {
+    // Free users can't bulk-install Pro-tier apps; intercept and surface the
+    // upsell instead. (They can still uncheck the locked apps and install the
+    // free ones, or activate trial/Pro.)
+    if (!isPro) {
+      const blocked = Array.from(selectedIds).find((id) => {
+        const app = catalog.find((a) => a.id === id);
+        return app && app.tier === "pro";
+      });
+      if (blocked) {
+        setShowProUpsell({ reason: "install" });
+        return;
+      }
+    }
     const gb = await checkDiskSpace();
     if (gb !== null && gb < 5) {
       setDiskSpaceAvailable(gb);
@@ -333,8 +366,9 @@ export function AppsPage() {
               app={app}
               selected={selectedIds.has(app.id)}
               progress={installProgress.get(app.id)}
-              onToggle={() => toggleApp(app.id)}
+              onToggle={() => handleToggleApp(app.id)}
               isInstalled={installedAppIds.has(app.id)}
+              proLocked={!isPro && app.tier === "pro"}
             />
           ))}
         </div>
@@ -581,6 +615,93 @@ export function AppsPage() {
             }
           }}
         />
+      )}
+
+      {/* Pro upsell modal — shown when a Free user clicks a Pro-tier app or
+          tries to bulk-install one. Mirrors SaveProfileDialog modal frame. */}
+      {showProUpsell && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setShowProUpsell(null)}
+        >
+          <div
+            className="bg-bg-elevated border border-border rounded-xl shadow-elevated w-full max-w-md mx-4 animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Crown className="w-4 h-4 text-amber-400" />
+                <h2 className="text-lg font-semibold text-text-primary">
+                  {showProUpsell.reason === "install"
+                    ? "Pro apps in your selection"
+                    : "Pro app"}
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowProUpsell(null)}
+                className="p-1 rounded hover:bg-bg-tertiary text-text-muted hover:text-text-primary transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              <p className="text-sm text-text-secondary">
+                {showProUpsell.reason === "install" ? (
+                  <>
+                    One or more apps in your selection are part of the full 60+ catalog.
+                    Unlock the entire catalog with FreshRig Pro and batch-install them all
+                    in one click.
+                  </>
+                ) : (
+                  <>
+                    <span className="text-text-primary font-medium">
+                      {showProUpsell.appName}
+                    </span>{" "}
+                    is part of the full 60+ catalog. Unlock it (and the rest) with FreshRig Pro.
+                  </>
+                )}
+              </p>
+              <ul className="text-xs text-text-muted space-y-1 list-disc list-inside ml-2">
+                <li>Full 60+ apps catalog</li>
+                <li>Disk Cleanup, Privacy Dashboard, Network Tools</li>
+                <li>SMART Disk Monitoring, Watchdog Mode, Encrypted Profile Sync</li>
+                <li>PDF System Health Report</li>
+              </ul>
+            </div>
+            <div className="flex justify-between gap-2 px-6 py-4 border-t border-border">
+              {canStartTrial ? (
+                <button
+                  onClick={() => {
+                    const r = startTrial();
+                    if (r.ok) {
+                      toast.success(`${TRIAL_DAYS}-day Pro trial started — enjoy!`);
+                      setShowProUpsell(null);
+                    } else {
+                      toast.error(r.error ?? "Could not start trial");
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-accent hover:bg-bg-tertiary transition-colors"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  Start {TRIAL_DAYS}-day free trial
+                </button>
+              ) : (
+                <span className="text-xs text-text-muted self-center">
+                  Trial already activated
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  window.open(PRO_PURCHASE_URL_ANNUAL, "_blank", "noopener,noreferrer");
+                }}
+                className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-black px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              >
+                <Crown className="w-4 h-4" />
+                Upgrade to Pro
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
