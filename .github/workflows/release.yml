@@ -122,11 +122,14 @@ jobs:
 
       - name: Generate SBOMs
         if: matrix.platform == 'windows-latest'
+        # cargo-cyclonedx removed --output-file in 0.5.x and renamed the
+        # replacement flag a few times. Rely on the default output behavior
+        # (writes <manifest-dir>/<package-name>.cdx.json) and glob-move it.
+        shell: bash
         run: |
-          # Pin: cargo-cyclonedx 0.5.9 dropped --output-file. Bump this when
-          # we migrate the call to --override-filename.
-          cargo install cargo-cyclonedx --version '=0.5.7'
-          cargo cyclonedx --manifest-path src-tauri/Cargo.toml --format json --output-file sbom-rust.cdx.json
+          cargo install cargo-cyclonedx
+          cargo cyclonedx --manifest-path src-tauri/Cargo.toml --format json
+          mv src-tauri/*.cdx.json sbom-rust.cdx.json
           npx @cyclonedx/cyclonedx-npm --output-file sbom-npm.cdx.json
 
       - name: Upload SBOMs to release

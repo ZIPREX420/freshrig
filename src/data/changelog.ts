@@ -1,4 +1,15 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.0.2": `### FreshRig v2.0.2 — CI hygiene 🧹
+
+This is a maintenance release. No user-facing changes — just CI plumbing cleanups so future contributors don't trip on the same lints we did.
+
+- **CI clippy fixes** — 35 lint sites cleaned up across the Linux command modules and watchdog.rs (Rust 1.95 added stricter \`unnecessary_sort_by\`, \`useless_format\`, \`collapsible_if\`, and \`trim_split_whitespace\` rules). Linux build is now clippy-clean for the first time in 10+ commits.
+- **Windows-only modules properly cfg-gated** — \`data::app_catalog\`, \`data::debloat_tweaks\`, \`models::{context_menu, custom_apps, debloat, profiles}\` are now \`#[cfg(target_os = "windows")]\` at module declaration, eliminating dead-code warnings on Linux builds.
+- **SBOM step robust against cargo-cyclonedx flag churn** — cargo-cyclonedx removed \`--output-file\` and has renamed its replacement a few times. The SBOM step now relies on the tool's default output behavior (writes to the manifest directory) and glob-moves the result to the expected name.
+- **Release workflow gained \`workflow_dispatch\`** — when GitHub Actions silently drops a tag-trigger event (which happened to v2.0.1), you can now re-run the release from the Actions UI by entering the tag name, no force-push tag dance required.
+
+Auto-updater will pull this for everyone on v2.0.0 / v2.0.1 within their normal check window.
+\`,
   "2.0.1": `### FreshRig v2.0.1 — UI overhaul + Pro flow hotfix 🛠️
 
 **Sidebar reorganized.**
