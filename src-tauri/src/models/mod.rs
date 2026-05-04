@@ -1,12 +1,16 @@
 pub mod apps;
 pub mod cleanup;
+#[cfg(target_os = "windows")]
 pub mod context_menu;
+#[cfg(target_os = "windows")]
 pub mod custom_apps;
+#[cfg(target_os = "windows")]
 pub mod debloat;
 pub mod drivers;
 pub mod hardware;
 pub mod network;
 pub mod privacy;
+#[cfg(target_os = "windows")]
 pub mod profiles;
 pub mod services;
 pub mod startup;

@@ -226,7 +226,7 @@ fn block_on_hardware() -> Option<crate::models::hardware::HardwareSummary> {
 
 fn cpu_field(key: &str) -> String {
     let data = fs::read_to_string("/proc/cpuinfo").unwrap_or_default();
-    let prefix = format!("{}", key);
+    let prefix = key.to_string();
     for line in data.lines() {
         if let Some((k, v)) = line.split_once(':') {
             if k.trim() == prefix {
@@ -248,7 +248,6 @@ fn read_meminfo_kb(key: &str) -> Option<u64> {
     for line in data.lines() {
         if let Some(rest) = line.strip_prefix(&prefix) {
             return rest
-                .trim()
                 .split_whitespace()
                 .next()
                 .and_then(|v| v.parse::<u64>().ok());
@@ -378,7 +377,6 @@ fn read_ram_slots_via_dmidecode() -> Option<Vec<RamSlotReport>> {
             }
         } else if let Some(rest) = line.strip_prefix("Configured Memory Speed:") {
             speed = rest
-                .trim()
                 .split_whitespace()
                 .next()
                 .and_then(|v| v.parse::<u32>().ok())

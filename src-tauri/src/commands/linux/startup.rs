@@ -20,7 +20,7 @@ pub async fn get_startup_entries() -> Result<Vec<StartupEntry>, String> {
         entries.extend(read_xdg_autostart());
         entries.extend(read_systemd_user_units());
 
-        entries.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        entries.sort_by_key(|a| a.name.to_lowercase());
         Ok(entries)
     })
     .await

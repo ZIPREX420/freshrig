@@ -10,15 +10,11 @@ use crate::models::network::{NetworkInterface, WifiProfile};
 pub async fn network_reset_dns() -> Result<(), String> {
     tokio::task::spawn_blocking(|| {
         // Prefer resolvectl on systemd-resolved systems.
-        if which("resolvectl") {
-            if run_cmd("resolvectl", &["flush-caches"]).is_ok() {
-                return Ok(());
-            }
+        if which("resolvectl") && run_cmd("resolvectl", &["flush-caches"]).is_ok() {
+            return Ok(());
         }
-        if which("systemd-resolve") {
-            if run_cmd("systemd-resolve", &["--flush-caches"]).is_ok() {
-                return Ok(());
-            }
+        if which("systemd-resolve") && run_cmd("systemd-resolve", &["--flush-caches"]).is_ok() {
+            return Ok(());
         }
         if which("systemctl") {
             if run_elevated("systemctl", &["restart", "systemd-resolved.service"]).is_ok() {
@@ -158,7 +154,7 @@ pub async fn get_wifi_passwords() -> Result<Vec<WifiProfile>, String> {
                 profiles.push(profile);
             }
         }
-        profiles.sort_by(|a, b| a.ssid.to_lowercase().cmp(&b.ssid.to_lowercase()));
+        profiles.sort_by_key(|a| a.ssid.to_lowercase());
         Ok(profiles)
     })
     .await
@@ -205,10 +201,8 @@ fn parse_nmconnection(text: &str) -> Option<WifiProfile> {
         let key = key.trim();
         let value = value.trim();
         match (section, key) {
-            ("connection", "type") => {
-                if value == "wifi" || value == "802-11-wireless" {
-                    is_wifi = true;
-                }
+            ("connection", "type") if value == "wifi" || value == "802-11-wireless" => {
+                is_wifi = true;
             }
             ("wifi", "ssid") | ("802-11-wireless", "ssid") => {
                 ssid = value.to_string();

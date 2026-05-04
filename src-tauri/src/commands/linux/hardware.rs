@@ -81,7 +81,6 @@ fn read_meminfo_kb(key: &str) -> Option<u64> {
     for line in data.lines() {
         if let Some(rest) = line.strip_prefix(&prefix) {
             return rest
-                .trim()
                 .split_whitespace()
                 .next()
                 .and_then(|v| v.parse::<u64>().ok());

@@ -2,7 +2,7 @@
 //! distro-specific package names. Also surfaces pending firmware updates from
 //! `fwupdmgr`.
 
-use crate::commands::linux::util::{distro_family, run_cmd, run_cmd_lossy, run_elevated, which};
+use crate::commands::linux::util::{distro_family, run_cmd_lossy, run_elevated, which};
 use crate::models::drivers::*;
 
 #[tauri::command]

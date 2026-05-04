@@ -4,6 +4,15 @@ on:
   push:
     tags:
       - 'v*'
+  # Manual fallback when a tag-trigger silently misses (GitHub Actions
+  # occasionally drops the CreateEvent when a tag is pushed alongside the
+  # branch update). Run from the Actions tab → Release → Run workflow.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v2.0.2). Must already exist on origin.'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -57,9 +66,19 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Compute APP_VERSION
+      - name: Compute RELEASE_TAG and APP_VERSION
         shell: bash
-        run: echo "APP_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+        run: |
+          # On a tag-trigger (push), GITHUB_REF_NAME is the tag (e.g. v2.0.2).
+          # On workflow_dispatch, GITHUB_REF_NAME is the branch we ran from
+          # (usually `main`), so fall back to the input.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "RELEASE_TAG=${TAG}" >> "$GITHUB_ENV"
+          echo "APP_VERSION=${TAG#v}" >> "$GITHUB_ENV"
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -68,18 +87,18 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           args: ''
-          tagName: ${{ github.ref_name }}
-          releaseName: 'FreshRig ${{ github.ref_name }}'
+          tagName: ${{ env.RELEASE_TAG }}
+          releaseName: 'FreshRig ${{ env.RELEASE_TAG }}'
           releaseBody: |
             ## Download
 
             ### Windows 10 / 11
-            - **[FreshRig_${{ env.APP_VERSION }}_x64-setup.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/FreshRig_${{ env.APP_VERSION }}_x64-setup.exe)** -- recommended NSIS installer (~7 MB)
+            - **[FreshRig_${{ env.APP_VERSION }}_x64-setup.exe](https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/FreshRig_${{ env.APP_VERSION }}_x64-setup.exe)** -- recommended NSIS installer (~7 MB)
 
             ### Linux
-            - **[FreshRig_${{ env.APP_VERSION }}_amd64.AppImage](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/FreshRig_${{ env.APP_VERSION }}_amd64.AppImage)** -- universal, runs on any distro (~85 MB). `chmod +x` then run.
-            - **[FreshRig_${{ env.APP_VERSION }}_amd64.deb](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/FreshRig_${{ env.APP_VERSION }}_amd64.deb)** -- Debian / Ubuntu / Mint / Pop!_OS (~12 MB). `sudo apt install ./FreshRig_${{ env.APP_VERSION }}_amd64.deb`
-            - **[FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm)** -- Fedora / RHEL / openSUSE (~12 MB). `sudo dnf install ./FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm`
+            - **[FreshRig_${{ env.APP_VERSION }}_amd64.AppImage](https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/FreshRig_${{ env.APP_VERSION }}_amd64.AppImage)** -- universal, runs on any distro (~85 MB). `chmod +x` then run.
+            - **[FreshRig_${{ env.APP_VERSION }}_amd64.deb](https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/FreshRig_${{ env.APP_VERSION }}_amd64.deb)** -- Debian / Ubuntu / Mint / Pop!_OS (~12 MB). `sudo apt install ./FreshRig_${{ env.APP_VERSION }}_amd64.deb`
+            - **[FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm](https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm)** -- Fedora / RHEL / openSUSE (~12 MB). `sudo dnf install ./FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm`
             - Arch / EndeavourOS -- AUR package planned. For now, use the AppImage.
 
             ### macOS
@@ -115,6 +134,6 @@ jobs:
           files: |
             sbom-rust.cdx.json
             sbom-npm.cdx.json
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ env.RELEASE_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

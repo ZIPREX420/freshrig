@@ -27,6 +27,7 @@ pub fn run_cmd(program: &str, args: &[&str]) -> Result<String, String> {
 }
 
 /// Run a command, returning Ok on success and the stderr-enriched error on failure.
+#[allow(dead_code)]
 pub fn run_cmd_ok(program: &str, args: &[&str]) -> Result<(), String> {
     run_cmd(program, args).map(|_| ())
 }

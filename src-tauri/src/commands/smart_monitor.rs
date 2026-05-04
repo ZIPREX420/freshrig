@@ -616,6 +616,7 @@ fn write_scheduler_files() -> Result<String, String> {
     ))
 }
 
+#[allow(dead_code)]
 fn xml_escape(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")

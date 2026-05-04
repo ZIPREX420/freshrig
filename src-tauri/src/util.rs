@@ -13,6 +13,7 @@ pub fn silent_cmd(program: &str) -> Command {
 }
 
 #[cfg(not(windows))]
+#[allow(dead_code)]
 pub fn silent_cmd(program: &str) -> Command {
     Command::new(program)
 }
