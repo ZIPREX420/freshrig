@@ -121,7 +121,7 @@ pub async fn get_wifi_passwords() -> Result<Vec<WifiProfile>, String> {
                 auth_type: "WPA2".to_string(),
             });
         }
-        profiles.sort_by(|a, b| a.ssid.to_lowercase().cmp(&b.ssid.to_lowercase()));
+        profiles.sort_by_key(|a| a.ssid.to_lowercase());
         Ok(profiles)
     })
     .await
