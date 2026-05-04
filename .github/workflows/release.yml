@@ -57,6 +57,10 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Compute APP_VERSION
+        shell: bash
+        run: echo "APP_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -66,7 +70,34 @@ jobs:
           args: ''
           tagName: ${{ github.ref_name }}
           releaseName: 'FreshRig ${{ github.ref_name }}'
-          releaseBody: 'See the assets below to download FreshRig.'
+          releaseBody: |
+            ## Download
+
+            ### Windows 10 / 11
+            - **[FreshRig_${{ env.APP_VERSION }}_x64-setup.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/FreshRig_${{ env.APP_VERSION }}_x64-setup.exe)** -- recommended NSIS installer (~7 MB)
+
+            ### Linux
+            - **[FreshRig_${{ env.APP_VERSION }}_amd64.AppImage](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/FreshRig_${{ env.APP_VERSION }}_amd64.AppImage)** -- universal, runs on any distro (~85 MB). `chmod +x` then run.
+            - **[FreshRig_${{ env.APP_VERSION }}_amd64.deb](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/FreshRig_${{ env.APP_VERSION }}_amd64.deb)** -- Debian / Ubuntu / Mint / Pop!_OS (~12 MB). `sudo apt install ./FreshRig_${{ env.APP_VERSION }}_amd64.deb`
+            - **[FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm)** -- Fedora / RHEL / openSUSE (~12 MB). `sudo dnf install ./FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm`
+            - Arch / EndeavourOS -- AUR package planned. For now, use the AppImage.
+
+            ### macOS
+            Code is implemented behind `#[cfg(target_os = "macos")]` but signed builds are not produced yet -- see the `macOS support` section in [CLAUDE.md](https://github.com/${{ github.repository }}/blob/main/CLAUDE.md) for the re-enable steps.
+
+            ---
+
+            ### Verifying signatures
+            Each binary ships with a matching `.sig` file. Verify with the public key in the repo or the Tauri updater key embedded in the app.
+
+            ### Auto-updater manifest
+            `latest.json` is consumed by the in-app updater -- don't download manually.
+
+            ### What's new
+            See the in-app **What's New** modal on first launch, or read [`src/data/changelog.ts`](https://github.com/${{ github.repository }}/blob/main/src/data/changelog.ts).
+
+            ### SBOM
+            `sbom-rust.cdx.json` and `sbom-npm.cdx.json` -- CycloneDX Software Bill of Materials for the Rust and npm dependency graphs respectively.
           releaseDraft: true
           prerelease: false
 

@@ -22,7 +22,13 @@ import { APP_NAME, APP_VERSION } from "../../config/app";
 import type { ReportData, Grade, DriveHealth } from "../../types/report";
 
 interface ReportPageProps {
-  onClose: () => void;
+  /**
+   * Optional close handler. When provided, the report renders as a fixed
+   * fullscreen modal with an X button (used by the Dashboard quick-action).
+   * When omitted, the report renders inline as a routed page (used by the
+   * sidebar's "Health Report" entry).
+   */
+  onClose?: () => void;
 }
 
 const GRADE_COLORS: Record<Grade, { bg: string; text: string; label: string }> = {
@@ -64,11 +70,19 @@ export function ReportPage({ onClose }: ReportPageProps) {
     };
   }, []);
 
+  // When opened via Dashboard's quick action, ReportPage renders as a modal
+  // takeover. When opened from the sidebar (no onClose), it renders inline so
+  // the AppLayout sidebar stays visible and the user can navigate elsewhere.
+  const isModal = typeof onClose === "function";
+  const containerClass = isModal
+    ? "fixed inset-0 z-[80] bg-bg-primary overflow-y-auto report-page"
+    : "report-page";
+
   return (
-    <div className="fixed inset-0 z-[80] bg-bg-primary overflow-y-auto report-page">
+    <div className={containerClass}>
       <PrintStyles />
       <ProFeatureGate feature="Diagnostic Report" mode="overlay">
-        <div className="max-w-4xl mx-auto px-6 py-6 space-y-5">
+        <div className={isModal ? "max-w-4xl mx-auto px-6 py-6 space-y-5" : "max-w-4xl mx-auto space-y-5"}>
           <TopBar report={report} onClose={onClose} />
 
           {loading && <LoadingState />}
@@ -82,7 +96,7 @@ export function ReportPage({ onClose }: ReportPageProps) {
   );
 }
 
-function TopBar({ report, onClose }: { report: ReportData | null; onClose: () => void }) {
+function TopBar({ report, onClose }: { report: ReportData | null; onClose?: () => void }) {
   const handlePrint = () => {
     window.print();
   };
@@ -127,13 +141,15 @@ function TopBar({ report, onClose }: { report: ReportData | null; onClose: () =>
           <Printer className="w-3.5 h-3.5" />
           Print / Save PDF
         </button>
-        <button
-          onClick={onClose}
-          className="flex items-center justify-center w-8 h-8 rounded-md text-text-muted hover:text-text-primary hover:bg-bg-tertiary border border-border transition-colors"
-          aria-label="Close"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center w-8 h-8 rounded-md text-text-muted hover:text-text-primary hover:bg-bg-tertiary border border-border transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );

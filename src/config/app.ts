@@ -3,7 +3,7 @@ import { type as osType } from "@tauri-apps/plugin-os";
 
 export const APP_NAME = "FreshRig";
 export const APP_TAGLINE = "Set up any PC in minutes — Windows, Linux, and macOS";
-export const APP_VERSION = "2.0.0";
+export const APP_VERSION = "2.0.1";
 export const BUILD_FINGERPRINT = `freshrig-${APP_VERSION}-${__BUILD_TIMESTAMP__}`;
 
 // ───────── Pricing (v2.0 subscription model) ─────────
@@ -14,20 +14,22 @@ export const PRO_FOUNDER_LIFETIME_PRICE = 149;
 export const PRO_FOUNDER_CAP = 500;
 export const PRO_FOUNDER_DAYS = 30;
 
-export const PRO_PURCHASE_URL_MONTHLY =
-  "{LemonSqueezy Pro Monthly checkout URL}";
-export const PRO_PURCHASE_URL_ANNUAL =
-  "{LemonSqueezy Pro Annual checkout URL}";
-export const PRO_PURCHASE_URL_FOUNDER =
-  "{LemonSqueezy Founder Lifetime checkout URL}";
+// PRE-LAUNCH MODE: paid checkout isn't wired yet. All upgrade buttons route to
+// the public pricing landing page so users can read about the plans and join
+// the waitlist via the mailto CTAs there. Replace with real LemonSqueezy
+// checkout URLs once the store is live, and bump EXPECTED_STORE_ID /
+// EXPECTED_PRODUCT_ID in src-tauri/src/commands/license.rs in the same commit.
+const PRICING_PAGE_URL = "https://ZIPREX420.github.io/freshrig/#pricing";
+
+export const PRO_PURCHASE_URL_MONTHLY = PRICING_PAGE_URL;
+export const PRO_PURCHASE_URL_ANNUAL = PRICING_PAGE_URL;
+export const PRO_PURCHASE_URL_FOUNDER = PRICING_PAGE_URL;
 
 export const BUSINESS_MONTHLY_PRICE = 14.99;
 export const BUSINESS_ANNUAL_PRICE = 149;
 
-export const BUSINESS_PURCHASE_URL_MONTHLY =
-  "{LemonSqueezy Business Monthly checkout URL}";
-export const BUSINESS_PURCHASE_URL_ANNUAL =
-  "{LemonSqueezy Business Annual checkout URL}";
+export const BUSINESS_PURCHASE_URL_MONTHLY = PRICING_PAGE_URL;
+export const BUSINESS_PURCHASE_URL_ANNUAL = PRICING_PAGE_URL;
 
 export const SITE_PRICE = 1499;
 export const SITE_CONTACT_URL = "mailto:sales@freshrig.app";

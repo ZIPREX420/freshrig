@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Seppe Willemsens (ZIPREX420). MIT License.
 import {
   LayoutDashboard,
   Cpu,
@@ -10,7 +11,8 @@ import {
   Globe,
   Menu,
   Cog,
-  Camera,
+  Eye,
+  FileChartColumn,
   Server,
   Settings,
   Monitor,
@@ -28,27 +30,75 @@ interface SidebarProps {
   onShowShortcuts?: () => void;
 }
 
+type Tier = "pro" | "business";
+
 interface NavItem {
   id: string;
   label: string;
   icon: LucideIcon;
   shortcut?: string;
+  /** When set, item shows a tier badge. Free items omit this field. */
+  tier?: Tier;
+  /** When true, item is hidden on non-Windows platforms. */
+  windowsOnly?: boolean;
 }
 
-const primaryNav: NavItem[] = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, shortcut: "Ctrl+1" },
-  { id: "drivers", label: "Drivers", icon: Cpu, shortcut: "Ctrl+2" },
-  { id: "apps", label: "Apps", icon: Package, shortcut: "Ctrl+3" },
-  { id: "profiles", label: "Profiles", icon: BookMarked, shortcut: "Ctrl+4" },
-  { id: "optimize", label: "Optimize", icon: Sparkles, shortcut: "Ctrl+5" },
-  { id: "startup", label: "Startup", icon: Rocket, shortcut: "Ctrl+6" },
-  { id: "cleanup", label: "Cleanup", icon: Trash2, shortcut: "Ctrl+7" },
-  { id: "privacy", label: "Privacy", icon: Shield, shortcut: "Ctrl+8" },
-  { id: "network", label: "Network", icon: Globe, shortcut: "Ctrl+9" },
-  { id: "contextMenu", label: "Context Menu", icon: Menu },
-  { id: "services", label: "Services", icon: Cog },
-  { id: "watchdog", label: "Watchdog", icon: Camera },
-  { id: "fleet", label: "Fleet", icon: Server },
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+  /** When provided, the entire group is hidden unless the predicate passes. */
+  visibleWhen?: (ctx: { isBusiness: boolean }) => boolean;
+}
+
+// Six functional groups, each capped at <=4 items so the working-memory load
+// stays manageable. Tier badges signal Pro/Business gating up front so users
+// don't hit a paywall by surprise. Keep IDs in sync with App.tsx routing.
+const navGroups: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, shortcut: "Ctrl+1" },
+    ],
+  },
+  {
+    label: "Setup",
+    items: [
+      { id: "drivers", label: "Drivers", icon: Cpu, shortcut: "Ctrl+2" },
+      { id: "apps", label: "Apps", icon: Package, shortcut: "Ctrl+3" },
+      { id: "profiles", label: "Profiles", icon: BookMarked, shortcut: "Ctrl+4", windowsOnly: true },
+    ],
+  },
+  {
+    label: "Tune-up",
+    items: [
+      { id: "optimize", label: "Optimize", icon: Sparkles, shortcut: "Ctrl+5", windowsOnly: true },
+      { id: "startup", label: "Startup", icon: Rocket, shortcut: "Ctrl+6" },
+      { id: "services", label: "Services", icon: Cog, tier: "pro" },
+      { id: "contextMenu", label: "Context Menu", icon: Menu, tier: "pro", windowsOnly: true },
+    ],
+  },
+  {
+    label: "Maintain",
+    items: [
+      { id: "cleanup", label: "Cleanup", icon: Trash2, shortcut: "Ctrl+7", tier: "pro" },
+      { id: "watchdog", label: "Watchdog", icon: Eye, tier: "pro" },
+      { id: "report", label: "Health Report", icon: FileChartColumn, tier: "pro" },
+    ],
+  },
+  {
+    label: "Protect",
+    items: [
+      { id: "privacy", label: "Privacy", icon: Shield, shortcut: "Ctrl+8", tier: "pro" },
+      { id: "network", label: "Network", icon: Globe, shortcut: "Ctrl+9", tier: "pro" },
+    ],
+  },
+  {
+    label: "Business",
+    visibleWhen: ({ isBusiness }) => isBusiness,
+    items: [
+      { id: "fleet", label: "Fleet", icon: Server, tier: "business" },
+    ],
+  },
 ];
 
 const secondaryNav: NavItem[] = [
@@ -57,23 +107,23 @@ const secondaryNav: NavItem[] = [
 ];
 
 export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarProps) {
-  // Optimize + Context Menu rely on Win32/WMI/shell extensions and Profiles
-  // uses Windows-specific JSON profile storage — hide all three on every
-  // non-Windows platform. Future platforms inherit the same hiding for free.
-  // Fleet is gated to Pro Business and hidden entirely from Free/Pro.
   const { isWindows } = usePlatform();
   const isBusiness = useLicenseStore((s) => s.isBusiness());
-  const WINDOWS_ONLY = new Set(["optimize", "contextMenu", "profiles"]);
-  const BUSINESS_ONLY = new Set(["fleet"]);
-  const visibleNav = primaryNav.filter((item) => {
-    if (!isWindows && WINDOWS_ONLY.has(item.id)) return false;
-    if (!isBusiness && BUSINESS_ONLY.has(item.id)) return false;
-    return true;
-  });
+  const isPro = useLicenseStore((s) => s.isPro());
+
+  // Filter platform-specific items, drop empty groups, drop groups gated by
+  // visibleWhen. Keeps the rendering loop simple and side-effect-free.
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !(item.windowsOnly && !isWindows)),
+    }))
+    .filter((group) => group.items.length > 0)
+    .filter((group) => !group.visibleWhen || group.visibleWhen({ isBusiness }));
 
   return (
     <aside className="flex flex-col w-[260px] shrink-0 h-full bg-[var(--bg-sidebar)] border-r border-[var(--border)] overflow-y-auto">
-      {/* Logo / App Name */}
+      {/* Logo / app name */}
       <div className="flex items-center gap-3 px-5 py-5">
         <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[var(--accent-subtle)] ring-1 ring-[var(--accent-ring)]">
           <Monitor className="w-4.5 h-4.5 text-[var(--accent)]" />
@@ -84,14 +134,31 @@ export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarPro
         </div>
       </div>
 
-      {/* Primary navigation */}
-      <nav className="flex-1 px-3">
-        <NavSection label="Navigate" items={visibleNav} currentView={currentView} onNavigate={onNavigate} />
+      {/* Primary navigation -- grouped by function */}
+      <nav className="flex-1 px-3 pb-2">
+        {visibleGroups.map((group) => (
+          <NavSection
+            key={group.label}
+            label={group.label}
+            items={group.items}
+            currentView={currentView}
+            onNavigate={onNavigate}
+            isPro={isPro}
+            isBusiness={isBusiness}
+          />
+        ))}
       </nav>
 
       {/* Secondary navigation */}
       <div className="px-3 pt-3 pb-3 border-t border-[var(--border)]">
-        <NavSection label="More" items={secondaryNav} currentView={currentView} onNavigate={onNavigate} />
+        <NavSection
+          label="More"
+          items={secondaryNav}
+          currentView={currentView}
+          onNavigate={onNavigate}
+          isPro={isPro}
+          isBusiness={isBusiness}
+        />
       </div>
 
       {/* Footer: version chip + shortcut helper */}
@@ -102,7 +169,7 @@ export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarPro
         {onShowShortcuts && (
           <button
             onClick={onShowShortcuts}
-            className="flex items-center justify-center w-6 h-6 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/[0.04] transition-colors active:scale-[0.97] transition-transform duration-100"
+            className="flex items-center justify-center w-6 h-6 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/[0.04] transition-colors active:scale-[0.97] duration-100"
             title="Keyboard Shortcuts"
           >
             <Keyboard className="w-3.5 h-3.5" />
@@ -118,15 +185,19 @@ function NavSection({
   items,
   currentView,
   onNavigate,
+  isPro,
+  isBusiness,
 }: {
   label: string;
   items: NavItem[];
   currentView: string;
   onNavigate: (view: string) => void;
+  isPro: boolean;
+  isBusiness: boolean;
 }) {
   return (
-    <div className="space-y-1">
-      <p className="text-[11px] uppercase tracking-[0.08em] font-medium text-[var(--text-muted)] px-3 pt-2 pb-1.5">
+    <div className="space-y-1 mt-3 first:mt-1">
+      <p className="text-[10.5px] uppercase tracking-[0.1em] font-semibold text-[var(--text-muted)] px-3 pt-1 pb-1.5">
         {label}
       </p>
       <ul className="space-y-0.5">
@@ -136,6 +207,8 @@ function NavSection({
             item={item}
             active={currentView === item.id}
             onSelect={() => onNavigate(item.id)}
+            isPro={isPro}
+            isBusiness={isBusiness}
           />
         ))}
       </ul>
@@ -147,15 +220,23 @@ function NavButton({
   item,
   active,
   onSelect,
+  isPro,
+  isBusiness,
 }: {
   item: NavItem;
   active: boolean;
   onSelect: () => void;
+  isPro: boolean;
+  isBusiness: boolean;
 }) {
   const Icon = item.icon;
+  // A tier is "owned" when the user already has access -- badge dims to imply
+  // "you have this" instead of "buy this".
+  const tierOwned =
+    (item.tier === "pro" && isPro) || (item.tier === "business" && isBusiness);
+
   return (
     <li className="relative group">
-      {/* 3px left accent bar shown on active */}
       {active && (
         <span
           aria-hidden="true"
@@ -170,14 +251,49 @@ function NavButton({
             : "text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]"
         }`}
       >
-        <Icon className={`w-4 h-4 ${active ? "text-[var(--accent)]" : ""}`} />
-        <span>{item.label}</span>
-        {item.shortcut && (
-          <span className="ml-auto text-[10px] font-mono text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity">
-            {item.shortcut}
-          </span>
-        )}
+        <Icon className={`w-4 h-4 shrink-0 ${active ? "text-[var(--accent)]" : ""}`} />
+        <span className="truncate">{item.label}</span>
+
+        {/* Right-aligned slot: tier badge (if any) wins over keyboard shortcut. */}
+        <span className="ml-auto flex items-center gap-1.5">
+          {item.tier === "pro" && (
+            <TierBadge label="PRO" owned={tierOwned} variant="pro" />
+          )}
+          {item.tier === "business" && (
+            <TierBadge label="BIZ" owned={tierOwned} variant="business" />
+          )}
+          {item.shortcut && !item.tier && (
+            <span className="text-[10px] font-mono text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity">
+              {item.shortcut}
+            </span>
+          )}
+        </span>
       </button>
     </li>
+  );
+}
+
+function TierBadge({
+  label,
+  owned,
+  variant,
+}: {
+  label: string;
+  owned: boolean;
+  variant: "pro" | "business";
+}) {
+  const palette =
+    variant === "pro"
+      ? "bg-[var(--accent-subtle)] text-[var(--accent)] ring-[var(--accent-ring)]"
+      : "bg-amber-500/10 text-amber-400 ring-amber-500/30";
+  return (
+    <span
+      className={`inline-flex items-center px-1.5 py-[1px] rounded text-[9px] font-bold tracking-wider font-mono ring-1 ${palette} ${
+        owned ? "opacity-50" : "opacity-100"
+      }`}
+      title={owned ? `${label} (active)` : `${label} feature`}
+    >
+      {label}
+    </span>
   );
 }

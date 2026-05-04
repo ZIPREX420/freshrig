@@ -24,6 +24,7 @@ import { ContextMenuPage } from "./components/context_menu/ContextMenuPage";
 import { ServicesPage } from "./components/services/ServicesPage";
 import { WatchdogPage } from "./components/watchdog/WatchdogPage";
 import { FleetDashboard } from "./components/fleet/FleetDashboard";
+import { ReportPage } from "./components/report/ReportPage";
 import { SettingsPage } from "./components/settings/SettingsPage";
 import { AboutPage } from "./components/about/AboutPage";
 import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
@@ -182,6 +183,7 @@ function App() {
                 {currentView === "services" && <ServicesPage />}
                 {currentView === "watchdog" && <WatchdogPage />}
                 {currentView === "fleet" && <FleetDashboard />}
+                {currentView === "report" && <ReportPage />}
                 {currentView === "settings" && <SettingsPage onNavigate={navigate} />}
                 {currentView === "about" && <AboutPage />}
               </motion.div>

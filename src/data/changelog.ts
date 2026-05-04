@@ -1,4 +1,20 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.0.1": `### FreshRig v2.0.1 — UI overhaul + Pro flow hotfix 🛠️
+
+**Sidebar reorganized.**
+The 13-item flat list became 6 functional groups — Overview, Setup, Tune-up, Maintain, Protect, and (for Business licenses) Fleet. Pro and Business features show inline tier badges so you know what's gated before you click. The badge dims to "you have this" once a license is active.
+
+**Health Report has a sidebar entry now.**
+Previously only reachable via a Dashboard button. Lives under Maintain.
+
+**Pro upgrade buttons no longer 404.**
+Every "Upgrade to Pro" button in v2.0.0 routed to a literal placeholder string. v2.0.1 routes them all to the public pricing page at ZIPREX420.github.io/freshrig#pricing while the LemonSqueezy store is being set up. The pricing page CTAs now mailto sales@freshrig.app for the waitlist.
+
+**Release page categorizes downloads by OS.**
+The new release notes group binaries under Windows / Linux / macOS sections instead of an alphabetical asset list, with install commands and size estimates next to each download.
+
+No breaking changes. v2.0.0 users on the auto-updater get this automatically. v2.0.0 has been marked as pre-release on GitHub — please use v2.0.1 or later.
+`,
   "2.0.0": `### FreshRig v2.0 — The Maintenance Tool That Reads Like a Tech 🛠️
 
 **Four flagship Pro features:**

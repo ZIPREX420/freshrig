@@ -6,8 +6,17 @@ use winreg::enums::HKEY_LOCAL_MACHINE;
 use winreg::RegKey;
 use wmi::WMIConnection;
 
-// LemonSqueezy store/product gating. Keep both at 0 until the real store is
-// created — the activate path skips the store-match check while placeholder.
+// LemonSqueezy store/product gating.
+//
+// PRE-LAUNCH MODE (v2.0.x): both IDs at 0. The activate/validate paths skip
+// store/product matching while placeholder, so any FR-XXXXX-XXXXX-shaped key
+// is accepted in dev. No paid licenses are issued in pre-launch — all
+// frontend "Upgrade to Pro" buttons route to the pricing landing page
+// (see PRICING_PAGE_URL in src/config/app.ts), which links to a sales mailto
+// waitlist. Replace these with real numerics from the LemonSqueezy dashboard
+// (Settings -> Stores for the store id; Products -> details for the product
+// id) the moment the store goes live, in the same commit that replaces
+// PRICING_PAGE_URL with real checkout URLs.
 const EXPECTED_STORE_ID: u64 = 0;
 const EXPECTED_PRODUCT_ID: u64 = 0;
 const LEMONSQUEEZY_API: &str = "https://api.lemonsqueezy.com/v1";

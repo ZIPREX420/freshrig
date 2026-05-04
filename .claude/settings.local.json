@@ -36,7 +36,18 @@
       "Bash(curl -sSI -o /dev/null -w \"HTTP %{http_code}\\\\nfinal_url: %{url_effective}\\\\n\" -L https://github.com/ZIPREX420/freshrig/releases/latest/download/latest.json)",
       "mcp__Claude_Preview__preview_start",
       "Bash(echo \"clippy_exit=$?\")",
-      "Bash(echo \"tsc_exit=$?\")"
+      "Bash(echo \"tsc_exit=$?\")",
+      "Bash(ls C:\\\\\\\\Users\\\\\\\\Seppe\\\\\\\\Desktop\\\\\\\\PROJECTS\\\\\\\\FreshRig\\\\\\\\src-tauri\\\\\\\\src\\\\\\\\models\\\\\\\\)",
+      "Read(//c/Program Files/GitHub CLI/**)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" --version)",
+      "Bash(git credential *)",
+      "Bash(python -c \"import sys, json; d=json.load\\(sys.stdin\\); [print\\(w['id'], w['name'], w['path']\\) for w in d.get\\('workflows', []\\)]\")",
+      "Bash(python -c \"import sys, json; d=json.load\\(sys.stdin\\); [print\\(r['id'], r['status'], r['conclusion'], r.get\\('head_branch'\\), r.get\\('display_title',''\\)[:60]\\) for r in d.get\\('workflow_runs', []\\)]\")",
+      "Bash(python -c \"import sys, json; d=json.load\\(sys.stdin\\); [print\\(j['name'], j['conclusion']\\) for j in d.get\\('jobs', []\\)]\")",
+      "Bash(python -c ' *)",
+      "Bash(npm view *)",
+      "Bash(node -e ' *)",
+      "Read(//tmp/**)"
     ]
   }
 }

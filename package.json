@@ -1,6 +1,6 @@
 {
   "name": "freshrig",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Hardware detection, driver setup, app batch install, and system optimization for Windows, Linux, and macOS.",
   "license": "MIT",
   "author": "ZIPREX420 (https://github.com/ZIPREX420)",
