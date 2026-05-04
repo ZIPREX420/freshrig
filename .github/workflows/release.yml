@@ -123,7 +123,9 @@ jobs:
       - name: Generate SBOMs
         if: matrix.platform == 'windows-latest'
         run: |
-          cargo install cargo-cyclonedx
+          # Pin: cargo-cyclonedx 0.5.9 dropped --output-file. Bump this when
+          # we migrate the call to --override-filename.
+          cargo install cargo-cyclonedx --version '=0.5.7'
           cargo cyclonedx --manifest-path src-tauri/Cargo.toml --format json --output-file sbom-rust.cdx.json
           npx @cyclonedx/cyclonedx-npm --output-file sbom-npm.cdx.json
 
