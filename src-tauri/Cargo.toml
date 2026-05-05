@@ -49,7 +49,7 @@ winreg = "0.56"
 wmi = "0.18"
 
 [target.'cfg(unix)'.dependencies]
-nix = { version = "0.29", features = ["user", "process", "fs"] }
+nix = { version = "0.30", features = ["user", "process", "fs"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 procfs = "0.18"
