@@ -47,7 +47,14 @@ pub async fn export_profile_encrypted(
         return Err("Passphrase cannot be empty".into());
     }
     tokio::task::spawn_blocking(move || {
-        let encryptor = age::Encryptor::with_user_passphrase(SecretString::from(passphrase));
+        // age 0.11 dropped `Encryptor::with_user_passphrase`; passphrase
+        // encryption now goes through the new `age::scrypt::Recipient`.
+        let recipient =
+            age::scrypt::Recipient::new(SecretString::new(passphrase.into_boxed_str()));
+        let encryptor = age::Encryptor::with_recipients(std::iter::once(
+            &recipient as &dyn age::Recipient,
+        ))
+        .map_err(|e| format!("age with_recipients: {}", e))?;
         let mut buf = Vec::new();
         let mut writer = encryptor
             .wrap_output(&mut buf)
@@ -73,14 +80,17 @@ pub async fn import_profile_encrypted(
     }
     tokio::task::spawn_blocking(move || {
         let raw = fs::read(&input_path).map_err(|e| format!("read {}: {}", input_path, e))?;
-        let decryptor = match age::Decryptor::new(raw.as_slice())
-            .map_err(|e| format!("age decrypt header: {}", e))?
-        {
-            age::Decryptor::Passphrase(d) => d,
-            _ => return Err("not a passphrase-encrypted age file".into()),
-        };
+        // age 0.11: `Decryptor` is opaque (no Passphrase/Recipients enum).
+        // We probe with `is_scrypt()` and decrypt with an scrypt identity.
+        let decryptor = age::Decryptor::new(raw.as_slice())
+            .map_err(|e| format!("age decrypt header: {}", e))?;
+        if !decryptor.is_scrypt() {
+            return Err("not a passphrase-encrypted age file".into());
+        }
+        let identity =
+            age::scrypt::Identity::new(SecretString::new(passphrase.into_boxed_str()));
         let mut reader = decryptor
-            .decrypt(&SecretString::from(passphrase), None)
+            .decrypt(std::iter::once(&identity as &dyn age::Identity))
             .map_err(|e| format!("age decrypt body: {} (wrong passphrase?)", e))?;
         let mut decrypted = String::new();
         reader
