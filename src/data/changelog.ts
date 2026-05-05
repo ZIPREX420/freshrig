@@ -1,4 +1,27 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.1.0": `### FreshRig v2.1.0 — UI polish line ✨
+
+The app's first dedicated polish release. Every page got a tighter design system, the dashboard learned to feel like a real tool, and a fresh primitive library makes future features cheaper to build.
+
+**New dashboard.**
+The old "header + 5 cards" layout is gone. The new dashboard opens with a hero strip — your hostname, a one-line health verdict, three context-aware quick actions, an XL animated health ring, and a system nameplate (motherboard, OS, CPU, RAM, network status) — followed by a live-metrics strip with sparkline-equipped chips for CPU, RAM, storage, network, and primary disk. An action strip surfaces driver issues only when there's something to act on (otherwise it disappears entirely). The hardware grid stays familiar: GPU, Storage, Network, Motherboard, Audio.
+
+**Token system v2.1.**
+Pre-mixed status alphas (\`bg-success-soft\`, \`bg-warning-rim\`) so usage is one class instead of \`bg-warning/10\`. New typography scale, a \`shadow-glow\` token for hover states, a \`shimmer\` keyframe for premium loading skeletons, and a \`prefers-reduced-motion\` blanket override that respects users who disable animation.
+
+**Seven new primitives.**
+\`PageShell\`, \`StatusPill\`, \`DataRow\`, \`SectionHeader\`, \`HealthRing\` (4 sizes, animated stroke), \`MetricChip\` (with sparkline support), and \`Drawer\` (right-side slide panel for "click for details" affordance). Plus refined \`Card\` (\`default\` / \`elevated\` / \`glass\` / \`hero\` variants, glow on \`interactive\`) and \`Button\` (added \`danger\` variant + \`lg\` size).
+
+**Drivers page polished as the first PageShell adoption.**
+Cleaner header, \`StatusPill\` for the recommendation count, shimmer skeletons replacing flat pulse, success empty-state instead of grey "no recommendations".
+
+**Repo hygiene.**
+Added \`.gitattributes\` (\`* text=auto eol=lf\`) — ends the CRLF/LF noisy-diff problem we hit through the v2.0 cycle. \`AboutPage\`, \`site/index.html\` JSON-LD schema, and CLAUDE.md were carrying stale v1.0 pricing copy ("$39 one-time", "14-day trial"); refreshed all three to reflect the v2.0 subscription reality.
+
+The remaining 13 pages still use their pre-v2.1 inline scaffolding. They'll be migrated to PageShell incrementally — no breaking changes, just gradual polish. The new DriversPage demonstrates the migration pattern.
+
+No breaking changes. Auto-updater pulls v2.1.0 for v2.0.x users on their next check.
+`,
   "2.0.2": `### FreshRig v2.0.2 — CI hygiene 🧹
 
 This is a maintenance release. No user-facing changes — just CI plumbing cleanups so future contributors don't trip on the same lints we did.

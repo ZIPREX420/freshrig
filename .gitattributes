@@ -1,0 +1,37 @@
+# Normalize line endings on commit so the working tree can be CRLF on Windows
+# without producing noisy diffs against contributors who check out on Linux/CI.
+# Git stores LF internally; checkouts convert to native by default.
+* text=auto eol=lf
+
+# Force CRLF on Windows-only artefacts that Windows tooling expects in CRLF
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+windows-app-manifest.xml text eol=crlf
+
+# Treat known binaries as binary so Git never tries to text-merge them
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.icns  binary
+*.webp  binary
+*.svg   binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.tar   binary
+*.7z    binary
+*.exe   binary
+*.dll   binary
+*.so    binary
+*.dylib binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+
+# Tauri signing keys — never normalize, never auto-merge
+*.key      binary
+*.key.pub  binary

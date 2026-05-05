@@ -93,7 +93,7 @@ export function AboutPage() {
         {/* License */}
         <div className="px-4 py-3 rounded-lg bg-bg-card border border-border text-xs text-text-secondary space-y-1">
           <p>Core features are free and open source under the MIT license.</p>
-          <p className="text-text-muted">Pro features unlock with a $39 one-time license — 14-day free trial included.</p>
+          <p className="text-text-muted">Pro features unlock from $5.99/mo (or $49/yr) — 7-day free trial, no credit card required. Founder's Lifetime ($149 one-time, first 500 only) available during the v2.0 launch window.</p>
         </div>
 
         {/* System Info (collapsible) */}

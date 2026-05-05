@@ -170,7 +170,7 @@ function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                {currentView === "dashboard" && <Dashboard />}
+                {currentView === "dashboard" && <Dashboard onNavigate={navigate} />}
                 {currentView === "drivers" && <DriversPage />}
                 {currentView === "apps" && <AppsPage />}
                 {currentView === "profiles" && <ProfilesPage />}
