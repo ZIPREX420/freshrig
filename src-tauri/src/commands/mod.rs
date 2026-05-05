@@ -3,6 +3,7 @@ pub mod branding;
 pub mod bulk_deploy;
 pub mod fleet;
 pub mod integrations;
+pub mod platform_info;
 pub mod presets;
 pub mod profile_sync;
 pub mod secrets;

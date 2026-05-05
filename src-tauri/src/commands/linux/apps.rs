@@ -6,7 +6,10 @@ use std::process::Command;
 use tauri::Emitter;
 
 use crate::commands::linux::app_catalog::{find_name, find_package, linux_app_catalog};
-use crate::commands::linux::util::{distro_family, is_root, run_cmd, which};
+use crate::commands::linux::util::{
+    apt_install_args, distro_family, ensure_flathub_remote, is_classic_snap, is_root,
+    refresh_package_index, require_elevation, run_cmd, which,
+};
 use crate::models::apps::*;
 
 #[tauri::command]
@@ -55,7 +58,27 @@ pub async fn install_apps(
     app_ids: Vec<String>,
 ) -> Result<(), String> {
     tokio::task::spawn_blocking(move || {
+        // Probe elevation upfront — clearer than letting each install try
+        // and fail with "pkexec: not found" 12 times.
+        if let Err(msg) = require_elevation() {
+            for app_id in &app_ids {
+                let app_name = find_name(app_id).unwrap_or(app_id.as_str()).to_string();
+                emit(&app_handle, app_id, &app_name, InstallStatus::Failed, &msg);
+            }
+            return Ok::<(), String>(());
+        }
+
         let family = distro_family();
+
+        // One-time package-index refresh before the install loop. Doing
+        // this per-app would multiply install time by 10x for a typical
+        // batch; doing it never gives "Unable to locate package …" on
+        // freshly booted systems.
+        let _ = refresh_package_index(&family);
+
+        // Lazy: only add the Flathub remote the first time we're about
+        // to install a flatpak in this batch.
+        let mut flathub_ready = false;
 
         for app_id in &app_ids {
             let app_name = find_name(app_id).unwrap_or(app_id.as_str()).to_string();
@@ -82,20 +105,37 @@ pub async fn install_apps(
                 }
             };
 
-            let (program, args) = match build_install_cmd(&family, pkg) {
-                Some(cmd) => cmd,
+            let plan = match plan_install(&family, pkg) {
+                Some(p) => p,
                 None => {
                     emit(
                         &app_handle,
                         app_id,
                         &app_name,
                         InstallStatus::Skipped,
-                        "No install target for this distro.",
+                        "No install target available — no package binding for this distro \
+                         and no Flatpak/Snap fallback installed.",
                     );
                     continue;
                 }
             };
 
+            // Lazy Flathub setup, only on first flatpak we hit.
+            if matches!(plan, InstallPlan::Flatpak(_)) && !flathub_ready {
+                if let Err(err) = ensure_flathub_remote() {
+                    emit(
+                        &app_handle,
+                        app_id,
+                        &app_name,
+                        InstallStatus::Failed,
+                        &format!("Could not configure Flathub: {}", err),
+                    );
+                    continue;
+                }
+                flathub_ready = true;
+            }
+
+            let (program, args) = materialize_plan(plan);
             let arg_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
             match run_cmd(&program, &arg_refs) {
                 Ok(_) => {
@@ -137,96 +177,97 @@ fn emit(
     );
 }
 
-/// Build the shell command to install one package for the current distro.
-/// Returns `(program, args)` where the leading program may be `pkexec` if the
-/// process isn't already root.
-fn build_install_cmd(
+/// What the install will actually do. Keeps the loop body small and lets
+/// the caller handle install-system-specific concerns (e.g. only
+/// configure Flathub if there's a flatpak in the batch) without
+/// re-stringifying argv.
+enum InstallPlan {
+    Apt(String),
+    Dnf(String),
+    Pacman(String),
+    Zypper(String),
+    Flatpak(String),
+    Snap { name: String, classic: bool },
+}
+
+/// Choose an install strategy for `pkg` on the running distro. Falls
+/// through to Flatpak or Snap if no native binding fits AND the
+/// alternative is on PATH.
+fn plan_install(
     family: &str,
     pkg: crate::commands::linux::app_catalog::LinuxPackage,
-) -> Option<(String, Vec<String>)> {
+) -> Option<InstallPlan> {
     let native = match family {
-        "debian" => pkg.apt.map(|p| {
-            (
-                "apt-get",
-                vec!["install", "-y", p]
-                    .into_iter()
-                    .map(String::from)
-                    .collect::<Vec<_>>(),
-            )
-        }),
-        "rhel" => pkg.dnf.map(|p| {
-            (
-                "dnf",
-                vec!["install", "-y", p]
-                    .into_iter()
-                    .map(String::from)
-                    .collect::<Vec<_>>(),
-            )
-        }),
-        "arch" => pkg.pacman.map(|p| {
-            (
-                "pacman",
-                vec!["-S", "--noconfirm", "--needed", p]
-                    .into_iter()
-                    .map(String::from)
-                    .collect::<Vec<_>>(),
-            )
-        }),
-        "suse" => pkg.zypper.map(|p| {
-            (
-                "zypper",
-                vec!["--non-interactive", "install", p]
-                    .into_iter()
-                    .map(String::from)
-                    .collect::<Vec<_>>(),
-            )
-        }),
+        "debian" => pkg.apt.map(|p| InstallPlan::Apt(p.to_string())),
+        "rhel" => pkg.dnf.map(|p| InstallPlan::Dnf(p.to_string())),
+        "arch" => pkg.pacman.map(|p| InstallPlan::Pacman(p.to_string())),
+        "suse" => pkg.zypper.map(|p| InstallPlan::Zypper(p.to_string())),
         _ => None,
     };
-
-    if let Some((program, args)) = native {
-        return Some(wrap_privilege(program, args));
+    if native.is_some() {
+        return native;
     }
-
-    // Fallback to Flatpak.
     if let Some(reference) = pkg.flatpak {
         if which("flatpak") {
-            return Some((
-                "flatpak".to_string(),
-                vec![
-                    "install".to_string(),
-                    "-y".to_string(),
-                    "--noninteractive".to_string(),
-                    "flathub".to_string(),
-                    reference.to_string(),
-                ],
-            ));
+            return Some(InstallPlan::Flatpak(reference.to_string()));
         }
     }
-
-    // Last resort: snap.
     if let Some(s) = pkg.snap {
         if which("snap") {
-            let args = vec!["install".to_string(), s.to_string()];
-            return Some(wrap_privilege("snap", args));
+            return Some(InstallPlan::Snap {
+                name: s.to_string(),
+                classic: is_classic_snap(s),
+            });
         }
     }
-
     None
 }
 
-/// Prepend `pkexec` + inline env scrubbing when not already root.
+/// Convert a plan into an executable (program, args) pair, applying the
+/// right elevation strategy: pkexec + DEBIAN_FRONTEND for apt; pkexec for
+/// dnf/pacman/zypper/snap; user-scope flatpak (no pkexec).
+fn materialize_plan(plan: InstallPlan) -> (String, Vec<String>) {
+    match plan {
+        InstallPlan::Apt(pkg) => apt_install_args(&[&pkg]),
+        InstallPlan::Dnf(pkg) => wrap_privilege("dnf", vec!["install".into(), "-y".into(), pkg]),
+        InstallPlan::Pacman(pkg) => wrap_privilege(
+            "pacman",
+            vec!["-S".into(), "--noconfirm".into(), "--needed".into(), pkg],
+        ),
+        InstallPlan::Zypper(pkg) => wrap_privilege(
+            "zypper",
+            vec!["--non-interactive".into(), "install".into(), pkg],
+        ),
+        InstallPlan::Flatpak(reference) => (
+            "flatpak".into(),
+            vec![
+                "install".into(),
+                "-y".into(),
+                "--noninteractive".into(),
+                "flathub".into(),
+                reference,
+            ],
+        ),
+        InstallPlan::Snap { name, classic } => {
+            let mut args = vec!["install".into()];
+            if classic {
+                args.push("--classic".into());
+            }
+            args.push(name);
+            wrap_privilege("snap", args)
+        }
+    }
+}
+
+/// Prepend `pkexec` when not already root. No env preamble — apt-specific
+/// `DEBIAN_FRONTEND` lives in `apt_install_args` instead, so callers that
+/// don't need it (dnf/pacman/zypper/snap) get a cleaner argv.
 fn wrap_privilege(program: &str, args: Vec<String>) -> (String, Vec<String>) {
     if is_root() {
         return (program.to_string(), args);
     }
-
-    let mut all = Vec::with_capacity(args.len() + 3);
-    // Ensure non-interactive behavior for apt and friends.
-    all.push("env".to_string());
-    all.push("DEBIAN_FRONTEND=noninteractive".to_string());
+    let mut all = Vec::with_capacity(args.len() + 1);
     all.push(program.to_string());
     all.extend(args);
-
     ("pkexec".to_string(), all)
 }

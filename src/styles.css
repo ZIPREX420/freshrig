@@ -90,9 +90,15 @@
   --titlebar-btn-hover: rgba(255, 255, 255, 0.07);
   --color-titlebar-btn-hover: var(--titlebar-btn-hover);
 
-  /* Typography */
-  --font-sans: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "Cascadia Code", "JetBrains Mono", "Fira Code", monospace;
+  /* Typography — stack falls through Windows → macOS → Linux native UI
+     fonts so the app feels native everywhere. Segoe variants for Win11,
+     -apple-system / BlinkMacSystemFont for macOS, then Inter / Ubuntu /
+     Cantarell / Noto Sans for Linux DEs (GNOME / Ubuntu / KDE). */
+  --font-sans: "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont,
+               "Inter", "Ubuntu", "Cantarell", "Noto Sans", "DejaVu Sans",
+               system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", "Fira Code", "SF Mono",
+               "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono", monospace;
   --text-display:    32px;
   --text-display-sm: 24px;
   --text-title:      18px;
@@ -211,4 +217,53 @@ html, body {
   }
   .skeleton-shimmer { animation: none; background: var(--bg-card); }
   .card-glow-hover:hover { transform: none; }
+}
+
+/* ========================================
+   Cross-platform polish — scrollbars + backdrop-filter
+   ======================================== */
+
+/* Custom scrollbars. WebView2 (Windows) ships a flat dark scrollbar that
+   already blends with the design; WebKit2GTK (Linux) defaults to GTK-themed
+   bars that look incongruous on a dark surface. This rules normalizes them
+   to a thin, unobtrusive token-derived design on all OSes. */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
+}
+
+/* Backdrop-filter fallback. Older WebKit2GTK versions render
+   `backdrop-filter: blur(...)` as no-op, leaving glass surfaces showing
+   pure translucency without the blur — washed out, not premium. The
+   @supports block only takes effect when blur is unsupported, applying a
+   higher opacity solid fill so cards stay legible. */
+@supports not (backdrop-filter: blur(0px)) {
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl {
+    background-color: var(--bg-card) !important;
+  }
 }

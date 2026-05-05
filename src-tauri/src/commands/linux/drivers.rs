@@ -2,8 +2,22 @@
 //! distro-specific package names. Also surfaces pending firmware updates from
 //! `fwupdmgr`.
 
-use crate::commands::linux::util::{distro_family, run_cmd_lossy, run_elevated, which};
+use crate::commands::linux::util::{
+    apt_install_args, distro_family, refresh_package_index, require_elevation, run_cmd,
+    run_cmd_lossy, run_elevated, which,
+};
 use crate::models::drivers::*;
+
+/// Read `ID=` from /etc/os-release — needed to special-case Ubuntu (which
+/// uses versioned NVIDIA package names like `nvidia-driver-535` and ships
+/// the `ubuntu-drivers` helper that picks the right one automatically).
+fn distro_id() -> String {
+    std::fs::read_to_string("/etc/os-release")
+        .unwrap_or_default()
+        .lines()
+        .find_map(|l| l.strip_prefix("ID=").map(|v| v.trim_matches('"').to_string()))
+        .unwrap_or_default()
+}
 
 #[tauri::command]
 pub async fn get_driver_recommendations() -> Result<Vec<DriverRecommendation>, String> {
@@ -64,12 +78,18 @@ pub async fn get_driver_recommendations() -> Result<Vec<DriverRecommendation>, S
 #[tauri::command]
 pub async fn install_driver(winget_id: String) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
+        require_elevation()?;
         let family = distro_family();
         match winget_id.as_str() {
-            "fwupdmgr" => run_elevated("fwupdmgr", &["update", "-y"]),
-            "gpu.nvidia" => install_package(&family, GpuVendor::Nvidia),
-            "gpu.amd" => install_package(&family, GpuVendor::Amd),
-            "gpu.intel" => install_package(&family, GpuVendor::Intel),
+            "fwupdmgr" => {
+                if !which("fwupdmgr") {
+                    return Err("fwupdmgr is not installed".to_string());
+                }
+                run_elevated("fwupdmgr", &["update", "-y"])
+            }
+            "gpu.nvidia" => install_gpu_package(&family, GpuVendor::Nvidia),
+            "gpu.amd" => install_gpu_package(&family, GpuVendor::Amd),
+            "gpu.intel" => install_gpu_package(&family, GpuVendor::Intel),
             other => Err(format!("Unknown Linux driver id: {}", other)),
         }
     })
@@ -77,9 +97,30 @@ pub async fn install_driver(winget_id: String) -> Result<String, String> {
     .map_err(|e| format!("install task failed: {}", e))?
 }
 
-fn install_package(family: &str, vendor: GpuVendor) -> Result<String, String> {
+/// Install the right GPU driver package for the running distro. Ubuntu
+/// (and Ubuntu-derivatives that ship `ubuntu-drivers`) is special-cased
+/// to use the helper, which picks the correct versioned NVIDIA package
+/// automatically — Ubuntu has no unversioned `nvidia-driver` meta-package.
+fn install_gpu_package(family: &str, vendor: GpuVendor) -> Result<String, String> {
+    // Refresh the package index first so a stale cache doesn't yield
+    // "Unable to locate package …" errors after a fresh boot.
+    let _ = refresh_package_index(family);
+
+    // Ubuntu / derivatives that ship ubuntu-drivers: prefer the helper
+    // for NVIDIA — it picks the right versioned package automatically.
+    if vendor == GpuVendor::Nvidia && family == "debian" && which("ubuntu-drivers") {
+        // `ubuntu-drivers install` defaults to the recommended driver.
+        return run_elevated("ubuntu-drivers", &["install"]);
+    }
+
     let pkg = match (family, vendor) {
-        ("debian", GpuVendor::Nvidia) => "nvidia-driver",
+        // Plain Debian uses `nvidia-driver` from non-free-firmware. Most
+        // users will need to enable that component first; surface a clear
+        // error if the package isn't present at install time.
+        ("debian", GpuVendor::Nvidia) if distro_id() != "ubuntu" => "nvidia-driver",
+        // Ubuntu without ubuntu-drivers (extremely rare) — try the
+        // current LTS recommended version; if missing, error is clear.
+        ("debian", GpuVendor::Nvidia) => "nvidia-driver-550",
         ("debian", GpuVendor::Amd) => "mesa-vulkan-drivers",
         ("debian", GpuVendor::Intel) => "intel-media-va-driver",
         ("rhel", GpuVendor::Nvidia) => "akmod-nvidia",
@@ -91,16 +132,20 @@ fn install_package(family: &str, vendor: GpuVendor) -> Result<String, String> {
         ("suse", GpuVendor::Nvidia) => "nvidia-driver-G06",
         ("suse", GpuVendor::Amd) => "Mesa-vulkan-device-select",
         ("suse", GpuVendor::Intel) => "intel-media-driver",
-        _ => return Err(format!("No package mapping for vendor on {family}")),
+        _ => return Err(format!("No package mapping for {:?} on {}", vendor, family)),
     };
-    let (program, args): (&str, Vec<&str>) = match family {
-        "debian" => ("apt-get", vec!["install", "-y", pkg]),
-        "rhel" => ("dnf", vec!["install", "-y", pkg]),
-        "arch" => ("pacman", vec!["-S", "--noconfirm", "--needed", pkg]),
-        "suse" => ("zypper", vec!["--non-interactive", "install", pkg]),
-        _ => return Err(format!("Unsupported distro family: {family}")),
-    };
-    run_elevated(program, &args)
+
+    match family {
+        "debian" => {
+            let (program, args) = apt_install_args(&[pkg]);
+            let arg_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+            run_cmd(&program, &arg_refs)
+        }
+        "rhel" => run_elevated("dnf", &["install", "-y", pkg]),
+        "arch" => run_elevated("pacman", &["-S", "--noconfirm", "--needed", pkg]),
+        "suse" => run_elevated("zypper", &["--non-interactive", "install", pkg]),
+        _ => Err(format!("Unsupported distro family: {family}")),
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -204,5 +249,69 @@ fn build_gpu_reco(
         status: DriverStatus::UpdateAvailable,
         install_action: DriverInstallAction::Winget(id.to_string()),
         install_label: label.to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const SAMPLE_LSPCI: &str = "\
+00:02.0 VGA compatible controller [0300]: Intel Corporation UHD Graphics 630 [8086:3e9b]
+\tDeviceName: Onboard - Video
+\tSubsystem: ASUSTeK Computer Inc. UHD Graphics 630 [1043:8694]
+\tKernel driver in use: i915
+\tKernel modules: i915
+01:00.0 3D controller [0302]: NVIDIA Corporation GeForce RTX 4070 [10de:2783]
+\tSubsystem: NVIDIA Corporation Device [10de:1467]
+\tKernel driver in use: nvidia
+\tKernel modules: nvidiafb, nouveau, nvidia_drm, nvidia
+02:00.0 Audio device [0403]: Realtek Semiconductor Co., Ltd. ALC4080 [10ec:4080]
+";
+
+    #[test]
+    fn split_pci_blocks_isolates_each_device() {
+        let blocks = split_pci_blocks(SAMPLE_LSPCI);
+        assert_eq!(blocks.len(), 3, "expected one block per top-level device");
+        assert!(blocks[0].starts_with("00:02.0"));
+        assert!(blocks[1].starts_with("01:00.0"));
+        assert!(blocks[2].starts_with("02:00.0"));
+        // First block keeps its indented child lines.
+        assert!(blocks[0].contains("Kernel driver in use: i915"));
+    }
+
+    #[test]
+    fn detect_vendor_recognises_each_brand() {
+        assert_eq!(
+            detect_vendor("00:02.0 VGA compatible controller [0300]: Intel Corporation UHD"),
+            GpuVendor::Intel
+        );
+        assert_eq!(
+            detect_vendor("01:00.0 3D controller [0302]: NVIDIA Corporation GeForce RTX 4070"),
+            GpuVendor::Nvidia
+        );
+        assert_eq!(
+            detect_vendor("06:00.0 VGA: Advanced Micro Devices, Inc. [AMD/ATI] Radeon RX"),
+            GpuVendor::Amd
+        );
+        // "Radeon" alone (no "AMD") still resolves.
+        assert_eq!(
+            detect_vendor("01:00.0 VGA: Some OEM Radeon Pro variant"),
+            GpuVendor::Amd
+        );
+        assert_eq!(
+            detect_vendor("00:01.0 VGA: VirtualBox SVGA"),
+            GpuVendor::Unknown
+        );
+    }
+
+    #[test]
+    fn classic_snap_list_covers_known_classics() {
+        use crate::commands::linux::util::is_classic_snap;
+        assert!(is_classic_snap("code"));
+        assert!(is_classic_snap("discord"));
+        assert!(is_classic_snap("slack"));
+        assert!(!is_classic_snap("firefox"));
+        assert!(!is_classic_snap("vlc"));
     }
 }
