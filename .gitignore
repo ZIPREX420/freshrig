@@ -46,3 +46,10 @@ debloat-log.txt
 
 # SBOM artifacts
 sbom-*.json
+
+# Personal task list + productivity dashboard (local, not project artifacts)
+TASKS.md
+dashboard.html
+
+# One-off cmd.exe scripts generated to drive multi-step git flows
+commit-hardening-pass.bat
