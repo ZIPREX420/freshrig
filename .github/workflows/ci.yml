@@ -27,7 +27,8 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: lts/*
+          # Pinned to current LTS minor; bumped via Dependabot.
+          node-version: '22.11.0'
           cache: 'npm'
 
       - uses: dtolnay/rust-toolchain@stable
@@ -67,6 +68,13 @@ jobs:
 
       - name: Rust tests
         run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: cargo audit
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          cargo install --locked cargo-audit
+          # Suppressions live in src-tauri/.cargo/audit.toml.
+          cargo audit --file src-tauri/Cargo.lock --deny warnings
 
       - name: Generate Rust SBOM
         if: matrix.platform == 'windows-latest'

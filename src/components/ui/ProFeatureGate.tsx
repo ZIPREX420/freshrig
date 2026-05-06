@@ -46,7 +46,8 @@ function UpsellCard({
   };
 
   const Icon = needsBusiness ? Briefcase : Crown;
-  const tone = needsBusiness ? "text-blue-400" : "text-amber-400";
+  // Centralized upsell tokens — see --upsell-* in src/styles.css.
+  const tone = needsBusiness ? "text-upsell-business" : "text-upsell-pro";
 
   return (
     <div
@@ -65,7 +66,7 @@ function UpsellCard({
       )}
       <button
         onClick={openPurchasePage}
-        className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-black px-4 py-2 rounded-lg font-semibold transition-colors"
+        className="inline-flex items-center gap-2 bg-upsell-pro hover:bg-upsell-pro-hover text-black px-4 py-2 rounded-lg font-semibold transition-colors"
       >
         {needsBusiness ? "Upgrade to Pro Business" : "Upgrade to Pro"}
       </button>
@@ -73,7 +74,7 @@ function UpsellCard({
       {!needsBusiness && (
         <>
           {isTrial ? (
-            <p className="text-xs text-amber-400 flex items-center gap-1">
+            <p className="text-xs text-upsell-pro flex items-center gap-1">
               <Clock className="w-3 h-3" />
               Trial: {trialDays} day{trialDays === 1 ? "" : "s"} left
             </p>
@@ -123,7 +124,7 @@ export function ProFeatureGate({
         {children}
         <div
           className={`absolute top-2 right-2 flex items-center gap-1 ${
-            needsBusiness ? "bg-blue-500/90" : "bg-amber-500/90"
+            needsBusiness ? "bg-upsell-business" : "bg-upsell-pro"
           } text-black text-xs font-semibold px-2 py-0.5 rounded-full`}
         >
           {needsBusiness ? (

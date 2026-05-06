@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { invoke } from "@tauri-apps/api/core";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { useSettingsStore, type AccentColor } from "../../stores/settingsStore";
 import { useProfileStore } from "../../stores/profileStore";
 import { useUpdateStore } from "../../stores/updateStore";
@@ -108,7 +109,6 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
 
   const handleOpenProfilesDir = async () => {
     try {
-      const { openUrl } = await import("@tauri-apps/plugin-opener");
       await openUrl("file:///C:/Users");
       toast.info("Profiles are stored in: %APPDATA%\\com.freshrig.app\\profiles");
     } catch {

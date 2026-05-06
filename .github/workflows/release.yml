@@ -40,7 +40,8 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: lts/*
+          # Pinned to current LTS minor; bumped via Dependabot.
+          node-version: '22.11.0'
           cache: 'npm'
 
       - uses: dtolnay/rust-toolchain@stable
@@ -66,6 +67,16 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      # Release-readiness gate: blocks the build if EXPECTED_STORE_ID,
+      # EXPECTED_PRODUCT_ID, or EXPECTED_PRO_VARIANT_IDS are still placeholder
+      # zeros in src-tauri/src/commands/license.rs. The test only asserts in
+      # release builds (debug_assertions off), so it's a no-op in `cargo test`
+      # but fails here. See the "release_gate" mod in license.rs for context.
+      - name: License release-readiness gate
+        if: matrix.platform == 'windows-latest'
+        run: |
+          cargo test --release --manifest-path src-tauri/Cargo.toml release_gate::lemonsqueezy_ids_set_for_release
+
       - name: Compute RELEASE_TAG and APP_VERSION
         shell: bash
         run: |
@@ -80,7 +91,9 @@ jobs:
           echo "RELEASE_TAG=${TAG}" >> "$GITHUB_ENV"
           echo "APP_VERSION=${TAG#v}" >> "$GITHUB_ENV"
 
-      - uses: tauri-apps/tauri-action@v0
+      # Pinned to a specific minor to avoid silent supply-chain shifts when
+      # the @v0 mutable major tag is updated. Bump deliberately when needed.
+      - uses: tauri-apps/tauri-action@v0.5.21
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}

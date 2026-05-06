@@ -6,9 +6,6 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "shell:allow-execute",
-    "shell:allow-spawn",
-    "shell:allow-stdin-write",
     "dialog:default",
     "store:default",
     "core:window:allow-minimize",

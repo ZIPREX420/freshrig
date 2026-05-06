@@ -18,24 +18,83 @@ pub use commands::smart_monitor::run_headless_smart_check;
 /// apply pipeline (winget installs, debloat, etc.) lives behind WMI/winget
 /// commands that need the full Tauri app shell, so we defer the heavy
 /// work to that next launch rather than reimplementing it headless.
+///
+/// Security:
+/// - The marker is written into the user's data dir (`%APPDATA%/com.freshrig.app/`
+///   or portable `data/` next to the exe). On Windows, %APPDATA% inherits
+///   user-only ACLs from the parent. On Unix, we explicitly chmod 0600 so
+///   another local user cannot inject a malicious profile id between the
+///   headless write and the next GUI launch.
+/// - The envelope is versioned (`{ "v": 1, "payload": ... }`) so future
+///   readers can refuse forward-incompatible markers.
+/// - TODO(v3): once a GUI-side reader exists, add an HMAC-SHA256 signature
+///   field keyed by a per-install secret in the OS keyring. Until a reader
+///   exists, signing is theatre — restrictive ACL is the actual defense.
 pub fn run_headless_apply_profile(profile_id: &str) -> i32 {
     if profile_id.is_empty() {
         eprintln!("apply-profile: missing --profile-id");
         return 2;
     }
+    // Defensive validation: profile ids in the bulk-deploy bundle are UUIDs
+    // (see commands::bulk_deploy). Reject anything that doesn't look like
+    // ASCII-safe printable to prevent path-traversal-style abuse.
+    if !profile_id
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+    {
+        eprintln!("apply-profile: profile-id contains disallowed characters");
+        return 2;
+    }
+
     let dir = portable::get_data_dir();
-    let _ = std::fs::create_dir_all(&dir);
+    if let Err(e) = std::fs::create_dir_all(&dir) {
+        eprintln!("apply-profile: create data dir failed: {}", e);
+        return 1;
+    }
     let marker = dir.join("pending-apply.json");
-    let payload = serde_json::json!({
-        "profileId": profile_id,
-        "queuedAt": commands::fleet::chrono_now(),
+    let envelope = serde_json::json!({
+        "v": 1,
+        "payload": {
+            "profileId": profile_id,
+            "queuedAt": commands::fleet::chrono_now(),
+        }
     });
-    if let Err(e) = std::fs::write(&marker, payload.to_string()) {
+    if let Err(e) = std::fs::write(&marker, envelope.to_string()) {
         eprintln!("apply-profile: write marker failed: {}", e);
         return 1;
     }
+    if let Err(e) = restrict_marker_permissions(&marker) {
+        // Non-fatal: the parent dir's ACL is still the real defense.
+        eprintln!(
+            "apply-profile: warning — could not tighten marker ACL: {}",
+            e
+        );
+    }
     println!("apply-profile: queued {}", profile_id);
     0
+}
+
+/// Tighten file permissions on the headless apply-profile marker.
+/// On Unix: chmod 0600 (owner read/write only).
+/// On Windows: %APPDATA% inheritance already restricts to the user; this is a no-op.
+#[cfg(unix)]
+fn restrict_marker_permissions(path: &std::path::Path) -> Result<(), String> {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))
+        .map_err(|e| format!("chmod 0600 {}: {}", path.display(), e))
+}
+
+#[cfg(windows)]
+fn restrict_marker_permissions(_path: &std::path::Path) -> Result<(), String> {
+    // %APPDATA% on Windows is per-user (S-1-5-32-545 owner) by default.
+    // Anyone wanting to write here would already need to be the same user
+    // (or have impersonated them), so no extra ACL juggling is needed.
+    Ok(())
+}
+
+#[cfg(not(any(unix, windows)))]
+fn restrict_marker_permissions(_path: &std::path::Path) -> Result<(), String> {
+    Ok(())
 }
 
 use tauri::{
@@ -63,6 +122,87 @@ fn scrub_sensitive_data(input: &str) -> String {
     result
 }
 
+#[cfg(test)]
+mod scrub_tests {
+    use super::scrub_sensitive_data;
+
+    #[test]
+    fn scrubs_windows_user_paths() {
+        let input = r"PANIC: failed to read C:\Users\Seppe\AppData\foo.txt";
+        let out = scrub_sensitive_data(input);
+        assert!(!out.contains("Seppe"), "username leaked: {}", out);
+        assert!(
+            out.contains(r"C:\Users\<USER>\"),
+            "redaction marker missing: {}",
+            out
+        );
+    }
+
+    #[test]
+    fn scrubs_windows_user_paths_case_insensitive() {
+        let input = r"c:\users\Alice\Documents\x.log";
+        let out = scrub_sensitive_data(input);
+        assert!(
+            !out.contains("Alice"),
+            "case-insensitive scrub missed: {}",
+            out
+        );
+    }
+
+    #[test]
+    fn scrubs_mac_addresses_colon() {
+        let input = "interface eth0: 02:42:ac:11:00:02 up";
+        let out = scrub_sensitive_data(input);
+        assert!(!out.contains("02:42:ac:11:00:02"), "MAC leaked: {}", out);
+        assert!(out.contains("<MAC_REDACTED>"));
+    }
+
+    #[test]
+    fn scrubs_mac_addresses_dash() {
+        let input = "Physical Address: 00-1A-2B-3C-4D-5E";
+        let out = scrub_sensitive_data(input);
+        assert!(
+            !out.contains("00-1A-2B-3C-4D-5E"),
+            "dash-MAC leaked: {}",
+            out
+        );
+    }
+
+    #[test]
+    fn scrubs_long_hex_serial() {
+        // 24-char hex string, plausible serial number / GUID without separators
+        let input = "drive serial: ABC1234567890DEF0123456789";
+        let out = scrub_sensitive_data(input);
+        assert!(
+            !out.contains("ABC1234567890DEF0123456789"),
+            "serial leaked: {}",
+            out
+        );
+        assert!(out.contains("<SERIAL_REDACTED>"));
+    }
+
+    #[test]
+    fn does_not_scrub_short_hex_addresses() {
+        // 16-char hex (typical 64-bit address) should pass through to keep
+        // panic backtraces readable.
+        let input = "thread 'main' panicked at 0x7ffeefbff000";
+        let out = scrub_sensitive_data(input);
+        assert!(
+            out.contains("0x7ffeefbff000"),
+            "stack address scrubbed: {}",
+            out
+        );
+    }
+
+    #[test]
+    fn idempotent() {
+        let input = r"C:\Users\Bob\x at 02:42:ac:11:00:02 serial ABC1234567890DEF0123456789";
+        let once = scrub_sensitive_data(input);
+        let twice = scrub_sensitive_data(&once);
+        assert_eq!(once, twice, "scrubbing should be idempotent");
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Panic hook — write crash log (scrubbed of sensitive data)
@@ -74,7 +214,11 @@ pub fn run() {
     }));
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_shell::init())
+        // tauri-plugin-shell is intentionally NOT registered. All subprocess
+        // work goes through Rust commands using std::process::Command (wrapped
+        // with crate::util::silent_cmd on Windows). The webview never needs
+        // shell:execute / shell:spawn — keeping the plugin off closes the
+        // XSS-to-RCE pivot.
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())

@@ -24,6 +24,18 @@
   --error: #ef4444;
   --info: #3b82f6;
 
+  /* Upsell — Pro = amber, Business = blue. Centralized so ProFeatureGate
+     and any future upsell surface (modals, badges, banners) speak one
+     vocabulary instead of hardcoding tailwind utilities. */
+  --upsell-pro: #fbbf24;
+  --upsell-pro-hover: #fcd34d;
+  --upsell-pro-soft: rgba(251, 191, 36, 0.10);
+  --upsell-pro-rim:  rgba(251, 191, 36, 0.55);
+  --upsell-business: #60a5fa;
+  --upsell-business-hover: #93c5fd;
+  --upsell-business-soft: rgba(96, 165, 250, 0.10);
+  --upsell-business-rim:  rgba(96, 165, 250, 0.55);
+
   /* Status soft + rim — pre-mixed alphas */
   --success-soft: rgba(34, 197, 94, 0.10);
   --success-rim:  rgba(34, 197, 94, 0.22);
@@ -79,6 +91,16 @@
   --color-error-rim:    var(--error-rim);
   --color-info-soft:    var(--info-soft);
   --color-info-rim:     var(--info-rim);
+
+  /* Upsell tokens — surfaced as Tailwind utilities (bg-upsell-pro, etc.) */
+  --color-upsell-pro:           var(--upsell-pro);
+  --color-upsell-pro-hover:     var(--upsell-pro-hover);
+  --color-upsell-pro-soft:      var(--upsell-pro-soft);
+  --color-upsell-pro-rim:       var(--upsell-pro-rim);
+  --color-upsell-business:      var(--upsell-business);
+  --color-upsell-business-hover: var(--upsell-business-hover);
+  --color-upsell-business-soft: var(--upsell-business-soft);
+  --color-upsell-business-rim:  var(--upsell-business-rim);
 
   /* Backward-compat aliases */
   --color-bg-primary: var(--bg-base);

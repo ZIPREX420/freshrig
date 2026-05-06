@@ -463,3 +463,40 @@ pub async fn validate_license(
         error: None,
     })
 }
+
+// =============================================================================
+// Release-readiness gate.
+//
+// In pre-launch dev mode the LemonSqueezy IDs are zero and any FR-XXXXX-XXXXX
+// shape is accepted as Pro. That's fine for development, but it must NOT ship.
+//
+// This test always exists, but only asserts in release builds (where
+// `debug_assertions` is off). The release workflow runs:
+//     cargo test --release ... release_gate::lemonsqueezy_ids_set_for_release
+// before tauri-action; the test fails with a clear message if the placeholders
+// are still in place, blocking the release until they're filled in.
+// =============================================================================
+#[cfg(test)]
+mod release_gate {
+    use super::{EXPECTED_PRODUCT_ID, EXPECTED_PRO_VARIANT_IDS, EXPECTED_STORE_ID};
+
+    #[test]
+    fn lemonsqueezy_ids_set_for_release() {
+        if cfg!(debug_assertions) {
+            // Pre-launch dev mode: zeros are intentionally allowed.
+            return;
+        }
+        assert_ne!(
+            EXPECTED_STORE_ID, 0,
+            "EXPECTED_STORE_ID is still 0 — set it to the LemonSqueezy store id before tagging a release",
+        );
+        assert_ne!(
+            EXPECTED_PRODUCT_ID, 0,
+            "EXPECTED_PRODUCT_ID is still 0 — set it to the LemonSqueezy product id before tagging a release",
+        );
+        assert!(
+            !EXPECTED_PRO_VARIANT_IDS.is_empty(),
+            "EXPECTED_PRO_VARIANT_IDS is empty — list the live Pro variant ids before tagging a release",
+        );
+    }
+}

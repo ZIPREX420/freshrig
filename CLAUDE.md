@@ -17,7 +17,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - `src/config/` — App constants (`app.ts`)
 
 ## Key patterns & Requirements
-- **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.0.2** (CI hygiene + SBOM rescue; v2.0 line is subscription-priced). `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
+- **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.2.0**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
 - **Tauri IPC:** Frontend calls `invoke('command_name')`, backend uses `#[tauri::command]` in `src-tauri/src/lib.rs`.
 - **Rust ↔ TS:** Rust uses snake_case, TypeScript uses camelCase — Tauri auto-converts field names.
 - **Hardware data:** All hardware info comes from WMI queries via the `wmi` crate (v0.18+, `WMIConnection::new()` takes 0 args). WMI queries have 5-second timeouts to avoid hangs.
@@ -34,7 +34,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - **Animations:** `MotionConfig` at app root with spring `{ stiffness: 380, damping: 30, mass: 0.8 }`. Page transitions use `AnimatePresence mode="wait"`. Import from `"framer-motion"` (package name, even though the library was renamed to `"motion"`).
 - **Startup Manager:** `StartupApproved` binary format: `byte[0]` `0x02`=enabled (`0x06` also enabled), `0x03`=disabled; `bytes[4..12]`=FILETIME of the toggle. Protected items: `SecurityHealth`, `Windows Defender`, `explorer` (case-insensitive substring match in `is_protected`).
 - **Pro License Testing:** Test keys must match format `FR-XXXXX-XXXXX` where X is uppercase A-Z or 0-9. Example test key: `FR-TEST1-KEY01`. The old lowercase "FR-xxxxx" format no longer validates.
-- **Pro Features (v2.0):** Pro features gated by `ProFeatureGate` (`src/components/ui/ProFeatureGate.tsx`, modes: `overlay | blur | badge | hide`). v2.0 pricing is subscription: Pro $5.99/mo or $49/yr, Business $14.99/mo or $149/yr per technician, plus a Founder's Lifetime offer at $149 one-time (first 500 customers / 30-day window) — see constants in `src/config/app.ts`. Non-Pro users see an upsell linking to `PRO_PURCHASE_URL` (currently aliased to `PRICING_PAGE_URL` while LemonSqueezy is being set up — pre-launch mode). The Pro commands registered in `lib.rs`:
+- **Pro Features (v2.2):** Pro features gated by `ProFeatureGate` (`src/components/ui/ProFeatureGate.tsx`, modes: `overlay | blur | badge | hide`). Subscription pricing: Pro $5.99/mo or $49/yr, Business $14.99/mo or $149/yr per technician, plus a Founder's Lifetime offer at $149 one-time (first 500 customers / 30-day window) — see constants in `src/config/app.ts`. Non-Pro users see an upsell linking to `PRO_PURCHASE_URL` (currently aliased to `PRICING_PAGE_URL` while LemonSqueezy is being set up — pre-launch mode). The Pro commands registered in `lib.rs`:
   - **Disk Cleanup** — `commands::cleanup::scan_cleanup`, `commands::cleanup::run_cleanup`
   - **Privacy Dashboard** — `commands::privacy::get_privacy_settings`, `get_app_permissions`, `apply_privacy_setting`, `revoke_app_permission`
   - **Network Tools** — `commands::network::network_reset_dns`, `network_reset_full`, `set_dns_servers`, `get_network_interfaces`, `get_wifi_passwords`
@@ -42,7 +42,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
   - **Context Menu Editor** — `commands::context_menu::get_classic_menu_status`, `toggle_classic_menu`, `get_shell_extensions`, `toggle_shell_extension`
   - **System Health Report** — `commands::report::generate_health_report`
 - **LemonSqueezy Licensing:** `commands::license::get_machine_fingerprint` (SHA-256 of MachineGuid + CPU ID + SMBIOS UUID), `activate_license` → `POST https://api.lemonsqueezy.com/v1/licenses/activate` (form-urlencoded), `validate_license` → `POST /v1/licenses/validate`. Frontend runs 6-hour revalidation tick from `App.tsx` with 14-day grace on network failure. `EXPECTED_STORE_ID` / `EXPECTED_PRODUCT_ID` in `src-tauri/src/commands/license.rs` must be filled before first real sale — when `0`, store/product match is skipped (dev-friendly).
-- **Trial mode:** `useLicenseStore.startTrial()` sets `trialStartedAt` and grants Pro access locally for `TRIAL_DAYS` (7 days as of v2.0; was 14 in v1.x). `isPro()` returns true if tier is "pro" OR trial is still within the window. Trial can only be started once per install; after expiry, user must purchase. No credit card is required to start the trial.
+- **Trial mode:** `useLicenseStore.startTrial()` sets `trialStartedAt` and grants Pro access locally for `TRIAL_DAYS` (7 days as of v2.0+; was 14 in v1.x). `isPro()` returns true if tier is "pro" OR trial is still within the window. Trial can only be started once per install; after expiry, user must purchase. No credit card is required to start the trial.
 - **SMART data:** Drive health comes from `Get-PhysicalDisk` + `Get-StorageReliabilityCounter` in `ROOT\Microsoft\Windows\Storage` WMI namespace via PowerShell wrapped with `silent_cmd`. Fields are `Option<T>` because older SATA and USB-attached drives may not populate the counter. Derivation: `Wear >= 90` or predict-failure → "Fail"; `Wear >= 70` or temp >= 60°C → "Warning"; else "OK".
 - **Privacy ConsentStore path encoding:** Registry path `HKCU\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\<capability>\NonPackaged\<path>` uses `#` to encode `\` in the Win32 path (e.g. `C:#Program Files#App#app.exe`). The `privacy::get_app_permissions` helper decodes `#` → `\` when parsing app paths.
 - **FILETIME epoch delta:** Windows FILETIME is 100-ns intervals since 1601-01-01 UTC. Unix epoch delta = `11_644_473_600` seconds. Used in `startup.rs` when parsing `StartupApproved` `bytes[4..12]`.
@@ -63,7 +63,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - Linux privacy: Flatpak permission audit via `flatpak info --show-permissions`, plus apport/whoopsie/popcon/firewall/auto-update toggles.
 - Linux cleanup: `~/.cache/`, `/var/log/`, distro package cache, browser cache, trash, thumbnails — via `jwalk` + `trash`.
 - Linux elevation: `pkexec` (polkit), never `sudo`. Matches the GUI-session expectation of Tauri apps.
-- CI: matrix build on `ubuntu-22.04` + `windows-latest` + `macos-latest` (`.github/workflows/ci.yml`); release on tag push produces `.exe`, `.deb`, `.rpm`, `.AppImage`, `.dmg` (`.github/workflows/release.yml`).
+- CI: matrix build on `ubuntu-22.04` + `windows-latest` (`.github/workflows/ci.yml`); macOS is intentionally omitted (see "macOS support" section below). Release on tag push produces `.exe`, `.deb`, `.rpm`, `.AppImage` (`.github/workflows/release.yml`); `.dmg` is gated behind macOS CI re-enable.
 - Linux command tree: `src-tauri/src/commands/linux/` — parallel subtree mirroring the Windows command modules. `tauri::generate_handler!` entries in `lib.rs` cfg-gate a Windows twin, Linux twin, and macOS twin under the same command name so the frontend's `invoke()` calls are OS-agnostic.
 
 ## macOS support

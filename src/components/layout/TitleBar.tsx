@@ -1,34 +1,51 @@
 import { useState, useEffect } from "react";
 import { Monitor } from "lucide-react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { APP_NAME } from "../../config/app";
-
-const isTauri = !!(window as unknown as Record<string, unknown>).__TAURI_INTERNALS__;
+import { isTauri } from "../../lib";
 
 export function TitleBar() {
   const [maximized, setMaximized] = useState(false);
 
   useEffect(() => {
-    if (!isTauri) return;
-    import("@tauri-apps/api/window").then(({ getCurrentWindow }) => {
-      const appWindow = getCurrentWindow();
-      appWindow.isMaximized().then(setMaximized);
-      appWindow.onResized(async () => {
-        setMaximized(await appWindow.isMaximized());
-      });
+    if (!isTauri()) return;
+    let cancelled = false;
+    let unlisten: (() => void) | undefined;
+
+    const appWindow = getCurrentWindow();
+    appWindow.isMaximized().then((m) => {
+      if (!cancelled) setMaximized(m);
     });
+
+    appWindow
+      .onResized(async () => {
+        if (cancelled) return;
+        setMaximized(await appWindow.isMaximized());
+      })
+      .then((fn) => {
+        // If unmount happened during the await, detach immediately —
+        // otherwise hold the reference for the cleanup function.
+        if (cancelled) fn();
+        else unlisten = fn;
+      });
+
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
   }, []);
 
   const handleMinimize = () => {
-    if (!isTauri) return;
-    import("@tauri-apps/api/window").then(({ getCurrentWindow }) => getCurrentWindow().minimize());
+    if (!isTauri()) return;
+    void getCurrentWindow().minimize();
   };
   const handleMaximize = () => {
-    if (!isTauri) return;
-    import("@tauri-apps/api/window").then(({ getCurrentWindow }) => getCurrentWindow().toggleMaximize());
+    if (!isTauri()) return;
+    void getCurrentWindow().toggleMaximize();
   };
   const handleClose = () => {
-    if (!isTauri) return;
-    import("@tauri-apps/api/window").then(({ getCurrentWindow }) => getCurrentWindow().hide());
+    if (!isTauri()) return;
+    void getCurrentWindow().hide();
   };
 
   return (

@@ -23,6 +23,31 @@ import type { LucideIcon } from "lucide-react";
 import { APP_NAME, APP_VERSION } from "../../config/app";
 import { usePlatform } from "../../hooks/usePlatform";
 import { useLicenseStore } from "../../stores/licenseStore";
+import { preloadModule } from "../../lib";
+
+// Preload-on-hover map. Each entry mirrors a `lazyNamed(...)` call in App.tsx
+// so the chunk download starts as soon as the user signals intent (hover or
+// keyboard focus). Dynamic imports dedupe — multiple hovers cost nothing.
+//
+// Keep this in sync with the lazy routes in App.tsx. If a key is missing,
+// the click still works; the chunk just loads on demand instead of warmed.
+const ROUTE_PRELOADERS: Record<string, () => Promise<unknown>> = {
+  drivers:     () => import("../drivers/DriversPage"),
+  apps:        () => import("../apps/AppsPage"),
+  profiles:    () => import("../profiles/ProfilesPage"),
+  optimize:    () => import("../optimize/OptimizePage"),
+  startup:     () => import("../startup/StartupPage"),
+  cleanup:     () => import("../cleanup/CleanupPage"),
+  privacy:     () => import("../privacy/PrivacyPage"),
+  network:     () => import("../network/NetworkPage"),
+  contextMenu: () => import("../context_menu/ContextMenuPage"),
+  services:    () => import("../services/ServicesPage"),
+  watchdog:    () => import("../watchdog/WatchdogPage"),
+  fleet:       () => import("../fleet/FleetDashboard"),
+  report:      () => import("../report/ReportPage"),
+  settings:    () => import("../settings/SettingsPage"),
+  about:       () => import("../about/AboutPage"),
+};
 
 interface SidebarProps {
   currentView: string;
@@ -245,6 +270,18 @@ function NavButton({
       )}
       <button
         onClick={onSelect}
+        onMouseEnter={() => {
+          const loader = ROUTE_PRELOADERS[item.id];
+          if (loader) preloadModule(loader);
+        }}
+        onFocus={() => {
+          const loader = ROUTE_PRELOADERS[item.id];
+          if (loader) preloadModule(loader);
+        }}
+        onTouchStart={() => {
+          const loader = ROUTE_PRELOADERS[item.id];
+          if (loader) preloadModule(loader);
+        }}
         className={`flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-colors ${
           active
             ? "bg-[var(--accent-subtle)] text-[var(--text-primary)] font-medium"

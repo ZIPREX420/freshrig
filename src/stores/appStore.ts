@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type { AppEntry, AppCategory, InstallProgress } from "../types/apps";
 import type { CustomAppEntry } from "../types/custom_apps";
+import { invokeOrToast } from "../lib/invoke";
 
 interface WingetSearchResult {
   name: string;
@@ -98,12 +99,14 @@ export const useAppStore = create<AppState>((set, get) => {
 
     fetchCatalog: async () => {
       set({ loading: true });
-      try {
-        const catalog = await invoke<AppEntry[]>("get_app_catalog");
+      const catalog = await invokeOrToast<AppEntry[]>("get_app_catalog", undefined, {
+        errorTitle: "Could not load app catalog",
+      });
+      if (catalog) {
         set({ catalog, loading: false });
         // Auto-check installed apps after catalog loads
         get().checkInstalledApps();
-      } catch {
+      } else {
         set({ loading: false });
       }
     },
@@ -197,12 +200,17 @@ export const useAppStore = create<AppState>((set, get) => {
         return;
       }
       set({ isSearchingWinget: true });
-      try {
-        const results = await invoke<WingetSearchResult[]>("search_winget_packages", { query });
-        set({ wingetResults: results, isSearchingWinget: false });
-      } catch {
-        set({ wingetResults: [], isSearchingWinget: false });
-      }
+      // Search is incremental and noisy — don't toast errors. The empty state
+      // is itself the user-visible signal.
+      const results = await invokeOrToast<WingetSearchResult[]>(
+        "search_winget_packages",
+        { query },
+        { silent: true },
+      );
+      set({
+        wingetResults: results ?? [],
+        isSearchingWinget: false,
+      });
     },
 
     checkInstalledApps: async () => {
@@ -228,12 +236,11 @@ export const useAppStore = create<AppState>((set, get) => {
     },
 
     fetchCustomApps: async () => {
-      try {
-        const apps = await invoke<CustomAppEntry[]>("get_custom_apps");
-        set({ customApps: apps });
-      } catch {
-        // Ignore errors (e.g., no file yet)
-      }
+      // Silent: no file on first run is the expected steady-state.
+      const apps = await invokeOrToast<CustomAppEntry[]>("get_custom_apps", undefined, {
+        silent: true,
+      });
+      if (apps) set({ customApps: apps });
     },
 
     addCustomApp: async (app: CustomAppEntry) => {
