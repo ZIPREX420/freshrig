@@ -10,6 +10,17 @@ interface SystemMetricsBarProps {
 const MAX_SAMPLES = 12;
 
 /**
+ * Format a drive size (in GB, may be a raw float from WMI like 3726.0208...)
+ * into a user-facing string. Below 1024 GB → "X GB" (no decimals — disks
+ * round to integer GB anyway). At or above 1024 GB → "X.X TB".
+ */
+function formatDriveSize(gb: number): string {
+  if (!Number.isFinite(gb) || gb <= 0) return "—";
+  if (gb >= 1024) return `${(gb / 1024).toFixed(1)} TB`;
+  return `${Math.round(gb)} GB`;
+}
+
+/**
  * Live system metrics strip. Polls minimal counters at 2 Hz and renders
  * chips with sparklines. RAM/disk derive from the hardware summary; CPU
  * and network are simulated with light noise around the current snapshot
@@ -71,14 +82,21 @@ export function SystemMetricsBar({ summary }: SystemMetricsBarProps) {
       <MetricChip
         label="Network"
         value={netLabel}
-        sparkline={netSamples}
-        sub={onlineAdapter?.name?.split(" ").slice(0, 3).join(" ") ?? "—"}
+        // Suppress the sparkline when offline — the simulated samples
+        // produce a misleading "trending down" line on a chip whose value
+        // says "Offline". Show the trend only when there's a real adapter.
+        sparkline={onlineAdapter ? netSamples : undefined}
+        sub={
+          onlineAdapter
+            ? (onlineAdapter.name?.split(" ").slice(0, 3).join(" ") ?? "—")
+            : "No connection"
+        }
         state={onlineAdapter ? "default" : "warning"}
       />
       {primaryDisk && (
         <MetricChip
           label={primaryDisk.mediaType || "Disk"}
-          value={`${primaryDisk.sizeGb} GB`}
+          value={formatDriveSize(primaryDisk.sizeGb)}
           sub={primaryDisk.model.split(" ").slice(0, 3).join(" ")}
         />
       )}

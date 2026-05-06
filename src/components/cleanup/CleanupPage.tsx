@@ -13,7 +13,14 @@ import {
   RefreshCw,
   ShieldCheck,
   X,
+  FileText,
+  Image,
+  Globe,
+  Recycle,
+  Archive,
+  Bug,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Card } from "../ui/Card";
 import { ProFeatureGate } from "../ui/ProFeatureGate";
 import type {
@@ -354,18 +361,33 @@ function CleanupPageInner() {
   );
 }
 
+// Empty-state preview: shows the user what *kinds* of things will be scanned
+// before they commit. Mirrors the canonical category list returned by
+// `scan_cleanup` on Windows; the actual scan may surface more or fewer
+// depending on installed software.
+const SCAN_PREVIEW: { icon: LucideIcon; label: string; description: string }[] = [
+  { icon: FileText, label: "Windows Temp",     description: "%TEMP% + %SystemRoot%\\Temp" },
+  { icon: Globe,    label: "Browser Cache",    description: "Edge, Chrome, Firefox" },
+  { icon: Recycle,  label: "Recycle Bin",      description: "Per-volume" },
+  { icon: Bug,      label: "Crash Dumps",      description: "Memory.dmp, minidumps" },
+  { icon: Archive,  label: "Update Cleanup",   description: "Old Windows components" },
+  { icon: Image,    label: "Thumbnail Cache",  description: "Explorer thumbnails.db" },
+];
+
 function IdleHero({ onScan }: { onScan: () => void }) {
   return (
-    <Card className="px-8 py-12 flex flex-col items-center text-center gap-4">
+    <Card className="px-8 py-10 flex flex-col items-center text-center gap-5">
       <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--accent-subtle)] ring-1 ring-[var(--accent-ring)]">
         <Trash2 className="w-8 h-8 text-[var(--accent)]" />
       </div>
-      <div className="space-y-1 max-w-md">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+      <div className="space-y-1.5 max-w-md">
+        <h2 className="text-xl font-semibold text-[var(--text-primary)]">
           Find junk files on your disk
         </h2>
-        <p className="text-sm text-[var(--text-secondary)]">
-          Scan for temporary files, crash dumps, caches, and other reclaimable space across Windows and installed applications.
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+          Scan for temporary files, crash dumps, caches, and other reclaimable
+          space across Windows and installed applications. Nothing is deleted
+          until you review and confirm.
         </p>
       </div>
       <button
@@ -375,6 +397,35 @@ function IdleHero({ onScan }: { onScan: () => void }) {
         <Scan className="w-4 h-4" />
         Scan for junk files
       </button>
+
+      {/* What we'll look at — preview grid. Educates users + gives the empty
+          state visual weight so the card doesn't float in dead space. */}
+      <div className="w-full max-w-2xl pt-6 mt-2 border-t border-[var(--border)]">
+        <p className="text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-semibold mb-3">
+          What gets scanned
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {SCAN_PREVIEW.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.label}
+                className="flex items-start gap-2.5 px-3 py-2.5 rounded-md bg-[var(--bg-card-hover)] border border-[var(--border)] text-left"
+              >
+                <Icon className="w-4 h-4 text-[var(--accent)] shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-[12px] font-medium text-[var(--text-primary)] leading-tight">
+                    {item.label}
+                  </p>
+                  <p className="text-[10.5px] text-[var(--text-muted)] mt-0.5 truncate">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </Card>
   );
 }
