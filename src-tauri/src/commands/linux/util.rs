@@ -112,10 +112,12 @@ pub fn require_elevation() -> Result<(), String> {
     if is_root() || which("pkexec") {
         Ok(())
     } else {
-        Err("This action needs administrator rights, but `pkexec` (polkit) \
+        Err(
+            "This action needs administrator rights, but `pkexec` (polkit) \
              isn't installed. Install `policykit-1` (Debian/Ubuntu) or \
              `polkit` (Fedora/Arch/openSUSE) and try again."
-            .to_string())
+                .to_string(),
+        )
     }
 }
 

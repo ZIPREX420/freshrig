@@ -49,12 +49,10 @@ pub async fn export_profile_encrypted(
     tokio::task::spawn_blocking(move || {
         // age 0.11 dropped `Encryptor::with_user_passphrase`; passphrase
         // encryption now goes through the new `age::scrypt::Recipient`.
-        let recipient =
-            age::scrypt::Recipient::new(SecretString::new(passphrase.into_boxed_str()));
-        let encryptor = age::Encryptor::with_recipients(std::iter::once(
-            &recipient as &dyn age::Recipient,
-        ))
-        .map_err(|e| format!("age with_recipients: {}", e))?;
+        let recipient = age::scrypt::Recipient::new(SecretString::new(passphrase.into_boxed_str()));
+        let encryptor =
+            age::Encryptor::with_recipients(std::iter::once(&recipient as &dyn age::Recipient))
+                .map_err(|e| format!("age with_recipients: {}", e))?;
         let mut buf = Vec::new();
         let mut writer = encryptor
             .wrap_output(&mut buf)
@@ -87,8 +85,7 @@ pub async fn import_profile_encrypted(
         if !decryptor.is_scrypt() {
             return Err("not a passphrase-encrypted age file".into());
         }
-        let identity =
-            age::scrypt::Identity::new(SecretString::new(passphrase.into_boxed_str()));
+        let identity = age::scrypt::Identity::new(SecretString::new(passphrase.into_boxed_str()));
         let mut reader = decryptor
             .decrypt(std::iter::once(&identity as &dyn age::Identity))
             .map_err(|e| format!("age decrypt body: {} (wrong passphrase?)", e))?;
