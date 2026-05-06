@@ -132,6 +132,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             // Cross-platform commands (always registered).
             // Ordered alphabetically by module to match `commands/mod.rs`.
+            commands::platform_info::get_platform_info,
             commands::presets::get_presets,
             portable::check_portable_mode,
             portable::get_portable_data_dir,

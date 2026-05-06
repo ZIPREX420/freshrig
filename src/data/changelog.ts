@@ -1,4 +1,36 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.2.0": `### FreshRig v2.2.0 — Cross-platform polish 🐧🍎
+
+The first release where the Linux and macOS builds stop feeling like ports. Driver and app installs now work end-to-end on Ubuntu/Fedora/Arch/openSUSE, the type renders with native fonts on every OS, and there's finally a single source of truth for which features work where.
+
+**Linux drivers — Ubuntu fix.**
+Previously every NVIDIA driver install on Ubuntu failed because the catalog used the meta-package name \`nvidia-driver\`, which doesn't exist on Ubuntu (Ubuntu ships versioned packages like \`nvidia-driver-535\`). The Linux drivers module now special-cases Ubuntu derivatives via \`ubuntu-drivers install\`, which picks the right versioned package automatically. Plain Debian still uses \`nvidia-driver\` from non-free-firmware.
+
+**Linux drivers + apps — pkexec pre-flight + index refresh.**
+Both flows now probe \`pkexec\` once and surface a clear "install policykit" message if it isn't on PATH, instead of failing 12 times with "binary not found". They also run the package manager refresh (\`apt-get update\` / \`dnf check-update --refresh\` / \`pacman -Sy\` / \`zypper refresh\`) once per batch, so a freshly booted system doesn't get "Unable to locate package…" before the first install even tries.
+
+**Linux apps — Flathub setup + classic snaps.**
+The first flatpak in a batch now lazily configures the \`flathub\` remote at user scope (no extra polkit prompt). Snap installs of classic-confined apps (VS Code, Discord, Slack, Spotify, IntelliJ, etc.) now pass \`--classic\` automatically. Apt installs are wrapped with \`env DEBIAN_FRONTEND=noninteractive\` so they don't hang on dpkg conf-file prompts when pkexec scrubs the parent environment. The install loop got an \`InstallPlan\` enum refactor — separating "what we're going to do" from "how we argv it" — so the next person adding a package manager only edits two functions.
+
+**macOS apps — \`brew update\` once.**
+The install loop now runs \`brew update\` once before iterating, so renamed formulae don't fail with "No formula with name X". Per-app installs still set \`HOMEBREW_NO_AUTO_UPDATE=1\` so each step is fast.
+
+**Cross-OS visual polish.**
+The font stack now falls through Windows → macOS → Linux native UI fonts: Segoe UI Variable, then \`-apple-system\` / \`BlinkMacSystemFont\`, then Inter / Ubuntu / Cantarell / Noto Sans / DejaVu Sans, then \`system-ui\`. Type density and weight now feel native on every distro/DE. Custom thin scrollbars (\`::-webkit-scrollbar\` + Firefox \`scrollbar-color\`) replace the GTK-themed defaults that looked incongruous on the dark UI. Backdrop-blur falls back to a solid card fill via \`@supports\` on older webkit2gtk versions where the property is a no-op.
+
+**New \`get_platform_info\` Tauri command.**
+A small cross-platform command exposing OS, arch, distro id + family, detected package managers, and elevation availability. Single source of truth for finer-grained UI gating than \`usePlatform\`'s os-only check. Frontend wiring lands incrementally — the data is exposed; consumers come in v2.3.
+
+**New \`docs/PLATFORM_PARITY.md\`.**
+Living parity table documenting every Tauri command's status per OS (Full / Partial / Stub / Missing), with a frontend gating contract, a "how to add a platform-aware command" guide, and a manual smoke checklist per distro. Updating it is part of "done" for any backend command change.
+
+**Cross-OS unit tests.**
+Pure-logic parsers (\`parse_os_release\`, \`split_pci_blocks\`, \`detect_vendor\`) now have \`#[cfg(test)] mod tests\` with fixture data — these compile without GTK/WebKit and run on every CI matrix leg.
+
+No breaking changes. Auto-updater pulls v2.2.0 for v2.1.x users on their next check.
+
+Known gaps still tracked: license activation on Linux/macOS (commands::license is still Windows-gated), profiles CRUD on Linux/macOS, and the macOS Privacy app-permissions list (TCC.db needs Full Disk Access entitlement we don't have in unsigned builds).
+`,
   "2.1.0": `### FreshRig v2.1.0 — UI polish line ✨
 
 The app's first dedicated polish release. Every page got a tighter design system, the dashboard learned to feel like a real tool, and a fresh primitive library makes future features cheaper to build.

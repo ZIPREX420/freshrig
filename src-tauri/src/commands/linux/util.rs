@@ -100,3 +100,115 @@ pub fn run_elevated(program: &str, args: &[&str]) -> Result<String, String> {
     let args_refs: Vec<&str> = a.iter().map(|s| s.as_str()).collect();
     run_cmd(&p, &args_refs)
 }
+
+/// Check whether elevation is reachable. Returns Ok(()) when:
+///   * we're already root, OR
+///   * `pkexec` is on PATH (and a polkit agent is presumed to be running
+///     in the desktop session — we can't probe the agent directly, but
+///     binary presence is the right gating heuristic since CLI-only
+///     environments wouldn't ship pkexec anyway).
+/// Returns Err with a user-friendly message when not.
+pub fn require_elevation() -> Result<(), String> {
+    if is_root() || which("pkexec") {
+        Ok(())
+    } else {
+        Err("This action needs administrator rights, but `pkexec` (polkit) \
+             isn't installed. Install `policykit-1` (Debian/Ubuntu) or \
+             `polkit` (Fedora/Arch/openSUSE) and try again."
+            .to_string())
+    }
+}
+
+/// Run `apt-get update` (or distro equivalent) without prompting. Best-
+/// effort: failures are returned for surfacing to the user but the caller
+/// may choose to proceed. Refresh once before an install batch, not per
+/// item — package-manager refresh on a fresh boot is the difference
+/// between "Unable to locate package nodejs" and a working install.
+pub fn refresh_package_index(family: &str) -> Result<(), String> {
+    let (program, args): (&str, Vec<&str>) = match family {
+        "debian" => ("apt-get", vec!["update", "-qq"]),
+        "rhel" => ("dnf", vec!["check-update", "--quiet", "--refresh"]),
+        "arch" => ("pacman", vec!["-Sy", "--noconfirm"]),
+        "suse" => ("zypper", vec!["--non-interactive", "refresh"]),
+        _ => return Ok(()),
+    };
+    let result = run_elevated(program, &args);
+    if family == "rhel" {
+        // dnf check-update signals "updates available" with status 100;
+        // run_elevated turns any non-zero into Err. Detect + swallow.
+        if let Err(ref e) = result {
+            if e.contains("status: 100") || e.contains("exit code: 100") {
+                return Ok(());
+            }
+        }
+    }
+    result.map(|_| ())
+}
+
+/// Build a one-shot env-prefixed apt command so `DEBIAN_FRONTEND` survives
+/// pkexec's environment scrubbing. Use for non-interactive apt installs
+/// that may otherwise hang on dpkg conf-file prompts.
+pub fn apt_install_args(packages: &[&str]) -> (String, Vec<String>) {
+    let mut all: Vec<String> = vec![
+        "env".into(),
+        "DEBIAN_FRONTEND=noninteractive".into(),
+        "apt-get".into(),
+        "install".into(),
+        "-y".into(),
+        "--no-install-recommends".into(),
+    ];
+    all.extend(packages.iter().map(|p| p.to_string()));
+    if is_root() {
+        let program = all.remove(0); // "env"
+        return (program, all);
+    }
+    ("pkexec".into(), all)
+}
+
+/// Snap packages that need `--classic` confinement to install. Snap install
+/// without this flag fails with a clear "use --classic" error, so the list
+/// only needs to cover apps in our catalog. Add to it when adding new
+/// snap-only entries to the catalog.
+pub const CLASSIC_SNAPS: &[&str] = &[
+    "code",
+    "code-insiders",
+    "discord",
+    "slack",
+    "spotify",
+    "sublime-text",
+    "intellij-idea-community",
+    "pycharm-community",
+    "node",
+    "go",
+    "kotlin",
+    "android-studio",
+    "obsidian",
+];
+
+pub fn is_classic_snap(name: &str) -> bool {
+    CLASSIC_SNAPS.iter().any(|s| *s == name)
+}
+
+/// Ensure the Flathub remote is configured for the current user. Idempotent.
+/// Returns Ok if Flathub is already known or was added; Err if `flatpak`
+/// isn't on PATH or the add command itself failed.
+pub fn ensure_flathub_remote() -> Result<(), String> {
+    if !which("flatpak") {
+        return Err("flatpak is not installed".into());
+    }
+    let listing = run_cmd_lossy("flatpak", &["remotes", "--columns=name"]);
+    if listing.lines().any(|l| l.trim() == "flathub") {
+        return Ok(());
+    }
+    run_cmd(
+        "flatpak",
+        &[
+            "remote-add",
+            "--if-not-exists",
+            "--user",
+            "flathub",
+            "https://flathub.org/repo/flathub.flatpakrepo",
+        ],
+    )
+    .map(|_| ())
+}

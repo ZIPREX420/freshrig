@@ -78,6 +78,19 @@ pub async fn install_apps(
             }
         };
 
+        // Refresh formula metadata once before the install loop. Without
+        // this, batches that include any formula renamed since the user's
+        // last `brew update` fail with "No formula with name X". We
+        // explicitly *don't* set HOMEBREW_NO_AUTO_UPDATE for this call
+        // since updating is the whole point.
+        let _ = std::process::Command::new(brew)
+            .arg("update")
+            .env("NONINTERACTIVE", "1")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+
         for app_id in &app_ids {
             let app_name = find_name(app_id).unwrap_or(app_id.as_str()).to_string();
 
