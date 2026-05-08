@@ -58,7 +58,33 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Build frontend
-        run: npm run build
+        shell: bash
+        run: |
+          # TEMP DEBUG: capture build output so the failing line surfaces in
+          # check-run annotations (the workflow log itself is auth-gated and
+          # not readable to anonymous CI investigators). Remove this block
+          # once the underlying failure is fixed.
+          set +e
+          set -o pipefail
+          npm run build 2>&1 | tee build-frontend.log
+          EXIT=${PIPESTATUS[0]}
+          if [ $EXIT -ne 0 ]; then
+            echo ""
+            echo "===== BUILD FAILED with exit $EXIT — full log: ====="
+            cat build-frontend.log
+            echo "===== END BUILD LOG ====="
+            # Emit each non-empty line of the tail as a ::error:: annotation
+            # so the GH UI / API exposes the failure reason.
+            tail -120 build-frontend.log | while IFS= read -r line; do
+              clean=$(printf '%s' "$line" | sed 's/\x1b\[[0-9;]*m//g')
+              if [ -n "$clean" ]; then
+                # Escape characters that GH actions group commands treat specially.
+                clean=$(printf '%s' "$clean" | sed 's/%/%25/g; s/\r/%0D/g')
+                echo "::error::$clean"
+              fi
+            done
+          fi
+          exit $EXIT
 
       - name: Rust clippy
         run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
