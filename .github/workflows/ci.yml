@@ -63,28 +63,7 @@ jobs:
         run: npm run build
 
       - name: Rust clippy
-        shell: bash
-        run: |
-          # TEMP DEBUG: dump the last 60 non-empty, non-progress lines as
-          # annotations so the failure surfaces without sign-in. Remove
-          # once green.
-          set +e
-          cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings 2>&1 | tee clippy.log
-          EXIT=${PIPESTATUS[0]}
-          if [ $EXIT -ne 0 ]; then
-            echo ""
-            echo "===== CLIPPY FAILED with exit $EXIT ====="
-            # Filter out cargo progress noise; keep diagnostics + the tail.
-            sed 's/\x1b\[[0-9;]*m//g' clippy.log \
-              | grep -vE '^(    Compiling|   Compiling|     Updating|   Updating|     Locking| *Downloaded|   Downloading|     Locking)' \
-              | grep -v '^$' \
-              | tail -60 \
-              | while IFS= read -r line; do
-                  clean=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
-                  echo "::error::$clean"
-                done
-          fi
-          exit $EXIT
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 
       - name: Rust fmt check
         run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
@@ -94,26 +73,16 @@ jobs:
 
       - name: cargo audit
         if: matrix.platform == 'ubuntu-22.04'
-        shell: bash
+        # cargo-audit reads its config from `<cwd>/.cargo/audit.toml`. Our
+        # suppressions live in `src-tauri/.cargo/audit.toml`, so we have to
+        # run from inside `src-tauri/` for the ignore list to be picked up.
+        # Running from the repo root with `--file src-tauri/Cargo.lock` does
+        # NOT make audit.toml discovery follow the lockfile — the config is
+        # resolved against the CWD only.
+        working-directory: src-tauri
         run: |
           cargo install --locked cargo-audit
-          # Suppressions live in src-tauri/.cargo/audit.toml.
-          # TEMP DEBUG: surface advisory IDs as annotations. Remove once green.
-          set +e
-          cargo audit --file src-tauri/Cargo.lock --deny warnings 2>&1 | tee audit.log
-          EXIT=${PIPESTATUS[0]}
-          if [ $EXIT -ne 0 ]; then
-            echo ""
-            echo "===== AUDIT FAILED with exit $EXIT ====="
-            sed 's/\x1b\[[0-9;]*m//g' audit.log \
-              | grep -v '^$' \
-              | tail -80 \
-              | while IFS= read -r line; do
-                  clean=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
-                  echo "::error::$clean"
-                done
-          fi
-          exit $EXIT
+          cargo audit --deny warnings
 
       - name: Generate Rust SBOM
         if: matrix.platform == 'windows-latest'
