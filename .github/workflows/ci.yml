@@ -75,16 +75,18 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           cargo install --locked cargo-audit
-          # cargo-audit searches `$CARGO_HOME/audit.toml` by default. Our
-          # suppressions live alongside the Tauri crate, so we point at
-          # them explicitly via -c/--config. Without this flag the ignore
-          # list is silently skipped and known-OK transitive advisories
-          # (RUSTSEC-2024-0429 glib via gtk-rs 0.18; RUSTSEC-2026-0097
-          # rand via kuchikiki) trigger spurious failures.
-          cargo audit \
-            --config src-tauri/.cargo/audit.toml \
-            --file src-tauri/Cargo.lock \
-            --deny warnings
+          # cargo-audit only honours `audit.toml` when it lives at
+          # `$CARGO_HOME/audit.toml` — there is no implicit lookup in CWD
+          # or next to Cargo.lock, and the `-c/--config` flag is brittle
+          # across versions. Copy our suppressions to the default search
+          # location so the ignore list is always picked up. Without this,
+          # known-OK transitive advisories (RUSTSEC-2024-0429 glib via
+          # gtk-rs 0.18; RUSTSEC-2026-0097 rand via kuchikiki) trigger
+          # spurious failures. See src-tauri/.cargo/audit.toml + CLAUDE.md
+          # "Known upstream issues" for rationale.
+          mkdir -p "${CARGO_HOME:-$HOME/.cargo}"
+          cp src-tauri/.cargo/audit.toml "${CARGO_HOME:-$HOME/.cargo}/audit.toml"
+          cargo audit --file src-tauri/Cargo.lock --deny warnings
 
       - name: Generate Rust SBOM
         if: matrix.platform == 'windows-latest'
