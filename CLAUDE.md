@@ -51,7 +51,13 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - **SBOM:** CI generates CycloneDX SBOMs for both Rust and npm dependencies.
 
 ## Known upstream issues
-- **Suppressed cargo audit findings:** Three transitive Tauri deps surface RustSec advisories we cannot patch at our layer. `glib 0.18.5` (RUSTSEC-2024-0429 / GHSA-wrw7-89jp-8q8g) is Linux-only via gtk-rs 0.18, excluded from Windows builds. `gtk-rs GTK3 bindings` (RUSTSEC-2024-0413, unmaintained warning across atk/atk-sys/gdk/gdk-sys/gtk/gtk-sys 0.18.x) shares the same gtk-rs 0.18 root cause. `rand 0.7.3` (RUSTSEC-2026-0097 / GHSA-cq8v-f236-94qc) is build-time HTML codegen via `kuchikiki`. All three ignored in `src-tauri/.cargo/audit.toml` AND mirrored as `--ignore` flags in `.github/workflows/ci.yml`'s cargo-audit step (file-config path lookup turned out brittle across cargo-audit versions, so CLI flags are the source of truth — the .toml stays for documentation parity and local-dev `cargo audit` runs). Re-evaluate when Tauri bumps to gtk-rs 0.20+ or replaces kuchikiki.
+- **Suppressed cargo audit findings:** 18 transitive RustSec advisories grouped into three families, all upstream-Tauri issues we cannot patch at our layer:
+  - **gtk-rs 0.18 family (11 IDs)** — `RUSTSEC-2024-0411` … `0420` (atk, atk-sys, gdk, gdk-sys, gdkwayland-sys, gdkx11, gdkx11-sys, gtk, gtk-sys, gtk3-macros — unmaintained warnings) plus `RUSTSEC-2024-0429` (glib 0.18.5 unsoundness). Linux-only via Tauri's `wry` → `webkit2gtk` → gtk-rs 0.18; clears when Tauri bumps to gtk-rs 0.20+ (GTK4).
+  - **unic-* family (5 IDs)** — `RUSTSEC-2025-0075`, `0080`, `0081`, `0098`, `0100` (unic-char-range, unic-common, unic-char-property, unic-ucd-version, unic-ucd-ident — unmaintained, all flagged 2025-10-18). Pulled via `urlpattern` → `tauri-utils`. Clears when Tauri replaces `urlpattern`.
+  - **proc-macro-error 1.x (1 ID)** — `RUSTSEC-2024-0370` unmaintained. Build-script transitive, never in shipped binary.
+  - **rand 0.7.3 (1 ID, currently no-op)** — `RUSTSEC-2026-0097` was firing via the kuchikiki path, which Tauri 2.11+ dropped. Kept as a defence in case a future dep tree change re-pulls it.
+
+  Single source of truth: `src-tauri/.cargo/audit.toml`. CI copies that file to `$CARGO_HOME/audit.toml` before running `cargo audit` (cargo-audit v0.22+ only auto-discovers there — there is no `--config` flag). Re-evaluate when Tauri bumps gtk-rs and/or replaces `urlpattern`; both would shrink this list dramatically.
 
 ## Linux support
 - Platform abstraction: `src-tauri/src/platform/` with `mod.rs`, `types.rs`, `windows.rs`, `linux.rs`.

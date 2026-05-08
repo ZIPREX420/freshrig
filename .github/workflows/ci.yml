@@ -75,18 +75,17 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           cargo install --locked cargo-audit
-          # Pass the ignore list via CLI flags rather than audit.toml.
-          # `--ignore` is stable across cargo-audit versions, while
-          # config-file discovery (`-c`, `working-directory`, copying to
-          # $CARGO_HOME) has been brittle in practice. The ignore set
-          # mirrors src-tauri/.cargo/audit.toml — see that file +
-          # CLAUDE.md "Known upstream issues" for rationale on each ID.
-          cargo audit \
-            --file src-tauri/Cargo.lock \
-            --ignore RUSTSEC-2024-0429 \
-            --ignore RUSTSEC-2024-0413 \
-            --ignore RUSTSEC-2026-0097 \
-            --deny warnings
+          # cargo-audit v0.22+ honours `audit.toml` only at
+          # `$CARGO_HOME/audit.toml` — there is no flag for an arbitrary
+          # config path (`--config` is not a valid option). Copy our
+          # suppression file (the source-of-truth for the 18 transitive
+          # advisories Tauri currently surfaces; see
+          # src-tauri/.cargo/audit.toml + CLAUDE.md "Known upstream
+          # issues") into the discovery path so the ignore list is
+          # honoured without a long inline `--ignore` flag chain.
+          mkdir -p "${CARGO_HOME:-$HOME/.cargo}"
+          cp src-tauri/.cargo/audit.toml "${CARGO_HOME:-$HOME/.cargo}/audit.toml"
+          cargo audit --file src-tauri/Cargo.lock --deny warnings
 
       - name: Generate Rust SBOM
         if: matrix.platform == 'windows-latest'
