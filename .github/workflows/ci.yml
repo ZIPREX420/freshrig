@@ -73,20 +73,31 @@ jobs:
 
       - name: cargo audit
         if: matrix.platform == 'ubuntu-22.04'
+        shell: bash
         run: |
           cargo install --locked cargo-audit
-          # Pass the ignore list via CLI flags rather than audit.toml.
-          # `--ignore` is stable across cargo-audit versions, while
-          # config-file discovery (whether via $CARGO_HOME/audit.toml,
-          # `-c`, or `working-directory: src-tauri`) has been brittle in
-          # practice. The ignore set mirrors src-tauri/.cargo/audit.toml
-          # — see that file + CLAUDE.md "Known upstream issues" for the
-          # rationale on each ID.
+          # TEMP DEBUG: surface advisory IDs as annotations so additional
+          # transitive RUSTSEC IDs can be added to the suppression list.
+          # Remove once green.
+          set +e
           cargo audit \
             --file src-tauri/Cargo.lock \
             --ignore RUSTSEC-2024-0429 \
             --ignore RUSTSEC-2026-0097 \
-            --deny warnings
+            --deny warnings 2>&1 | tee audit.log
+          EXIT=${PIPESTATUS[0]}
+          if [ $EXIT -ne 0 ]; then
+            echo ""
+            echo "===== AUDIT FAILED with exit $EXIT ====="
+            sed 's/\x1b\[[0-9;]*m//g' audit.log \
+              | grep -v '^$' \
+              | tail -120 \
+              | while IFS= read -r line; do
+                  clean=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                  echo "::error::$clean"
+                done
+          fi
+          exit $EXIT
 
       - name: Generate Rust SBOM
         if: matrix.platform == 'windows-latest'
