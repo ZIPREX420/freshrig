@@ -102,11 +102,13 @@ pub fn run_elevated(program: &str, args: &[&str]) -> Result<String, String> {
 }
 
 /// Check whether elevation is reachable. Returns Ok(()) when:
-///   * we're already root, OR
-///   * `pkexec` is on PATH (and a polkit agent is presumed to be running
-///     in the desktop session — we can't probe the agent directly, but
-///     binary presence is the right gating heuristic since CLI-only
-///     environments wouldn't ship pkexec anyway).
+///
+/// * we're already root, OR
+/// * `pkexec` is on PATH (and a polkit agent is presumed to be running
+///   in the desktop session — we can't probe the agent directly, but
+///   binary presence is the right gating heuristic since CLI-only
+///   environments wouldn't ship pkexec anyway).
+///
 /// Returns Err with a user-friendly message when not.
 pub fn require_elevation() -> Result<(), String> {
     if is_root() || which("pkexec") {

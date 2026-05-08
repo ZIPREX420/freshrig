@@ -2,7 +2,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Check if FreshRig is running in portable mode.
+///
 /// Portable mode is detected by:
+///
 /// 1. A `.portable` marker file next to the executable
 /// 2. The `FRESHRIG_PORTABLE` environment variable set to "1"
 pub fn is_portable() -> bool {

@@ -20,6 +20,7 @@ pub use commands::smart_monitor::run_headless_smart_check;
 /// work to that next launch rather than reimplementing it headless.
 ///
 /// Security:
+///
 /// - The marker is written into the user's data dir (`%APPDATA%/com.freshrig.app/`
 ///   or portable `data/` next to the exe). On Windows, %APPDATA% inherits
 ///   user-only ACLs from the parent. On Unix, we explicitly chmod 0600 so
