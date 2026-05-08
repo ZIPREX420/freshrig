@@ -73,20 +73,30 @@ jobs:
 
       - name: cargo audit
         if: matrix.platform == 'ubuntu-22.04'
+        shell: bash
         run: |
           cargo install --locked cargo-audit
-          # cargo-audit only honours `audit.toml` when it lives at
-          # `$CARGO_HOME/audit.toml` — there is no implicit lookup in CWD
-          # or next to Cargo.lock, and the `-c/--config` flag is brittle
-          # across versions. Copy our suppressions to the default search
-          # location so the ignore list is always picked up. Without this,
-          # known-OK transitive advisories (RUSTSEC-2024-0429 glib via
-          # gtk-rs 0.18; RUSTSEC-2026-0097 rand via kuchikiki) trigger
-          # spurious failures. See src-tauri/.cargo/audit.toml + CLAUDE.md
-          # "Known upstream issues" for rationale.
+          # See src-tauri/.cargo/audit.toml + CLAUDE.md "Known upstream
+          # issues" for rationale on suppressed advisories.
           mkdir -p "${CARGO_HOME:-$HOME/.cargo}"
           cp src-tauri/.cargo/audit.toml "${CARGO_HOME:-$HOME/.cargo}/audit.toml"
-          cargo audit --file src-tauri/Cargo.lock --deny warnings
+          # TEMP DEBUG: surface advisory IDs as annotations so we can
+          # extend the suppression list. Remove once green.
+          set +e
+          cargo audit --file src-tauri/Cargo.lock --deny warnings 2>&1 | tee audit.log
+          EXIT=${PIPESTATUS[0]}
+          if [ $EXIT -ne 0 ]; then
+            echo ""
+            echo "===== AUDIT FAILED with exit $EXIT ====="
+            sed 's/\x1b\[[0-9;]*m//g' audit.log \
+              | grep -v '^$' \
+              | tail -120 \
+              | while IFS= read -r line; do
+                  clean=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                  echo "::error::$clean"
+                done
+          fi
+          exit $EXIT
 
       - name: Generate Rust SBOM
         if: matrix.platform == 'windows-latest'
