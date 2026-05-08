@@ -1,34 +1,89 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0f0f18"/>
-      <stop offset="100%" stop-color="#0a0a0f"/>
+      <stop offset="0%" stop-color="#0a0c14"/>
+      <stop offset="100%" stop-color="#05060a"/>
     </linearGradient>
+    <linearGradient id="neon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#ff2bd6"/>
+    </linearGradient>
+    <radialGradient id="glow-cyan" cx="15%" cy="20%" r="55%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow-magenta" cx="85%" cy="80%" r="55%">
+      <stop offset="0%" stop-color="#ff2bd6" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#ff2bd6" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#ffffff" stroke-width="0.4" opacity="0.04"/>
+    </pattern>
+    <filter id="soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
+
+  <!-- Base + ambient + grid -->
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <!-- Grid pattern -->
-  <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#00d4aa" stroke-width="0.3" opacity="0.08"/>
-  </pattern>
   <rect width="1200" height="630" fill="url(#grid)"/>
-  <!-- Accent glow -->
-  <ellipse cx="600" cy="280" rx="300" ry="150" fill="#00d4aa" opacity="0.04"/>
-  <!-- Monitor icon -->
-  <rect x="540" y="120" width="120" height="90" rx="8" fill="none" stroke="#00d4aa" stroke-width="4"/>
-  <rect x="555" y="135" width="90" height="60" rx="3" fill="#00d4aa" opacity="0.12"/>
-  <rect x="585" y="210" width="30" height="15" rx="2" fill="#00d4aa" opacity="0.3"/>
-  <rect x="565" y="225" width="70" height="6" rx="3" fill="#00d4aa" opacity="0.4"/>
-  <!-- Title -->
-  <text x="600" y="310" text-anchor="middle" font-family="Segoe UI Variable, system-ui, sans-serif" font-weight="800" font-size="72" fill="#e8e8ed">Fresh<tspan fill="#00d4aa">Rig</tspan></text>
+  <rect width="1200" height="630" fill="url(#glow-cyan)"/>
+  <rect width="1200" height="630" fill="url(#glow-magenta)"/>
+
+  <!-- Hexagonal "FR" mark, centred above the wordmark -->
+  <g transform="translate(536 80) scale(0.21)" filter="url(#soft-glow)">
+    <!-- Hexagon frame: same vertices as src-tauri/icons/app-icon.svg -->
+    <polygon points="512,112 896,320 896,704 512,912 128,704 128,320"
+             fill="none" stroke="url(#neon)" stroke-width="28" stroke-linejoin="round"/>
+    <!-- F -->
+    <g fill="none" stroke="url(#neon)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 320 320 L 320 736"/>
+      <path d="M 320 320 L 512 320"/>
+      <path d="M 320 528 L 480 528"/>
+      <!-- R -->
+      <path d="M 576 736 L 576 320"/>
+      <path d="M 576 320 L 672 320 Q 752 320 752 416 Q 752 512 672 512 L 576 512"/>
+      <path d="M 656 512 L 752 736"/>
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="600" y="380" text-anchor="middle"
+        font-family="Segoe UI Variable, system-ui, sans-serif"
+        font-weight="800" font-size="84" letter-spacing="6">
+    <tspan fill="#e6f1ff">FRESH</tspan><tspan fill="#ff2bd6">RIG</tspan>
+  </text>
+
   <!-- Tagline -->
-  <text x="600" y="370" text-anchor="middle" font-family="Segoe UI Variable, system-ui, sans-serif" font-weight="400" font-size="24" fill="#9898a8">The first tool you run after a fresh Windows install</text>
-  <!-- Feature pills -->
-  <rect x="240" y="420" width="200" height="36" rx="18" fill="#00d4aa" opacity="0.1" stroke="#00d4aa" stroke-width="1" stroke-opacity="0.3"/>
-  <text x="340" y="443" text-anchor="middle" font-family="Segoe UI Variable, system-ui, sans-serif" font-size="14" fill="#00d4aa">Hardware Detection</text>
-  <rect x="470" y="420" width="200" height="36" rx="18" fill="#00d4aa" opacity="0.1" stroke="#00d4aa" stroke-width="1" stroke-opacity="0.3"/>
-  <text x="570" y="443" text-anchor="middle" font-family="Segoe UI Variable, system-ui, sans-serif" font-size="14" fill="#00d4aa">Driver Finder</text>
-  <rect x="700" y="420" width="200" height="36" rx="18" fill="#00d4aa" opacity="0.1" stroke="#00d4aa" stroke-width="1" stroke-opacity="0.3"/>
-  <text x="800" y="443" text-anchor="middle" font-family="Segoe UI Variable, system-ui, sans-serif" font-size="14" fill="#00d4aa">Batch App Install</text>
+  <text x="600" y="430" text-anchor="middle"
+        font-family="Segoe UI Variable, system-ui, sans-serif"
+        font-weight="400" font-size="22" letter-spacing="3" fill="#8a93a8">
+    SETUP ANY PC. IN MINUTES.
+  </text>
+
+  <!-- Feature pills (cyan rim) -->
+  <g font-family="Segoe UI Variable, system-ui, sans-serif" font-size="14" font-weight="500">
+    <rect x="220" y="478" width="220" height="40" rx="20"
+          fill="rgba(0,229,255,0.10)" stroke="#00e5ff" stroke-opacity="0.45" stroke-width="1"/>
+    <text x="330" y="503" text-anchor="middle" fill="#00e5ff">Hardware Detection</text>
+
+    <rect x="490" y="478" width="220" height="40" rx="20"
+          fill="rgba(0,229,255,0.10)" stroke="#00e5ff" stroke-opacity="0.45" stroke-width="1"/>
+    <text x="600" y="503" text-anchor="middle" fill="#00e5ff">Driver Finder</text>
+
+    <rect x="760" y="478" width="220" height="40" rx="20"
+          fill="rgba(255,43,214,0.10)" stroke="#ff2bd6" stroke-opacity="0.45" stroke-width="1"/>
+    <text x="870" y="503" text-anchor="middle" fill="#ff2bd6">Batch App Install</text>
+  </g>
+
   <!-- Footer -->
-  <text x="600" y="550" text-anchor="middle" font-family="Segoe UI Variable, system-ui, sans-serif" font-size="16" fill="#5a5a6e">Free &amp; Open Source | Built with Rust &amp; Tauri</text>
+  <text x="600" y="572" text-anchor="middle"
+        font-family="Segoe UI Variable, system-ui, sans-serif"
+        font-size="14" letter-spacing="2" fill="#525a73">
+    FREE &amp; OPEN SOURCE  ·  BUILT WITH RUST &amp; TAURI
+  </text>
 </svg>

@@ -1,26 +1,72 @@
-# This file only suppresses `cargo audit` CLI output. GitHub Dependabot uses
-# its own GHSA database and does NOT read this config. The same advisories
-# below must also be dismissed individually in the repo's Dependabot UI
-# (Security → Dependabot alerts → Dismiss → "Vulnerable code is not actually
-# used") with a comment referencing this file.
+# cargo audit suppression list for FreshRig.
+#
+# This file is the source of truth for advisory suppressions. CI copies it
+# into `$CARGO_HOME/audit.toml` before running `cargo audit` so the entries
+# below are honoured without per-ID `--ignore` flags. cargo-audit v0.22+
+# does NOT auto-discover audit.toml in CWD or next to Cargo.lock — only
+# `$CARGO_HOME/audit.toml`. See `.github/workflows/ci.yml`.
+#
+# GitHub Dependabot uses its own GHSA database and does NOT read this file.
+# Each advisory below must also be dismissed individually in the repo's
+# Dependabot UI (Security → Dependabot alerts → Dismiss → "Vulnerable code
+# is not actually used") with a comment referencing this file.
+#
+# Re-evaluate the entire list when Tauri ships a release with gtk-rs 0.20+
+# (clears the gtk-rs 0.18 family) or replaces `urlpattern` (clears the
+# unic-* family) or replaces `kuchikiki` (clears the rand 0.7.3 entry).
 
 [advisories]
 ignore = [
-    # GHSA-wrw7-89jp-8q8g — glib 0.18.5 unsoundness (Moderate, CVSS 6.9).
-    # Pinned by gtk 0.18.2 (^0.18). gtk-rs is Linux-only; FreshRig ships
-    # Windows-only, so this code path is never compiled into release builds.
-    # Will clear when Tauri bumps to gtk-rs 0.20+.
+    # ── gtk-rs 0.18 family ───────────────────────────────────────────────
+    # Pulled by Tauri 2.x's `tauri-runtime-wry` → `wry` → `webkit2gtk` →
+    # gtk-rs 0.18 on Linux only. FreshRig ships Linux as a first-class
+    # target now, but these crates' issues are ALL upstream maintenance
+    # status, not exploitable in the FreshRig codepath:
+    #
+    #   * `RUSTSEC-2024-0429` — glib 0.18.5 unsoundness in
+    #     `Iterator`/`DoubleEndedIterator` for `VariantStrIter`. FreshRig
+    #     never iterates Variants in the affected pattern; the unsoundness
+    #     requires custom `Iterator` impls we don't write.
+    #   * `RUSTSEC-2024-0411` … `0420` (10 IDs) — gtk-rs GTK3 bindings
+    #     unmaintained warnings (atk, atk-sys, gdk, gdk-sys, gdkwayland-sys,
+    #     gdkx11, gdkx11-sys, gtk, gtk-sys, gtk3-macros). Pure status flag,
+    #     no CVE; will clear when Tauri bumps to gtk-rs 0.20+ (GTK4).
+    "RUSTSEC-2024-0411",
+    "RUSTSEC-2024-0412",
+    "RUSTSEC-2024-0413",
+    "RUSTSEC-2024-0414",
+    "RUSTSEC-2024-0415",
+    "RUSTSEC-2024-0416",
+    "RUSTSEC-2024-0417",
+    "RUSTSEC-2024-0418",
+    "RUSTSEC-2024-0419",
+    "RUSTSEC-2024-0420",
     "RUSTSEC-2024-0429",
 
-    # GHSA-cq8v-f236-94qc — rand 0.7.3 unsoundness (Low).
-    # Pinned by phf_generator 0.8.0 (^0.7) via kuchikiki 0.8.8-speedreader
-    # → tauri-utils 2.8.3 (html-manipulation feature). Build-time-only
-    # transitive used in Tauri's HTML asset codegen; never compiled into
-    # the shipped Windows binary. The vulnerable conditions require all of:
-    # custom `log` logger + `thread_rng`/`TryRng` calls on ThreadRng +
-    # reseed during logger invocation — phf_generator does none of these.
-    # First patched version is rand 0.8.6; no fix exists in the 0.7.x line.
-    # Will clear when Tauri replaces kuchikiki with a maintained HTML parser
-    # (tracked upstream: tauri-apps/tauri — no target date).
+    # ── proc-macro-error 1.x ─────────────────────────────────────────────
+    # `RUSTSEC-2024-0370` — `proc-macro-error` unmaintained. Pulled
+    # transitively by several Tauri build-script deps. Build-time only,
+    # never compiled into the shipped binary.
+    "RUSTSEC-2024-0370",
+
+    # ── unic-* family ────────────────────────────────────────────────────
+    # Pulled by `urlpattern` → `tauri-utils` (Tauri 2.x). The whole `unic`
+    # crate family was unmaintained-flagged on the same day (2025-10-18).
+    # Like gtk-rs, this is a status flag rather than a known exploit, and
+    # the deps are not user-reachable from FreshRig code. Will clear when
+    # Tauri replaces `urlpattern` or upstream `unic` is forked / replaced.
+    "RUSTSEC-2025-0075",
+    "RUSTSEC-2025-0080",
+    "RUSTSEC-2025-0081",
+    "RUSTSEC-2025-0098",
+    "RUSTSEC-2025-0100",
+
+    # ── rand 0.7.3 (build-time, not currently in tree) ───────────────────
+    # `RUSTSEC-2026-0097` (GHSA-cq8v-f236-94qc) — rand 0.7.3 unsoundness
+    # (Low). Historically pulled via kuchikiki → tauri-utils. Current
+    # Tauri 2.11.x dep tree does NOT pull this anymore (kuchikiki removed
+    # in favour of `urlpattern`), so this entry is currently a no-op. Kept
+    # as a defence in case a future Tauri / dep change re-pulls it; a no-op
+    # `--ignore` is harmless.
     "RUSTSEC-2026-0097",
 ]

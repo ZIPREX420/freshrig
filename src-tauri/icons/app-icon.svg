@@ -1,23 +1,62 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0f0f18"/>
-      <stop offset="100%" stop-color="#0a0a0f"/>
+      <stop offset="0%" stop-color="#0a0c14"/>
+      <stop offset="100%" stop-color="#05060a"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#00e8bc"/>
-      <stop offset="100%" stop-color="#00d4aa"/>
+    <linearGradient id="neon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#ff2bd6"/>
     </linearGradient>
+    <radialGradient id="glow-cyan" cx="20%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow-magenta" cx="80%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#ff2bd6" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#ff2bd6" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <!-- Background -->
-  <rect width="1024" height="1024" rx="128" fill="url(#bg)"/>
-  <!-- Outer frame -->
-  <rect x="200" y="180" width="624" height="664" rx="40" fill="none" stroke="url(#accent)" stroke-width="36"/>
-  <!-- Screen area -->
-  <rect x="260" y="240" width="504" height="380" rx="16" fill="url(#accent)" opacity="0.15"/>
-  <!-- FR text -->
-  <text x="512" y="480" text-anchor="middle" font-family="Segoe UI Variable, system-ui, sans-serif" font-weight="800" font-size="220" fill="url(#accent)">FR</text>
-  <!-- Stand -->
-  <rect x="432" y="844" width="160" height="16" rx="8" fill="url(#accent)" opacity="0.6"/>
-  <rect x="488" y="780" width="48" height="72" rx="4" fill="url(#accent)" opacity="0.4"/>
+
+  <!-- Background tile with rounded corners -->
+  <rect width="1024" height="1024" rx="180" fill="url(#bg)"/>
+
+  <!-- Corner ambient glows -->
+  <rect width="1024" height="1024" rx="180" fill="url(#glow-cyan)"/>
+  <rect width="1024" height="1024" rx="180" fill="url(#glow-magenta)"/>
+
+  <!-- Subtle grid -->
+  <g opacity="0.06" stroke="#ffffff" stroke-width="1">
+    <line x1="0"   y1="256" x2="1024" y2="256"/>
+    <line x1="0"   y1="512" x2="1024" y2="512"/>
+    <line x1="0"   y1="768" x2="1024" y2="768"/>
+    <line x1="256" y1="0"   x2="256"  y2="1024"/>
+    <line x1="512" y1="0"   x2="512"  y2="1024"/>
+    <line x1="768" y1="0"   x2="768"  y2="1024"/>
+  </g>
+
+  <!-- Hexagon frame -->
+  <g filter="url(#soft-glow)">
+    <polygon points="512,112 896,320 896,704 512,912 128,704 128,320"
+             fill="none" stroke="url(#neon)" stroke-width="28" stroke-linejoin="round"/>
+  </g>
+
+  <!-- "FR" monogram (matches BrandMark.tsx, scaled to 1024) -->
+  <g fill="none" stroke="url(#neon)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft-glow)">
+    <!-- F -->
+    <path d="M 320 320 L 320 736"/>
+    <path d="M 320 320 L 512 320"/>
+    <path d="M 320 528 L 480 528"/>
+    <!-- R -->
+    <path d="M 576 736 L 576 320"/>
+    <path d="M 576 320 L 672 320 Q 752 320 752 416 Q 752 512 672 512 L 576 512"/>
+    <path d="M 656 512 L 752 736"/>
+  </g>
 </svg>

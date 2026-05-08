@@ -15,12 +15,12 @@ import {
   FileChartColumn,
   Server,
   Settings,
-  Monitor,
   Keyboard,
   Info,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { APP_NAME, APP_VERSION } from "../../config/app";
+import { APP_VERSION } from "../../config/app";
+import { BrandMark, BrandWordmark } from "../ui/BrandMark";
 import { usePlatform } from "../../hooks/usePlatform";
 import { useLicenseStore } from "../../stores/licenseStore";
 import { preloadModule } from "../../lib";
@@ -150,12 +150,10 @@ export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarPro
     <aside className="flex flex-col w-[260px] shrink-0 h-full bg-[var(--bg-sidebar)] border-r border-[var(--border)] overflow-y-auto">
       {/* Logo / app name */}
       <div className="flex items-center gap-3 px-5 py-5">
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[var(--accent-subtle)] ring-1 ring-[var(--accent-ring)]">
-          <Monitor className="w-4.5 h-4.5 text-[var(--accent)]" />
-        </div>
+        <BrandMark size={32} />
         <div>
-          <h1 className="text-[15px] font-semibold text-[var(--text-primary)] leading-tight">{APP_NAME}</h1>
-          <p className="text-[11px] text-[var(--text-muted)] mt-0.5">System Setup Tool</p>
+          <BrandWordmark className="text-[15px] leading-tight" />
+          <p className="text-[10px] text-[var(--text-muted)] mt-0.5 tracking-[0.18em] uppercase">Setup any PC</p>
         </div>
       </div>
 
@@ -265,7 +263,11 @@ function NavButton({
       {active && (
         <span
           aria-hidden="true"
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full bg-[var(--accent)]"
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full"
+          style={{
+            background: "var(--gradient-neon-edge)",
+            boxShadow: "0 0 8px var(--accent-cyan-glow)",
+          }}
         />
       )}
       <button
@@ -282,10 +284,10 @@ function NavButton({
           const loader = ROUTE_PRELOADERS[item.id];
           if (loader) preloadModule(loader);
         }}
-        className={`flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-colors ${
+        className={`flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm transition-colors ${
           active
-            ? "bg-[var(--accent-subtle)] text-[var(--text-primary)] font-medium"
-            : "text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]"
+            ? "bg-[var(--accent-cyan-soft)] text-[var(--text-primary)] font-medium"
+            : "text-[var(--text-secondary)] hover:bg-white/[0.03] hover:text-[var(--text-primary)]"
         }`}
       >
         <Icon className={`w-4 h-4 shrink-0 ${active ? "text-[var(--accent)]" : ""}`} />
@@ -321,8 +323,8 @@ function TierBadge({
 }) {
   const palette =
     variant === "pro"
-      ? "bg-[var(--accent-subtle)] text-[var(--accent)] ring-[var(--accent-ring)]"
-      : "bg-amber-500/10 text-amber-400 ring-amber-500/30";
+      ? "bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)] ring-[var(--accent-cyan-rim)]"
+      : "bg-[var(--accent-magenta-soft)] text-[var(--accent-magenta)] ring-[var(--accent-magenta-rim)]";
   return (
     <span
       className={`inline-flex items-center px-1.5 py-[1px] rounded text-[9px] font-bold tracking-wider font-mono ring-1 ${palette} ${

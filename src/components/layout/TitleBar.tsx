@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Monitor } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { APP_NAME } from "../../config/app";
+import { BrandMark, BrandWordmark } from "../ui/BrandMark";
 import { isTauri } from "../../lib";
 
 export function TitleBar() {
@@ -54,10 +53,10 @@ export function TitleBar() {
       className="flex items-center h-8 bg-bg-secondary border-b border-border select-none shrink-0"
       onDoubleClick={handleMaximize}
     >
-      {/* Left: App icon + name */}
+      {/* Left: App icon + wordmark */}
       <div className="flex items-center gap-2 px-3 pointer-events-none">
-        <Monitor className="w-3.5 h-3.5 text-accent" />
-        <span className="text-xs text-text-muted font-medium">{APP_NAME}</span>
+        <BrandMark size={14} idSuffix="-titlebar" />
+        <BrandWordmark className="text-[11px]" />
       </div>
 
       {/* Spacer (draggable) */}

@@ -27,8 +27,10 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          # Pinned to current LTS minor; bumped via Dependabot.
-          node-version: '22.11.0'
+          # Pinned to current LTS minor; bumped via Dependabot. 22.12.0 is
+          # the minimum Vite 8 supports (22.11 fails with "Vite requires
+          # Node.js version 20.19+ or 22.12+").
+          node-version: '22.22.2'
           cache: 'npm'
 
       - uses: dtolnay/rust-toolchain@stable
@@ -73,7 +75,16 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           cargo install --locked cargo-audit
-          # Suppressions live in src-tauri/.cargo/audit.toml.
+          # cargo-audit v0.22+ honours `audit.toml` only at
+          # `$CARGO_HOME/audit.toml` — there is no flag for an arbitrary
+          # config path (`--config` is not a valid option). Copy our
+          # suppression file (the source-of-truth for the 18 transitive
+          # advisories Tauri currently surfaces; see
+          # src-tauri/.cargo/audit.toml + CLAUDE.md "Known upstream
+          # issues") into the discovery path so the ignore list is
+          # honoured without a long inline `--ignore` flag chain.
+          mkdir -p "${CARGO_HOME:-$HOME/.cargo}"
+          cp src-tauri/.cargo/audit.toml "${CARGO_HOME:-$HOME/.cargo}/audit.toml"
           cargo audit --file src-tauri/Cargo.lock --deny warnings
 
       - name: Generate Rust SBOM

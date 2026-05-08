@@ -109,7 +109,7 @@ fn build_category_specs() -> Vec<CategorySpec> {
         }
         if let Some(l) = local.as_ref() {
             let local_temp = l.join("Temp");
-            if !roots.iter().any(|r| r == &local_temp) {
+            if !roots.contains(&local_temp) {
                 roots.push(local_temp);
             }
         }
