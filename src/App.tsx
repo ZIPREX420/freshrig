@@ -284,8 +284,10 @@ function App() {
           toastOptions={{
             style: {
               background: "var(--bg-elevated)",
-              border: "1px solid var(--border)",
+              border: "1px solid var(--accent-cyan-rim)",
               color: "var(--text-primary)",
+              boxShadow:
+                "0 0 0 1px var(--accent-cyan-rim), 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 24px -8px var(--accent-cyan-glow)",
             },
             className: "freshrig-toast",
           }}

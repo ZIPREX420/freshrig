@@ -1,65 +1,87 @@
 @import "tailwindcss";
 
 /* ========================================
-   FreshRig Design Tokens (v2.1)
-   Dark-mode first, multi-accent theme system
+   FreshRig Design Tokens (v2.2 — Cyber/Neon)
+   Dark-first, dual-accent (cyan + magenta) control-panel theme
    ======================================== */
 
 :root {
-  /* Neutrals — cool near-black, never pure #000 */
-  --bg-base: #09090b;
-  --bg-sidebar: #0c0d0f;
-  --bg-card: #111214;
-  --bg-card-hover: #18191c;
-  --bg-elevated: #1e1f23;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.14);
-  --text-primary: #e8eaed;
-  --text-secondary: #8b8d93;
-  --text-muted: #5c5e64;
+  /* Neutrals — deep near-black with cool blue undertone */
+  --bg-base: #05060a;
+  --bg-sidebar: #07080f;
+  --bg-card: #0c0e16;
+  --bg-card-hover: #11141f;
+  --bg-elevated: #141826;
+  --border: rgba(0, 229, 255, 0.10);
+  --border-hover: rgba(0, 229, 255, 0.22);
+  --text-primary: #e6f1ff;
+  --text-secondary: #8a93a8;
+  --text-muted: #525a73;
 
-  /* Status (accent-independent) */
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --info: #3b82f6;
-
-  /* Upsell — Pro = amber, Business = blue. Centralized so ProFeatureGate
-     and any future upsell surface (modals, badges, banners) speak one
-     vocabulary instead of hardcoding tailwind utilities. */
-  --upsell-pro: #fbbf24;
-  --upsell-pro-hover: #fcd34d;
-  --upsell-pro-soft: rgba(251, 191, 36, 0.10);
-  --upsell-pro-rim:  rgba(251, 191, 36, 0.55);
-  --upsell-business: #60a5fa;
-  --upsell-business-hover: #93c5fd;
-  --upsell-business-soft: rgba(96, 165, 250, 0.10);
-  --upsell-business-rim:  rgba(96, 165, 250, 0.55);
+  /* Status (accent-independent) — neon-leaning hues */
+  --success: #22e3a4;
+  --warning: #ffb547;
+  --error: #ff4d6d;
+  --info: #4cc2ff;
 
   /* Status soft + rim — pre-mixed alphas */
-  --success-soft: rgba(34, 197, 94, 0.10);
-  --success-rim:  rgba(34, 197, 94, 0.22);
-  --warning-soft: rgba(245, 158, 11, 0.10);
-  --warning-rim:  rgba(245, 158, 11, 0.22);
-  --error-soft:   rgba(239, 68, 68, 0.10);
-  --error-rim:    rgba(239, 68, 68, 0.22);
-  --info-soft:    rgba(59, 130, 246, 0.10);
-  --info-rim:     rgba(59, 130, 246, 0.22);
+  --success-soft: rgba(34, 227, 164, 0.10);
+  --success-rim:  rgba(34, 227, 164, 0.30);
+  --warning-soft: rgba(255, 181, 71, 0.10);
+  --warning-rim:  rgba(255, 181, 71, 0.30);
+  --error-soft:   rgba(255, 77, 109, 0.10);
+  --error-rim:    rgba(255, 77, 109, 0.32);
+  --info-soft:    rgba(76, 194, 255, 0.10);
+  --info-rim:     rgba(76, 194, 255, 0.30);
 
-  /* Accent — default teal */
-  --accent: #00d4aa;
-  --accent-hover: #00e8bb;
-  --accent-subtle: rgba(0, 212, 170, 0.12);
-  --accent-ring: rgba(0, 212, 170, 0.4);
+  /* === Dual-accent system (NEW) ===
+     Cyan = primary / safe / "go". Magenta = creative / pro / danger.
+     `--accent` aliases cyan so existing utilities (`bg-accent`, `text-accent`,
+     etc.) keep working everywhere; the magenta side is preset-independent and
+     stays constant so the dual-accent identity is always present. */
+  --accent-cyan: #00e5ff;
+  --accent-cyan-hover: #4df3ff;
+  --accent-cyan-soft: rgba(0, 229, 255, 0.12);
+  --accent-cyan-rim:  rgba(0, 229, 255, 0.45);
+  --accent-cyan-glow: rgba(0, 229, 255, 0.35);
+
+  --accent-magenta: #ff2bd6;
+  --accent-magenta-hover: #ff63e0;
+  --accent-magenta-soft: rgba(255, 43, 214, 0.10);
+  --accent-magenta-rim:  rgba(255, 43, 214, 0.45);
+  --accent-magenta-glow: rgba(255, 43, 214, 0.32);
+
+  /* Active accent (preset-driven) — defaults to cyan */
+  --accent: var(--accent-cyan);
+  --accent-hover: var(--accent-cyan-hover);
+  --accent-subtle: var(--accent-cyan-soft);
+  --accent-ring: var(--accent-cyan-rim);
+
+  /* Upsell — Pro = cyan, Business = magenta. Centralized so ProFeatureGate
+     and any future upsell surface (modals, badges, banners) speak one
+     vocabulary instead of hardcoding tailwind utilities. */
+  --upsell-pro: var(--accent-cyan);
+  --upsell-pro-hover: var(--accent-cyan-hover);
+  --upsell-pro-soft: var(--accent-cyan-soft);
+  --upsell-pro-rim:  var(--accent-cyan-rim);
+  --upsell-business: var(--accent-magenta);
+  --upsell-business-hover: var(--accent-magenta-hover);
+  --upsell-business-soft: var(--accent-magenta-soft);
+  --upsell-business-rim:  var(--accent-magenta-rim);
+
+  /* Gradients — defined here so the @theme block can map them. */
+  --gradient-neon-edge: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-magenta) 100%);
+  --gradient-neon-soft: linear-gradient(135deg, var(--accent-cyan-soft) 0%, var(--accent-magenta-soft) 100%);
 }
 
-/* 6 accent presets — toggled via document.documentElement.dataset.accent */
-[data-accent="teal"]   { --accent: #00d4aa; --accent-hover: #00e8bb; --accent-subtle: rgba(0, 212, 170, 0.12); --accent-ring: rgba(0, 212, 170, 0.4); }
-[data-accent="blue"]   { --accent: #3b82f6; --accent-hover: #60a5fa; --accent-subtle: rgba(59, 130, 246, 0.12); --accent-ring: rgba(59, 130, 246, 0.4); }
-[data-accent="purple"] { --accent: #a855f7; --accent-hover: #c084fc; --accent-subtle: rgba(168, 85, 247, 0.12); --accent-ring: rgba(168, 85, 247, 0.4); }
-[data-accent="orange"] { --accent: #f97316; --accent-hover: #fb923c; --accent-subtle: rgba(249, 115, 22, 0.12); --accent-ring: rgba(249, 115, 22, 0.4); }
-[data-accent="rose"]   { --accent: #f43f5e; --accent-hover: #fb7185; --accent-subtle: rgba(244, 63, 94, 0.12); --accent-ring: rgba(244, 63, 94, 0.4); }
-[data-accent="green"]  { --accent: #22c55e; --accent-hover: #4ade80; --accent-subtle: rgba(34, 197, 94, 0.12); --accent-ring: rgba(34, 197, 94, 0.4); }
+/* 6 accent presets — toggled via document.documentElement.dataset.accent.
+   Magenta side is preset-independent; only the "primary" cyan slot rotates. */
+[data-accent="teal"]   { --accent: #00e5ff; --accent-hover: #4df3ff; --accent-subtle: rgba(0, 229, 255, 0.12); --accent-ring: rgba(0, 229, 255, 0.45); --accent-cyan: #00e5ff; --accent-cyan-hover: #4df3ff; --accent-cyan-soft: rgba(0, 229, 255, 0.12); --accent-cyan-rim: rgba(0, 229, 255, 0.45); --accent-cyan-glow: rgba(0, 229, 255, 0.35); }
+[data-accent="blue"]   { --accent: #3a8bff; --accent-hover: #6ba8ff; --accent-subtle: rgba(58, 139, 255, 0.12); --accent-ring: rgba(58, 139, 255, 0.45); --accent-cyan: #3a8bff; --accent-cyan-hover: #6ba8ff; --accent-cyan-soft: rgba(58, 139, 255, 0.12); --accent-cyan-rim: rgba(58, 139, 255, 0.45); --accent-cyan-glow: rgba(58, 139, 255, 0.35); }
+[data-accent="purple"] { --accent: #b06bff; --accent-hover: #c896ff; --accent-subtle: rgba(176, 107, 255, 0.12); --accent-ring: rgba(176, 107, 255, 0.45); --accent-cyan: #b06bff; --accent-cyan-hover: #c896ff; --accent-cyan-soft: rgba(176, 107, 255, 0.12); --accent-cyan-rim: rgba(176, 107, 255, 0.45); --accent-cyan-glow: rgba(176, 107, 255, 0.35); }
+[data-accent="orange"] { --accent: #ff8a3d; --accent-hover: #ffaa70; --accent-subtle: rgba(255, 138, 61, 0.12); --accent-ring: rgba(255, 138, 61, 0.45); --accent-cyan: #ff8a3d; --accent-cyan-hover: #ffaa70; --accent-cyan-soft: rgba(255, 138, 61, 0.12); --accent-cyan-rim: rgba(255, 138, 61, 0.45); --accent-cyan-glow: rgba(255, 138, 61, 0.35); }
+[data-accent="rose"]   { --accent: #ff5d8f; --accent-hover: #ff85a8; --accent-subtle: rgba(255, 93, 143, 0.12); --accent-ring: rgba(255, 93, 143, 0.45); --accent-cyan: #ff5d8f; --accent-cyan-hover: #ff85a8; --accent-cyan-soft: rgba(255, 93, 143, 0.12); --accent-cyan-rim: rgba(255, 93, 143, 0.45); --accent-cyan-glow: rgba(255, 93, 143, 0.35); }
+[data-accent="green"]  { --accent: #3dffa6; --accent-hover: #6effbd; --accent-subtle: rgba(61, 255, 166, 0.12); --accent-ring: rgba(61, 255, 166, 0.45); --accent-cyan: #3dffa6; --accent-cyan-hover: #6effbd; --accent-cyan-soft: rgba(61, 255, 166, 0.12); --accent-cyan-rim: rgba(61, 255, 166, 0.45); --accent-cyan-glow: rgba(61, 255, 166, 0.35); }
 
 @theme inline {
   /* Canonical tokens */
@@ -77,6 +99,16 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-subtle: var(--accent-subtle);
   --color-accent-ring: var(--accent-ring);
+
+  /* Dual-accent — surfaced as Tailwind utilities */
+  --color-accent-cyan:         var(--accent-cyan);
+  --color-accent-cyan-hover:   var(--accent-cyan-hover);
+  --color-accent-cyan-soft:    var(--accent-cyan-soft);
+  --color-accent-cyan-rim:     var(--accent-cyan-rim);
+  --color-accent-magenta:      var(--accent-magenta);
+  --color-accent-magenta-hover: var(--accent-magenta-hover);
+  --color-accent-magenta-soft: var(--accent-magenta-soft);
+  --color-accent-magenta-rim:  var(--accent-magenta-rim);
 
   /* Status */
   --color-success: var(--success);
@@ -109,7 +141,7 @@
   --color-accent-muted: var(--accent-subtle);
 
   /* Window chrome */
-  --titlebar-btn-hover: rgba(255, 255, 255, 0.07);
+  --titlebar-btn-hover: rgba(0, 229, 255, 0.08);
   --color-titlebar-btn-hover: var(--titlebar-btn-hover);
 
   /* Typography — stack falls through Windows → macOS → Linux native UI
@@ -129,18 +161,20 @@
   --text-mono-data:  13px;
   --text-mono-tiny:  10px;
 
-  /* Radius */
+  /* Radius — tighter than before, more "instrument panel" than "pillow" */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
 
   /* Shadows */
-  --shadow-card:      0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-elevated:  0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-glow:      0 0 0 1px var(--accent-ring), 0 8px 24px rgba(0, 212, 170, 0.15);
-  --shadow-inner-rim: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-card:         0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-elevated:     0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 16px 32px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-glow:         0 0 0 1px var(--accent-cyan-rim), 0 0 24px -2px var(--accent-cyan-glow);
+  --shadow-glow-cyan:    0 0 0 1px var(--accent-cyan-rim), 0 0 24px -2px var(--accent-cyan-glow);
+  --shadow-glow-magenta: 0 0 0 1px var(--accent-magenta-rim), 0 0 24px -2px var(--accent-magenta-glow);
+  --shadow-inner-rim:    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 html, body {
@@ -150,9 +184,38 @@ html, body {
   padding: 0;
   min-height: 100vh;
   font-family: var(--font-sans);
+  letter-spacing: -0.005em;
 }
 
-#root { min-height: 100vh; }
+/* Ambient body backdrop — fixed cyan + magenta corner glows + a faint
+   line-grid. Pure CSS, no DOM, no impact on scroll/perf. Gives the whole
+   app the "control surface" feel from the reference. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 0% 0%, rgba(0, 229, 255, 0.07), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 43, 214, 0.06), transparent 70%);
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 90%);
+  opacity: 0.5;
+}
+
+#root { min-height: 100vh; position: relative; z-index: 1; }
 
 :root {
   transition: background-color 200ms ease, color 200ms ease;
@@ -197,12 +260,18 @@ html, body {
   to   { opacity: 1; }
 }
 
+@keyframes neon-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px var(--accent-cyan-rim), 0 0 18px -4px var(--accent-cyan-glow); }
+  50%      { box-shadow: 0 0 0 1px var(--accent-cyan-rim), 0 0 28px 0   var(--accent-cyan-glow); }
+}
+
 .animate-fade-in           { animation: fade-in           150ms ease-out; }
 .animate-fade-in-soft      { animation: fade-in-soft      200ms ease-out; }
 .animate-check-pop         { animation: check-pop         500ms ease-out; }
 .animate-pulse-soft        { animation: pulse-soft       1800ms ease-in-out infinite; }
 .animate-drawer-in         { animation: drawer-in         200ms cubic-bezier(0.32, 0.72, 0, 1); }
 .animate-drawer-overlay-in { animation: drawer-overlay-in 200ms ease-out; }
+.animate-neon-pulse        { animation: neon-pulse       3200ms ease-in-out infinite; }
 
 .skeleton-shimmer {
   background: linear-gradient(
@@ -221,7 +290,40 @@ html, body {
 .card-glow-hover:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-glow);
-  border-color: var(--accent-ring);
+  border-color: var(--accent-cyan-rim);
+}
+
+/* Neon outline panel — thin gradient border with inner glow. Used by the hero
+   card and any "showcase" surface that needs the cyan/magenta edge from the
+   reference shots. Implemented via a 1px gradient border + matching inner
+   shadow so it works on any background. */
+.neon-edge {
+  position: relative;
+  background:
+    linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
+    var(--gradient-neon-edge) border-box;
+  border: 1px solid transparent;
+}
+
+.neon-edge-cyan {
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 229, 255, 0.10),
+    0 0 24px -4px var(--accent-cyan-glow);
+}
+.neon-edge-magenta {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 43, 214, 0.10),
+    0 0 24px -4px var(--accent-magenta-glow);
+}
+
+/* Gradient text — used for hero headings & wordmarks. Falls back to
+   accent color in browsers without -webkit-background-clip. */
+.text-gradient-neon {
+  background: var(--gradient-neon-edge);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--accent-cyan);
 }
 
 .tabular { font-variant-numeric: tabular-nums; }
@@ -239,6 +341,7 @@ html, body {
   }
   .skeleton-shimmer { animation: none; background: var(--bg-card); }
   .card-glow-hover:hover { transform: none; }
+  body::after { display: none; }
 }
 
 /* ========================================
@@ -257,13 +360,13 @@ html, body {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.10);
+  background-color: rgba(0, 229, 255, 0.14);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: rgba(0, 229, 255, 0.28);
 }
 *::-webkit-scrollbar-corner {
   background: transparent;
@@ -272,7 +375,7 @@ html, body {
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
+  scrollbar-color: rgba(0, 229, 255, 0.18) transparent;
 }
 
 /* Backdrop-filter fallback. Older WebKit2GTK versions render

@@ -66,7 +66,11 @@ function UpsellCard({
       )}
       <button
         onClick={openPurchasePage}
-        className="inline-flex items-center gap-2 bg-upsell-pro hover:bg-upsell-pro-hover text-black px-4 py-2 rounded-lg font-semibold transition-colors"
+        className={`inline-flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-all border ${
+          needsBusiness
+            ? "bg-upsell-business-soft text-upsell-business hover:text-upsell-business-hover border-upsell-business-rim shadow-[0_0_18px_-4px_var(--accent-magenta-glow)] hover:shadow-[0_0_28px_-2px_var(--accent-magenta-glow)]"
+            : "bg-upsell-pro-soft text-upsell-pro hover:text-upsell-pro-hover border-upsell-pro-rim shadow-[0_0_18px_-4px_var(--accent-cyan-glow)] hover:shadow-[0_0_28px_-2px_var(--accent-cyan-glow)]"
+        }`}
       >
         {needsBusiness ? "Upgrade to Pro Business" : "Upgrade to Pro"}
       </button>
@@ -123,9 +127,11 @@ export function ProFeatureGate({
       <div className="relative">
         {children}
         <div
-          className={`absolute top-2 right-2 flex items-center gap-1 ${
-            needsBusiness ? "bg-upsell-business" : "bg-upsell-pro"
-          } text-black text-xs font-semibold px-2 py-0.5 rounded-full`}
+          className={`absolute top-2 right-2 flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ring-1 ${
+            needsBusiness
+              ? "bg-upsell-business-soft text-upsell-business ring-upsell-business-rim"
+              : "bg-upsell-pro-soft text-upsell-pro ring-upsell-pro-rim"
+          }`}
         >
           {needsBusiness ? (
             <Briefcase className="w-3 h-3" />
