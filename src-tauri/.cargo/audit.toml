@@ -12,6 +12,14 @@ ignore = [
     # Will clear when Tauri bumps to gtk-rs 0.20+.
     "RUSTSEC-2024-0429",
 
+    # RUSTSEC-2024-0413 — gtk-rs GTK3 bindings unmaintained (Warning).
+    # Fires for atk/atk-sys/gdk/gdk-sys/gtk/gtk-sys 0.18.x via gtk 0.18.2,
+    # the entire GTK3 binding family. Same Tauri 2.x gtk-rs 0.18 root
+    # cause as the glib advisory above; clears together when Tauri bumps
+    # to gtk-rs 0.20+ (which targets GTK4) or migrates to a different
+    # Linux backend.
+    "RUSTSEC-2024-0413",
+
     # GHSA-cq8v-f236-94qc — rand 0.7.3 unsoundness (Low).
     # Pinned by phf_generator 0.8.0 (^0.7) via kuchikiki 0.8.8-speedreader
     # → tauri-utils 2.8.3 (html-manipulation feature). Build-time-only

@@ -73,36 +73,20 @@ jobs:
 
       - name: cargo audit
         if: matrix.platform == 'ubuntu-22.04'
-        shell: bash
         run: |
           cargo install --locked cargo-audit
-          # TEMP DEBUG: surface advisory metadata as annotations so the
-          # specific RUSTSEC IDs can be added to --ignore. The annotation
-          # panel only shows ~10 entries, so we filter for metadata
-          # fields (Crate/Title/ID/URL/Date/Severity/Warning) and skip
-          # the dep tree, which would otherwise crowd out the IDs.
-          # Remove once green.
-          set +e
+          # Pass the ignore list via CLI flags rather than audit.toml.
+          # `--ignore` is stable across cargo-audit versions, while
+          # config-file discovery (`-c`, `working-directory`, copying to
+          # $CARGO_HOME) has been brittle in practice. The ignore set
+          # mirrors src-tauri/.cargo/audit.toml — see that file +
+          # CLAUDE.md "Known upstream issues" for rationale on each ID.
           cargo audit \
             --file src-tauri/Cargo.lock \
             --ignore RUSTSEC-2024-0429 \
+            --ignore RUSTSEC-2024-0413 \
             --ignore RUSTSEC-2026-0097 \
-            --deny warnings 2>&1 | tee audit.log
-          EXIT=${PIPESTATUS[0]}
-          if [ $EXIT -ne 0 ]; then
-            echo ""
-            echo "===== AUDIT FAILED with exit $EXIT — full log: ====="
-            cat audit.log
-            echo "===== ADVISORY METADATA ====="
-            sed 's/\x1b\[[0-9;]*m//g' audit.log \
-              | grep -E '^(Crate|Version|Warning|Title|Date|ID|URL|Severity|Solution):|^(warning|error):' \
-              | head -40 \
-              | while IFS= read -r line; do
-                  clean=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
-                  echo "::error::$clean"
-                done
-          fi
-          exit $EXIT
+            --deny warnings
 
       - name: Generate Rust SBOM
         if: matrix.platform == 'windows-latest'

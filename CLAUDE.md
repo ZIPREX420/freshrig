@@ -51,7 +51,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - **SBOM:** CI generates CycloneDX SBOMs for both Rust and npm dependencies.
 
 ## Known upstream issues
-- **Suppressed cargo audit findings:** Two transitive Tauri deps surface RustSec advisories that we cannot patch at our layer. `glib 0.18.5` (RUSTSEC-2024-0429 / GHSA-wrw7-89jp-8q8g) is Linux-only via gtk-rs 0.18 and excluded from Windows builds. `rand 0.7.3` (RUSTSEC-2026-0097 / GHSA-cq8v-f236-94qc) is build-time HTML codegen via `kuchikiki`. Both ignored in `src-tauri/.cargo/audit.toml`. Re-evaluate when Tauri bumps to gtk-rs 0.20+ or replaces kuchikiki.
+- **Suppressed cargo audit findings:** Three transitive Tauri deps surface RustSec advisories we cannot patch at our layer. `glib 0.18.5` (RUSTSEC-2024-0429 / GHSA-wrw7-89jp-8q8g) is Linux-only via gtk-rs 0.18, excluded from Windows builds. `gtk-rs GTK3 bindings` (RUSTSEC-2024-0413, unmaintained warning across atk/atk-sys/gdk/gdk-sys/gtk/gtk-sys 0.18.x) shares the same gtk-rs 0.18 root cause. `rand 0.7.3` (RUSTSEC-2026-0097 / GHSA-cq8v-f236-94qc) is build-time HTML codegen via `kuchikiki`. All three ignored in `src-tauri/.cargo/audit.toml` AND mirrored as `--ignore` flags in `.github/workflows/ci.yml`'s cargo-audit step (file-config path lookup turned out brittle across cargo-audit versions, so CLI flags are the source of truth — the .toml stays for documentation parity and local-dev `cargo audit` runs). Re-evaluate when Tauri bumps to gtk-rs 0.20+ or replaces kuchikiki.
 
 ## Linux support
 - Platform abstraction: `src-tauri/src/platform/` with `mod.rs`, `types.rs`, `windows.rs`, `linux.rs`.
