@@ -65,24 +65,24 @@ jobs:
       - name: Rust clippy
         shell: bash
         run: |
-          # TEMP DEBUG: surface clippy errors as annotations so the failure
-          # reason is visible without sign-in. Remove once green.
+          # TEMP DEBUG: surface clippy errors as annotations. Only emit
+          # diagnostic lines (error:/warning:/--> path/= note:/= help:) so
+          # cargo's download progress doesn't drown out the real failure.
+          # Remove once green.
           set +e
           set -o pipefail
           cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings 2>&1 | tee clippy.log
           EXIT=${PIPESTATUS[0]}
           if [ $EXIT -ne 0 ]; then
             echo ""
-            echo "===== CLIPPY FAILED with exit $EXIT — full log: ====="
-            cat clippy.log
-            echo "===== END CLIPPY LOG ====="
-            tail -200 clippy.log | while IFS= read -r line; do
-              clean=$(printf '%s' "$line" | sed 's/\x1b\[[0-9;]*m//g')
-              if [ -n "$clean" ]; then
-                clean=$(printf '%s' "$clean" | sed 's/%/%25/g; s/\r/%0D/g')
-                echo "::error::$clean"
-              fi
-            done
+            echo "===== CLIPPY FAILED with exit $EXIT ====="
+            grep -E '^(error|warning)(\[E[0-9]+\])?:|^\s+-->|^\s+= (help|note):|^\s+\|' clippy.log \
+              | sed 's/\x1b\[[0-9;]*m//g' \
+              | head -200 \
+              | while IFS= read -r line; do
+                  clean=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
+                  echo "::error::$clean"
+                done
           fi
           exit $EXIT
 
