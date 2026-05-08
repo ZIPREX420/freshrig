@@ -76,8 +76,11 @@ jobs:
         shell: bash
         run: |
           cargo install --locked cargo-audit
-          # TEMP DEBUG: surface advisory IDs as annotations so additional
-          # transitive RUSTSEC IDs can be added to the suppression list.
+          # TEMP DEBUG: surface advisory metadata as annotations so the
+          # specific RUSTSEC IDs can be added to --ignore. The annotation
+          # panel only shows ~10 entries, so we filter for metadata
+          # fields (Crate/Title/ID/URL/Date/Severity/Warning) and skip
+          # the dep tree, which would otherwise crowd out the IDs.
           # Remove once green.
           set +e
           cargo audit \
@@ -88,10 +91,12 @@ jobs:
           EXIT=${PIPESTATUS[0]}
           if [ $EXIT -ne 0 ]; then
             echo ""
-            echo "===== AUDIT FAILED with exit $EXIT ====="
+            echo "===== AUDIT FAILED with exit $EXIT — full log: ====="
+            cat audit.log
+            echo "===== ADVISORY METADATA ====="
             sed 's/\x1b\[[0-9;]*m//g' audit.log \
-              | grep -v '^$' \
-              | tail -120 \
+              | grep -E '^(Crate|Version|Warning|Title|Date|ID|URL|Severity|Solution):|^(warning|error):' \
+              | head -40 \
               | while IFS= read -r line; do
                   clean=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g')
                   echo "::error::$clean"
