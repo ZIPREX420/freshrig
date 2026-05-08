@@ -7,81 +7,101 @@
   <meta name="description" content="Download FreshRig for Windows, Linux, and macOS. Free, open source, ~5 MB. .exe installer, .deb, .rpm, .AppImage, and AUR support.">
   <link rel="canonical" href="https://ZIPREX420.github.io/freshrig/download.html">
   <link rel="icon" type="image/svg+xml" href="assets/og-image.svg">
+  <meta name="theme-color" content="#05060a">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            bg: { primary: '#0a0a0f', secondary: '#12121a', tertiary: '#1a1a25' },
-            accent: { DEFAULT: '#00d4aa', hover: '#00e8bc', muted: '#00d4aa33' },
-            text: { primary: '#e8e8ed', secondary: '#9898a8', muted: '#5a5a6e' },
-            border: '#2a2a38',
+            bg: { primary: '#05060a', secondary: '#0c0e16', tertiary: '#141826', card: '#0c0e16', elevated: '#141826' },
+            accent: {
+              DEFAULT: '#00e5ff',
+              hover:   '#4df3ff',
+              soft:    'rgba(0, 229, 255, 0.12)',
+              rim:     'rgba(0, 229, 255, 0.45)',
+              cyan:    '#00e5ff',
+              magenta: '#ff2bd6',
+            },
+            text:   { primary: '#e6f1ff', secondary: '#8a93a8', muted: '#525a73' },
+            border: 'rgba(0, 229, 255, 0.10)',
           },
           fontFamily: {
-            sans: ['"Segoe UI Variable"', '"Segoe UI"', 'system-ui', 'sans-serif'],
+            sans: ['"Segoe UI Variable"', '"Segoe UI"', '-apple-system', 'BlinkMacSystemFont',
+                   '"Inter"', '"Ubuntu"', '"Cantarell"', '"Noto Sans"', 'system-ui', 'sans-serif'],
           }
         }
       }
     }
   </script>
   <style>
-    body { background-color: #0a0a0f; }
+    body { background-color: #05060a; position: relative; }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 0% 0%,    rgba(0,229,255,0.07), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255,43,214,0.06), transparent 70%);
+    }
+    body > * { position: relative; z-index: 1; }
 
     .download-page { max-width: 800px; margin: 0 auto; padding: 6rem 1.5rem 4rem; }
-    .download-page h1 { text-align: center; font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; }
+    .download-page h1 { text-align: center; font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.01em; }
     .download-page h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; }
     .download-page h3 { font-size: 1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; }
-    .download-subtitle { text-align: center; color: #8b8d93; margin-bottom: 2rem; }
+    .download-subtitle { text-align: center; color: #8a93a8; margin-bottom: 2rem; }
 
     .os-tabs { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; }
-    .os-tab { padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.08);
-      background: transparent; color: #8b8d93; cursor: pointer; font-size: 0.95rem; transition: all 0.15s; }
-    .os-tab:hover { border-color: rgba(255,255,255,0.14); color: #e8eaed; }
-    .os-tab.active { background: rgba(0,212,170,0.12); color: #00d4aa; border-color: rgba(0,212,170,0.3); }
+    .os-tab { padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: 1px solid rgba(0,229,255,0.10);
+      background: transparent; color: #8a93a8; cursor: pointer; font-size: 0.95rem; transition: all 0.15s; }
+    .os-tab:hover { border-color: rgba(0,229,255,0.22); color: #e6f1ff; }
+    .os-tab.active { background: rgba(0,229,255,0.12); color: #00e5ff; border-color: rgba(0,229,255,0.45); }
 
     .os-panel.hidden, .distro-panel.hidden { display: none; }
 
     .download-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
     .download-card { display: flex; flex-direction: column; align-items: center; padding: 1.5rem;
-      border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; background: #111214;
-      text-decoration: none; color: #e8eaed; transition: border-color 0.15s; }
-    .download-card:hover { border-color: rgba(255,255,255,0.14); }
+      border: 1px solid rgba(0,229,255,0.10); border-radius: 0.75rem; background: #0c0e16;
+      text-decoration: none; color: #e6f1ff; transition: all 0.15s; }
+    .download-card:hover { border-color: rgba(0,229,255,0.45); box-shadow: 0 0 24px -4px rgba(0,229,255,0.35); }
     .download-card strong { font-size: 1.2rem; margin-bottom: 0.25rem; }
-    .download-card span { font-size: 0.8rem; color: #8b8d93; text-align: center; }
+    .download-card span { font-size: 0.8rem; color: #8a93a8; text-align: center; }
 
     .distro-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-    .distro-tab { padding: 0.5rem 1rem; border-radius: 0.375rem; border: 1px solid rgba(255,255,255,0.08);
-      background: transparent; color: #8b8d93; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
-    .distro-tab.active { background: rgba(255,255,255,0.06); color: #e8eaed; border-color: rgba(255,255,255,0.14); }
+    .distro-tab { padding: 0.5rem 1rem; border-radius: 0.375rem; border: 1px solid rgba(0,229,255,0.10);
+      background: transparent; color: #8a93a8; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+    .distro-tab.active { background: rgba(255,255,255,0.05); color: #e6f1ff; border-color: rgba(0,229,255,0.22); }
 
-    .code-block { position: relative; background: #0d1117; border: 1px solid rgba(255,255,255,0.08);
+    .code-block { position: relative; background: #0a0c14; border: 1px solid rgba(0,229,255,0.10);
       border-radius: 0.5rem; padding: 1rem 3.5rem 1rem 1rem; font-family: ui-monospace, 'SF Mono',
-      'Cascadia Code', 'Fira Code', monospace; font-size: 0.9rem; color: #e8eaed; overflow-x: auto;
+      'Cascadia Code', 'Fira Code', monospace; font-size: 0.9rem; color: #e6f1ff; overflow-x: auto;
       white-space: pre; line-height: 1.6; }
 
     .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.25rem 0.75rem;
-      border-radius: 0.375rem; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06);
-      color: #8b8d93; cursor: pointer; font-size: 0.75rem; transition: all 0.15s; }
-    .copy-btn:hover { background: rgba(255,255,255,0.1); color: #e8eaed; }
-    .copy-btn.copied { color: #00d4aa; border-color: rgba(0,212,170,0.3); }
+      border-radius: 0.375rem; border: 1px solid rgba(0,229,255,0.10); background: rgba(255,255,255,0.04);
+      color: #8a93a8; cursor: pointer; font-size: 0.75rem; transition: all 0.15s; }
+    .copy-btn:hover { background: rgba(0,229,255,0.08); color: #e6f1ff; }
+    .copy-btn.copied { color: #00e5ff; border-color: rgba(0,229,255,0.45); }
 
-    .download-btn-large { display: inline-block; padding: 1rem 2rem; background: #00d4aa;
-      color: #000; font-weight: 600; border-radius: 0.5rem; text-decoration: none;
-      font-size: 1.1rem; transition: background 0.15s; margin-bottom: 2rem; }
-    .download-btn-large:hover { background: #00e8bb; }
+    .download-btn-large { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem;
+      background: rgba(0,229,255,0.12);
+      color: #00e5ff; font-weight: 600; border: 1px solid rgba(0,229,255,0.45); border-radius: 0.5rem;
+      text-decoration: none; font-size: 1.1rem; letter-spacing: 0.02em; transition: all 0.15s;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 0 1px rgba(0,229,255,0.45), 0 0 24px -4px rgba(0,229,255,0.35); }
+    .download-btn-large:hover { background: rgba(0,229,255,0.18); color: #4df3ff;
+      box-shadow: 0 0 0 1px rgba(0,229,255,0.45), 0 0 32px -2px rgba(0,229,255,0.45); }
 
-    .download-btn-secondary { display: inline-block; color: #8b8d93; text-decoration: none;
+    .download-btn-secondary { display: inline-block; color: #8a93a8; text-decoration: none;
       font-size: 0.9rem; transition: color 0.15s; }
-    .download-btn-secondary:hover { color: #e8eaed; text-decoration: underline; }
+    .download-btn-secondary:hover { color: #e6f1ff; text-decoration: underline; }
 
-    .install-note { font-size: 0.8rem; color: #5c5e64; font-style: italic; margin-top: 0.5rem; }
-    .coming-soon-text { color: #8b8d93; max-width: 500px; line-height: 1.7; margin-bottom: 1.5rem; }
-    .verify-section { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.08); }
+    .install-note { font-size: 0.8rem; color: #525a73; font-style: italic; margin-top: 0.5rem; }
+    .coming-soon-text { color: #8a93a8; max-width: 500px; line-height: 1.7; margin-bottom: 1.5rem; }
+    .verify-section { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(0,229,255,0.10); }
     .verify-section h3 { font-size: 1rem; margin-bottom: 0.5rem; margin-top: 0; }
-    .verify-section p { color: #8b8d93; font-size: 0.85rem; }
-    .verify-section a { color: #00d4aa; }
-    .verify-section a:hover { text-decoration: underline; }
+    .verify-section p { color: #8a93a8; font-size: 0.85rem; }
+    .verify-section a { color: #00e5ff; }
+    .verify-section a:hover { color: #4df3ff; text-decoration: underline; }
 
     .install-method { margin-top: 2rem; }
 
@@ -97,17 +117,17 @@
   <!-- Nav (matches index.html) -->
   <nav id="nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-bg-primary/80 backdrop-blur-xl border-b border-border">
     <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-      <a href="index.html" class="text-lg font-bold text-text-primary">
-        <span class="opacity-80">Fresh</span><span class="text-accent">Rig</span>
+      <a href="index.html" class="text-lg font-bold tracking-[0.08em]">
+        <span class="text-text-primary">FRESH</span><span class="text-accent-magenta">RIG</span>
       </a>
       <div class="hidden md:flex items-center gap-8 text-sm text-text-secondary">
         <a href="index.html#features" class="hover:text-text-primary transition-colors">Features</a>
-        <a href="index.html#pro" class="hover:text-amber-400 transition-colors">Pro</a>
+        <a href="index.html#pro" class="hover:text-accent-cyan transition-colors">Pro</a>
         <a href="index.html#pricing" class="hover:text-text-primary transition-colors">Pricing</a>
         <a href="index.html#faq" class="hover:text-text-primary transition-colors">FAQ</a>
         <a href="https://github.com/ZIPREX420/freshrig" class="hover:text-text-primary transition-colors" target="_blank" rel="noopener">GitHub</a>
       </div>
-      <a id="nav-download-btn" href="https://github.com/ZIPREX420/freshrig/releases/latest" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-accent text-bg-primary text-sm font-medium rounded-md hover:bg-accent-hover transition-colors">
+      <a id="nav-download-btn" href="https://github.com/ZIPREX420/freshrig/releases/latest" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-accent-soft hover:bg-[rgba(0,229,255,0.18)] text-accent-cyan hover:text-accent-hover border border-accent-rim text-sm font-semibold rounded-md transition-all duration-150 tracking-wide" style="box-shadow: 0 0 0 1px rgba(0,229,255,0.45), 0 0 24px -4px rgba(0,229,255,0.35);">
         <span id="nav-download-label">Download</span>
       </a>
     </div>
@@ -205,7 +225,7 @@ sudo apt-get install -f</code>
       <p class="coming-soon-text">
         macOS support is fully implemented and will be available once Apple Developer
         signing is configured. The code is ready and open source — you can build it
-        locally with <code style="background:#0d1117;padding:0.15rem 0.4rem;border-radius:0.25rem;font-family:ui-monospace,'SF Mono',monospace;font-size:0.85em;">npm run tauri build</code> on a Mac.
+        locally with <code style="background:#0a0c14;padding:0.15rem 0.4rem;border-radius:0.25rem;font-family:ui-monospace,'SF Mono',monospace;font-size:0.85em;border:1px solid rgba(0,229,255,0.10);">npm run tauri build</code> on a Mac.
       </p>
       <a href="https://github.com/ZIPREX420/freshrig" class="download-btn-secondary">
         View source on GitHub →
@@ -216,7 +236,7 @@ sudo apt-get install -f</code>
     <div class="verify-section">
       <h3>Verify your download</h3>
       <p>All releases include SHA-256 checksums and Minisign signatures.
-        <a href="https://github.com/ZIPREX420/freshrig/releases">View on GitHub Releases →</a>
+        <a href="https://github.com/ZIPREX420/freshrig/releases" class="text-accent-cyan hover:text-accent-hover">View on GitHub Releases →</a>
       </p>
     </div>
   </main>
@@ -226,7 +246,7 @@ sudo apt-get install -f</code>
     <div class="max-w-6xl mx-auto">
       <div class="flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="text-center md:text-left">
-          <p class="font-bold text-lg"><span class="opacity-80">Fresh</span><span class="text-accent">Rig</span></p>
+          <p class="font-bold text-lg tracking-[0.08em]"><span class="text-text-primary">FRESH</span><span class="text-accent-magenta">RIG</span></p>
           <p class="text-sm text-text-muted mt-1">The first tool you run after a fresh install.</p>
         </div>
         <div class="flex items-center gap-6 text-sm text-text-secondary">

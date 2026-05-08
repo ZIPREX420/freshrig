@@ -13,19 +13,33 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="https://ZIPREX420.github.io/freshrig/">
   <link rel="icon" type="image/svg+xml" href="assets/og-image.svg">
+  <meta name="theme-color" content="#05060a">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            bg: { primary: '#0a0a0f', secondary: '#12121a', tertiary: '#1a1a25' },
-            accent: { DEFAULT: '#00d4aa', hover: '#00e8bc', muted: '#00d4aa33' },
-            text: { primary: '#e8e8ed', secondary: '#9898a8', muted: '#5a5a6e' },
-            border: '#2a2a38',
+            bg: { primary: '#05060a', secondary: '#0c0e16', tertiary: '#141826', card: '#0c0e16', elevated: '#141826' },
+            accent: {
+              DEFAULT: '#00e5ff',
+              hover:   '#4df3ff',
+              soft:    'rgba(0, 229, 255, 0.12)',
+              rim:     'rgba(0, 229, 255, 0.45)',
+              glow:    'rgba(0, 229, 255, 0.35)',
+              cyan:    '#00e5ff',
+              magenta: '#ff2bd6',
+              'magenta-hover': '#ff63e0',
+              'magenta-soft': 'rgba(255, 43, 214, 0.10)',
+              'magenta-rim':  'rgba(255, 43, 214, 0.45)',
+              'magenta-glow': 'rgba(255, 43, 214, 0.32)',
+            },
+            text:   { primary: '#e6f1ff', secondary: '#8a93a8', muted: '#525a73' },
+            border: 'rgba(0, 229, 255, 0.10)',
           },
           fontFamily: {
-            sans: ['"Segoe UI Variable"', '"Segoe UI"', 'system-ui', 'sans-serif'],
+            sans: ['"Segoe UI Variable"', '"Segoe UI"', '-apple-system', 'BlinkMacSystemFont',
+                   '"Inter"', '"Ubuntu"', '"Cantarell"', '"Noto Sans"', 'system-ui', 'sans-serif'],
           }
         }
       }
@@ -48,25 +62,57 @@
     ],
     "url": "https://ZIPREX420.github.io/freshrig/",
     "downloadUrl": "https://github.com/ZIPREX420/freshrig/releases/latest",
-    "softwareVersion": "2.0.2",
+    "softwareVersion": "2.2.1",
     "author": { "@type": "Person", "name": "ZIPREX420" }
   }
   </script>
   <style>
-    body { background-color: #0a0a0f; }
+    body { background-color: #05060a; position: relative; }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 0% 0%,    rgba(0,229,255,0.07), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255,43,214,0.06), transparent 70%);
+    }
+    body > * { position: relative; z-index: 1; }
     .grid-bg {
       background-image:
-        linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
       background-size: 60px 60px;
     }
-    .glow { box-shadow: 0 0 30px rgba(0,212,170,0.25); }
-    .glow:hover { box-shadow: 0 0 40px rgba(0,212,170,0.4); }
+    .glow {
+      box-shadow:
+        0 0 0 1px rgba(0,229,255,0.45),
+        0 0 24px -4px rgba(0,229,255,0.35);
+    }
+    .glow:hover {
+      box-shadow:
+        0 0 0 1px rgba(0,229,255,0.45),
+        0 0 32px -2px rgba(0,229,255,0.45);
+    }
+    .glow-magenta {
+      box-shadow:
+        0 0 0 1px rgba(255,43,214,0.45),
+        0 0 24px -4px rgba(255,43,214,0.32);
+    }
+    .glow-magenta:hover {
+      box-shadow:
+        0 0 0 1px rgba(255,43,214,0.45),
+        0 0 32px -2px rgba(255,43,214,0.45);
+    }
+    .text-gradient-neon {
+      background: linear-gradient(135deg, #00e5ff 0%, #ff2bd6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: #00e5ff;
+    }
     .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
     .fade-in.visible { opacity: 1; transform: translateY(0); }
     details summary { cursor: pointer; list-style: none; }
     details summary::-webkit-details-marker { display: none; }
-    details summary::after { content: '+'; float: right; font-size: 1.25rem; color: #5a5a6e; transition: transform 0.2s; }
+    details summary::after { content: '+'; float: right; font-size: 1.25rem; color: #525a73; transition: transform 0.2s; }
     details[open] summary::after { content: '-'; }
   </style>
 </head>
@@ -75,17 +121,17 @@
   <!-- Nav -->
   <nav id="nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
     <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-      <a href="#" class="text-lg font-bold text-text-primary">
-        <span class="opacity-80">Fresh</span><span class="text-accent">Rig</span>
+      <a href="#" class="text-lg font-bold tracking-[0.08em]">
+        <span class="text-text-primary">FRESH</span><span class="text-accent-magenta">RIG</span>
       </a>
       <div class="hidden md:flex items-center gap-8 text-sm text-text-secondary">
         <a href="#features" class="hover:text-text-primary transition-colors">Features</a>
-        <a href="#pro" class="hover:text-amber-400 transition-colors">Pro</a>
+        <a href="#pro" class="hover:text-accent-cyan transition-colors">Pro</a>
         <a href="#pricing" class="hover:text-text-primary transition-colors">Pricing</a>
         <a href="#faq" class="hover:text-text-primary transition-colors">FAQ</a>
         <a href="https://github.com/ZIPREX420/freshrig" class="hover:text-text-primary transition-colors" target="_blank" rel="noopener">GitHub</a>
       </div>
-      <a id="nav-download-btn" href="https://github.com/ZIPREX420/freshrig/releases/latest" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-accent text-bg-primary text-sm font-medium rounded-md hover:bg-accent-hover transition-colors">
+      <a id="nav-download-btn" href="https://github.com/ZIPREX420/freshrig/releases/latest" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-accent-soft hover:bg-[rgba(0,229,255,0.18)] text-accent-cyan hover:text-accent-hover border border-accent-rim text-sm font-semibold rounded-md transition-all duration-150 glow tracking-wide">
         <span id="nav-download-label">Download</span>
       </a>
     </div>
@@ -93,21 +139,21 @@
 
   <!-- Hero -->
   <section class="relative min-h-screen flex items-center justify-center grid-bg overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-accent-cyan/5 via-transparent to-transparent pointer-events-none"></div>
     <div class="relative max-w-4xl mx-auto px-6 text-center pt-24 pb-20">
-      <a href="https://github.com/ZIPREX420/freshrig/releases" class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-text-secondary mb-8 hover:border-accent/40 hover:text-text-primary transition-colors" target="_blank" rel="noopener">
-        <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-        <span>v<span id="version-badge">1.2.1</span> · Open Source</span>
+      <a href="https://github.com/ZIPREX420/freshrig/releases" class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-rim/60 bg-accent-soft text-xs text-accent-cyan mb-8 hover:bg-[rgba(0,229,255,0.18)] transition-colors tracking-wide" target="_blank" rel="noopener">
+        <span class="w-2 h-2 rounded-full bg-accent-cyan animate-pulse"></span>
+        <span>v<span id="version-badge">2.2.1</span> &middot; Open Source</span>
       </a>
       <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight mb-6">
         Set up any PC<br>
-        <span class="text-accent">in minutes, not hours</span>
+        <span class="text-gradient-neon">in minutes, not hours</span>
       </h1>
       <p class="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
         Hardware detection, driver setup, app batch install, and system optimization — all in one app. Free, open source, and built with Rust.
       </p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-        <a id="hero-download-btn" href="https://github.com/ZIPREX420/freshrig/releases/latest" class="inline-flex items-center gap-3 px-8 py-3 bg-accent text-bg-primary font-semibold rounded-lg text-base hover:bg-accent-hover transition-all glow">
+        <a id="hero-download-btn" href="https://github.com/ZIPREX420/freshrig/releases/latest" class="inline-flex items-center gap-3 px-8 py-3 bg-accent-soft hover:bg-[rgba(0,229,255,0.18)] text-accent-cyan hover:text-accent-hover border border-accent-rim font-semibold tracking-wide rounded-lg text-base transition-all duration-150 glow">
           <span id="hero-download-label">Download</span>
         </a>
         <a href="download.html" class="text-sm text-text-secondary hover:text-text-primary hover:underline transition-colors">
@@ -119,13 +165,13 @@
         <span title="Linux" class="opacity-70">&#x1F427;</span>
         <span title="macOS — Coming Soon" class="opacity-30">&#x1F34E;</span>
       </div>
-      <p class="hero-meta text-xs text-text-muted tracking-wide mb-2" id="hero-meta-line">v1.2.1 · Windows 10+ · Linux · macOS (soon)</p>
+      <p class="hero-meta text-xs text-text-muted tracking-wide mb-2" id="hero-meta-line">v2.2.1 &middot; Windows 10+ &middot; Linux &middot; macOS (soon)</p>
       <p class="text-sm text-text-muted">
         Free & open source &bull; No ads &bull; No telemetry &bull; Made in Belgium 🇧🇪
       </p>
       <div class="flex items-center justify-center gap-3 mt-4">
-        <img src="https://img.shields.io/github/stars/ZIPREX420/freshrig?style=flat-square&color=00d4aa&label=Stars" alt="GitHub Stars" class="h-5">
-        <img src="https://img.shields.io/github/downloads/ZIPREX420/freshrig/total?style=flat-square&color=00d4aa&label=Downloads" alt="Total Downloads" class="h-5">
+        <img src="https://img.shields.io/github/stars/ZIPREX420/freshrig?style=flat-square&color=00e5ff&label=Stars" alt="GitHub Stars" class="h-5">
+        <img src="https://img.shields.io/github/downloads/ZIPREX420/freshrig/total?style=flat-square&color=00e5ff&label=Downloads" alt="Total Downloads" class="h-5">
         <img src="https://img.shields.io/github/license/ZIPREX420/freshrig?style=flat-square&label=License" alt="License" class="h-5">
       </div>
     </div>
@@ -151,19 +197,19 @@
           </div>
         </div>
       </div>
-      <div class="bg-bg-secondary border border-accent/20 rounded-2xl p-8">
-        <h3 class="text-lg font-bold text-accent mb-6 uppercase tracking-wider text-sm">The FreshRig Way</h3>
+      <div class="bg-bg-secondary border border-accent-rim/40 rounded-2xl p-8">
+        <h3 class="text-lg font-bold text-accent-cyan mb-6 uppercase tracking-wider text-sm">The FreshRig Way</h3>
         <div class="space-y-5">
           <div class="flex items-start gap-3">
-            <span class="text-accent text-lg mt-0.5">&#10004;</span>
+            <span class="text-accent-cyan text-lg mt-0.5">&#10004;</span>
             <p class="text-text-primary">Auto-detect your hardware and recommend official drivers</p>
           </div>
           <div class="flex items-start gap-3">
-            <span class="text-accent text-lg mt-0.5">&#10004;</span>
+            <span class="text-accent-cyan text-lg mt-0.5">&#10004;</span>
             <p class="text-text-primary">Install 60+ apps silently with one click via winget</p>
           </div>
           <div class="flex items-start gap-3">
-            <span class="text-accent text-lg mt-0.5">&#10004;</span>
+            <span class="text-accent-cyan text-lg mt-0.5">&#10004;</span>
             <p class="text-text-primary">Save and share your setup as a reusable profile</p>
           </div>
         </div>
@@ -175,46 +221,46 @@
   <section id="features" class="py-24 px-6">
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-16 fade-in">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Everything You Need,<br><span class="text-accent">Nothing You Don't</span></h2>
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Everything You Need,<br><span class="text-gradient-neon">Nothing You Don't</span></h2>
         <p class="text-text-secondary text-lg max-w-xl mx-auto">Eight core features. All free. Six more in Pro.</p>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 fade-in">
-        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-300">
+        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent-rim hover:-translate-y-1 transition-all duration-300">
           <div class="text-3xl mb-4">&#128269;</div>
           <h3 class="text-lg font-semibold mb-2">Hardware Dashboard</h3>
           <p class="text-sm text-text-secondary leading-relaxed">See your CPU, GPU, motherboard, storage, and more — detected automatically on Windows, Linux, and macOS.</p>
         </div>
-        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-300">
+        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent-rim hover:-translate-y-1 transition-all duration-300">
           <div class="text-3xl mb-4">&#127919;</div>
           <h3 class="text-lg font-semibold mb-2">Smart Driver Finder</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Detects NVIDIA, AMD, Intel, and Realtek hardware. Intel DSA installs silently; NVIDIA and AMD open their official driver tools.</p>
         </div>
-        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-300">
+        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent-rim hover:-translate-y-1 transition-all duration-300">
           <div class="text-3xl mb-4">&#128230;</div>
           <h3 class="text-lg font-semibold mb-2">Batch App Install</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Select from 60+ popular apps, hit install, and watch them install silently via your platform's package manager (winget, apt/dnf/pacman, or Homebrew).</p>
         </div>
-        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-300">
+        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent-rim hover:-translate-y-1 transition-all duration-300">
           <div class="text-3xl mb-4">&#128190;</div>
           <h3 class="text-lg font-semibold mb-2">Shareable Profiles</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Save your app selection as a .freshrig.json file. Share it with friends, import on any PC.</p>
         </div>
-        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-300">
+        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent-rim hover:-translate-y-1 transition-all duration-300">
           <div class="text-3xl mb-4">&#127973;</div>
           <h3 class="text-lg font-semibold mb-2">Health Score</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Instant readiness check — see driver issues, missing components, and system status at a glance.</p>
         </div>
-        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-300">
+        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent-rim hover:-translate-y-1 transition-all duration-300">
           <div class="text-3xl mb-4">&#9889;</div>
           <h3 class="text-lg font-semibold mb-2">Lightning Fast</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Built with Rust and Tauri — 5MB installer, 30MB RAM usage, no Electron bloat.</p>
         </div>
-        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-300">
+        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent-rim hover:-translate-y-1 transition-all duration-300">
           <div class="text-3xl mb-4">&#128640;</div>
           <h3 class="text-lg font-semibold mb-2">Startup Manager</h3>
           <p class="text-sm text-text-secondary leading-relaxed">See what runs at boot and disable it with one click. Works on Windows registry/Startup folder, Linux XDG autostart, and macOS LaunchAgents.</p>
         </div>
-        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent/30 hover:-translate-y-1 transition-all duration-300">
+        <div class="group bg-bg-secondary border border-border rounded-xl p-6 hover:border-accent-rim hover:-translate-y-1 transition-all duration-300">
           <div class="text-3xl mb-4">&#127912;</div>
           <h3 class="text-lg font-semibold mb-2">Your Style</h3>
           <p class="text-sm text-text-secondary leading-relaxed">6 accent color presets to make FreshRig yours — Teal, Blue, Purple, Orange, Rose, or Green.</p>
@@ -227,46 +273,46 @@
   <section id="pro" class="py-24 px-6 bg-gradient-to-b from-bg-primary via-bg-secondary/30 to-bg-primary">
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-16 fade-in">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-xs text-amber-400 mb-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-rim/60 bg-accent-soft text-xs text-accent-cyan mb-6 tracking-wide">
           <span>&#9733; PRO</span>
-          <span>7-day free trial · No credit card · Cancel anytime</span>
+          <span>7-day free trial &middot; No credit card &middot; Cancel anytime</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Unlock the<br><span class="text-accent">Full Toolkit</span></h2>
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Unlock the<br><span class="text-gradient-neon">Full Toolkit</span></h2>
         <p class="text-text-secondary text-lg max-w-2xl mx-auto">From $5.99/month. Pay monthly, pay yearly, or own it forever with the Founder's Lifetime offer (first 500 only).</p>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 fade-in">
-        <div class="group relative bg-bg-secondary border border-amber-500/20 rounded-xl p-6 hover:border-amber-400/50 hover:-translate-y-1 transition-all duration-300">
-          <span class="absolute top-4 right-4 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">&#9733; PRO</span>
+        <div class="group relative bg-bg-secondary border border-accent-rim/40 rounded-xl p-6 hover:border-accent-cyan/60 hover:-translate-y-1 transition-all duration-300">
+          <span class="absolute top-4 right-4 text-[10px] font-bold text-accent-cyan bg-accent-soft border border-accent-rim px-2 py-0.5 rounded-full tracking-wider">&#9733; PRO</span>
           <div class="text-3xl mb-4">&#129531;</div>
           <h3 class="text-lg font-semibold mb-2">Disk Cleanup</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Scan temp files, browser caches, crash dumps, and shader caches with per-category risk ratings and preview before cleaning.</p>
         </div>
-        <div class="group relative bg-bg-secondary border border-amber-500/20 rounded-xl p-6 hover:border-amber-400/50 hover:-translate-y-1 transition-all duration-300">
-          <span class="absolute top-4 right-4 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">&#9733; PRO</span>
+        <div class="group relative bg-bg-secondary border border-accent-rim/40 rounded-xl p-6 hover:border-accent-cyan/60 hover:-translate-y-1 transition-all duration-300">
+          <span class="absolute top-4 right-4 text-[10px] font-bold text-accent-cyan bg-accent-soft border border-accent-rim px-2 py-0.5 rounded-full tracking-wider">&#9733; PRO</span>
           <div class="text-3xl mb-4">&#128274;</div>
           <h3 class="text-lg font-semibold mb-2">Privacy Dashboard</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Audit camera, microphone, and location access per app. 20+ privacy toggles with drift detection when Windows re-enables tracking.</p>
         </div>
-        <div class="group relative bg-bg-secondary border border-amber-500/20 rounded-xl p-6 hover:border-amber-400/50 hover:-translate-y-1 transition-all duration-300">
-          <span class="absolute top-4 right-4 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">&#9733; PRO</span>
+        <div class="group relative bg-bg-secondary border border-accent-rim/40 rounded-xl p-6 hover:border-accent-cyan/60 hover:-translate-y-1 transition-all duration-300">
+          <span class="absolute top-4 right-4 text-[10px] font-bold text-accent-cyan bg-accent-soft border border-accent-rim px-2 py-0.5 rounded-full tracking-wider">&#9733; PRO</span>
           <div class="text-3xl mb-4">&#127760;</div>
           <h3 class="text-lg font-semibold mb-2">Network Tools</h3>
           <p class="text-sm text-text-secondary leading-relaxed">One-click DNS flush, full network reset, DNS preset switching (Cloudflare, Google, Quad9), and saved WiFi password viewer.</p>
         </div>
-        <div class="group relative bg-bg-secondary border border-amber-500/20 rounded-xl p-6 hover:border-amber-400/50 hover:-translate-y-1 transition-all duration-300">
-          <span class="absolute top-4 right-4 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">&#9733; PRO</span>
+        <div class="group relative bg-bg-secondary border border-accent-rim/40 rounded-xl p-6 hover:border-accent-cyan/60 hover:-translate-y-1 transition-all duration-300">
+          <span class="absolute top-4 right-4 text-[10px] font-bold text-accent-cyan bg-accent-soft border border-accent-rim px-2 py-0.5 rounded-full tracking-wider">&#9733; PRO</span>
           <div class="text-3xl mb-4">&#9881;</div>
           <h3 class="text-lg font-semibold mb-2">Services Manager</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Gaming, Privacy, and Performance presets to safely disable unnecessary Windows services with never-disable guardrails.</p>
         </div>
-        <div class="group relative bg-bg-secondary border border-amber-500/20 rounded-xl p-6 hover:border-amber-400/50 hover:-translate-y-1 transition-all duration-300">
-          <span class="absolute top-4 right-4 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">&#9733; PRO</span>
+        <div class="group relative bg-bg-secondary border border-accent-rim/40 rounded-xl p-6 hover:border-accent-cyan/60 hover:-translate-y-1 transition-all duration-300">
+          <span class="absolute top-4 right-4 text-[10px] font-bold text-accent-cyan bg-accent-soft border border-accent-rim px-2 py-0.5 rounded-full tracking-wider">&#9733; PRO</span>
           <div class="text-3xl mb-4">&#128433;</div>
           <h3 class="text-lg font-semibold mb-2">Context Menu Editor</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Restore the Windows 11 classic right-click menu with one toggle. View and block shell extensions you don't want.</p>
         </div>
-        <div class="group relative bg-bg-secondary border border-amber-500/20 rounded-xl p-6 hover:border-amber-400/50 hover:-translate-y-1 transition-all duration-300">
-          <span class="absolute top-4 right-4 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">&#9733; PRO</span>
+        <div class="group relative bg-bg-secondary border border-accent-rim/40 rounded-xl p-6 hover:border-accent-cyan/60 hover:-translate-y-1 transition-all duration-300">
+          <span class="absolute top-4 right-4 text-[10px] font-bold text-accent-cyan bg-accent-soft border border-accent-rim px-2 py-0.5 rounded-full tracking-wider">&#9733; PRO</span>
           <div class="text-3xl mb-4">&#128196;</div>
           <h3 class="text-lg font-semibold mb-2">System Health Report</h3>
           <p class="text-sm text-text-secondary leading-relaxed">Full diagnostic with SMART disk health, battery wear, security posture, driver status, and an overall A-F grade. Export as PDF.</p>
@@ -279,7 +325,7 @@
   <section id="pricing" class="py-24 px-6">
     <div class="max-w-6xl mx-auto fade-in">
       <div class="text-center mb-12">
-        <h2 class="text-3xl sm:text-5xl font-bold mb-4">Pay monthly, pay yearly,<br><span class="text-accent">or own it forever.</span></h2>
+        <h2 class="text-3xl sm:text-5xl font-bold mb-4">Pay monthly, pay yearly,<br><span class="text-gradient-neon">or own it forever.</span></h2>
         <p class="text-text-secondary text-lg max-w-2xl mx-auto">FreshRig is the maintenance tool that reads like a tech, not a salesman: every change is previewed, reversible, and logged.</p>
       </div>
 
@@ -316,13 +362,13 @@
           <h3 class="text-3xl font-bold mt-2 mb-1">$0 <span class="text-sm font-normal text-text-secondary">forever</span></h3>
           <p class="text-sm text-text-secondary mb-6">No account needed.</p>
           <ul class="space-y-2 text-sm text-text-secondary mb-8 flex-1">
-            <li class="flex items-start gap-2"><span class="text-accent mt-0.5">&#10004;</span><span>Hardware Dashboard</span></li>
-            <li class="flex items-start gap-2"><span class="text-accent mt-0.5">&#10004;</span><span>Drivers (read-only)</span></li>
-            <li class="flex items-start gap-2"><span class="text-accent mt-0.5">&#10004;</span><span>15 Essential Apps catalog</span></li>
-            <li class="flex items-start gap-2"><span class="text-accent mt-0.5">&#10004;</span><span>1 saved Profile</span></li>
-            <li class="flex items-start gap-2"><span class="text-accent mt-0.5">&#10004;</span><span>Windows Optimize</span></li>
-            <li class="flex items-start gap-2"><span class="text-accent mt-0.5">&#10004;</span><span>Startup Manager</span></li>
-            <li class="flex items-start gap-2"><span class="text-accent mt-0.5">&#10004;</span><span>Themes &amp; command palette</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#10004;</span><span>Hardware Dashboard</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#10004;</span><span>Drivers (read-only)</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#10004;</span><span>15 Essential Apps catalog</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#10004;</span><span>1 saved Profile</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#10004;</span><span>Windows Optimize</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#10004;</span><span>Startup Manager</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#10004;</span><span>Themes &amp; command palette</span></li>
           </ul>
           <a href="download.html" class="mt-auto inline-flex items-center justify-center gap-2 px-5 py-3 border border-border text-text-primary rounded-xl hover:border-accent/40 transition-colors font-semibold">
             Download Free
@@ -330,51 +376,51 @@
         </div>
 
         <!-- Pro (highlighted) -->
-        <div class="relative bg-gradient-to-br from-amber-500/10 via-bg-secondary to-bg-secondary border border-amber-500/40 rounded-2xl p-8 flex flex-col md:scale-[1.03]">
-          <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-black bg-amber-400 px-3 py-1 rounded-full whitespace-nowrap">MOST POPULAR</span>
-          <p class="text-xs uppercase tracking-wider text-amber-400 font-semibold">Pro</p>
+        <div class="relative bg-gradient-to-br from-accent-soft via-bg-secondary to-bg-secondary border border-accent-rim rounded-2xl p-8 flex flex-col md:scale-[1.03]">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-accent-cyan bg-bg-secondary border border-accent-rim px-3 py-1 rounded-full whitespace-nowrap tracking-wider">MOST POPULAR</span>
+          <p class="text-xs uppercase tracking-wider text-accent-cyan font-semibold">Pro</p>
           <h3 class="text-3xl font-bold mt-2 mb-1">$5.99<span class="text-sm font-normal text-text-secondary">/month</span></h3>
           <p class="text-sm text-text-secondary mb-1">or <strong class="text-text-primary">$49/year</strong> &mdash; <span class="text-emerald-400">save 32%</span></p>
           <p class="text-xs text-amber-400 mb-6">Founder's Lifetime: $149 one-time (limited)</p>
           <ul class="space-y-2 text-sm text-text-secondary mb-8 flex-1">
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>Everything in Free, plus:</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>Full 60+ Apps catalog &amp; cross-platform batch install</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>Disk Cleanup with browser caches</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>Privacy Dashboard with Drift Detection</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>Network Tools, Context Menu Editor, Services Manager</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>PDF System Health Report</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>Watchdog Mode &mdash; snapshots + diffs</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>Encrypted Profile Sync (3 devices)</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>SMART Disk Monitoring with trends</span></li>
-            <li class="flex items-start gap-2"><span class="text-amber-400 mt-0.5">&#9733;</span><span>Scheduled background tasks</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>Everything in Free, plus:</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>Full 60+ Apps catalog &amp; cross-platform batch install</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>Disk Cleanup with browser caches</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>Privacy Dashboard with Drift Detection</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>Network Tools, Context Menu Editor, Services Manager</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>PDF System Health Report</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>Watchdog Mode &mdash; snapshots + diffs</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>Encrypted Profile Sync (3 devices)</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>SMART Disk Monitoring with trends</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-cyan mt-0.5">&#9733;</span><span>Scheduled background tasks</span></li>
           </ul>
           <p class="text-[11px] text-text-muted mb-2"><strong class="text-text-secondary">1 user, unlimited devices</strong> &middot; Windows + Linux + macOS</p>
           <p class="text-[11px] text-emerald-400 mb-1">7-day free trial &middot; No credit card required</p>
           <p class="text-[11px] text-text-muted mb-4">Cancel anytime &middot; Pause subscription option</p>
-          <a href="mailto:sales@freshrig.app?subject=FreshRig%20Pro%20%E2%80%94%20notify%20me&amp;body=Hi%20Seppe%2C%0A%0AI%27d%20like%20to%20be%20notified%20when%20FreshRig%20Pro%20checkout%20goes%20live.%0A" class="mt-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-amber-400 text-black rounded-xl hover:bg-amber-300 transition-colors font-bold">
+          <a href="mailto:sales@freshrig.app?subject=FreshRig%20Pro%20%E2%80%94%20notify%20me&amp;body=Hi%20Seppe%2C%0A%0AI%27d%20like%20to%20be%20notified%20when%20FreshRig%20Pro%20checkout%20goes%20live.%0A" class="mt-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-soft hover:bg-[rgba(0,229,255,0.18)] text-accent-cyan hover:text-accent-hover border border-accent-rim font-bold tracking-wide transition-all duration-150 glow">
             Notify Me &mdash; Pro
           </a>
         </div>
 
         <!-- Pro Business -->
-        <div class="bg-bg-secondary border border-blue-500/40 rounded-2xl p-8 flex flex-col">
-          <p class="text-xs uppercase tracking-wider text-blue-400 font-semibold">Pro Business</p>
+        <div class="bg-bg-secondary border border-accent-magenta-rim/60 rounded-2xl p-8 flex flex-col">
+          <p class="text-xs uppercase tracking-wider text-accent-magenta font-semibold">Pro Business</p>
           <h3 class="text-3xl font-bold mt-2 mb-1">$14.99<span class="text-sm font-normal text-text-secondary">/month</span></h3>
           <p class="text-sm text-text-secondary mb-1">or <strong class="text-text-primary">$149/year</strong> per technician</p>
           <p class="text-xs text-text-muted mb-6">Volume: 5+ &minus;20% &middot; 10+ &minus;30% &middot; 25+ &minus;40% &middot; 50+ &minus;50%</p>
           <ul class="space-y-2 text-sm text-text-secondary mb-8 flex-1">
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>Everything in Pro, plus:</span></li>
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>White-label PDF reports</span></li>
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>Multi-Machine Dashboard (25 endpoints)</span></li>
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>Bulk Profile Deployment</span></li>
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>USB Portable Mode</span></li>
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>Customer Database</span></li>
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>Recurring Maintenance Contracts</span></li>
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>RepairShopr / Syncro / NinjaOne integration</span></li>
-            <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5">&#128188;</span><span>Commercial-use license</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>Everything in Pro, plus:</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>White-label PDF reports</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>Multi-Machine Dashboard (25 endpoints)</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>Bulk Profile Deployment</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>USB Portable Mode</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>Customer Database</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>Recurring Maintenance Contracts</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>RepairShopr / Syncro / NinjaOne integration</span></li>
+            <li class="flex items-start gap-2"><span class="text-accent-magenta mt-0.5">&#128188;</span><span>Commercial-use license</span></li>
           </ul>
           <p class="text-[11px] text-emerald-400 mb-4">7-day free trial</p>
-          <a href="mailto:sales@freshrig.app?subject=FreshRig%20Business%20%E2%80%94%20enquiry&amp;body=Hi%20Seppe%2C%0A%0AI%27d%20like%20to%20learn%20more%20about%20FreshRig%20Business%20for%20my%20repair%20shop%20%2F%20MSP.%0A%0AHow%20many%20technicians%3A%20%0AHow%20many%20endpoints%3A%20%0A" class="mt-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-400 transition-colors font-bold">
+          <a href="mailto:sales@freshrig.app?subject=FreshRig%20Business%20%E2%80%94%20enquiry&amp;body=Hi%20Seppe%2C%0A%0AI%27d%20like%20to%20learn%20more%20about%20FreshRig%20Business%20for%20my%20repair%20shop%20%2F%20MSP.%0A%0AHow%20many%20technicians%3A%20%0AHow%20many%20endpoints%3A%20%0A" class="mt-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-magenta-soft hover:bg-[rgba(255,43,214,0.18)] text-accent-magenta hover:text-accent-magenta-hover border border-accent-magenta-rim font-bold tracking-wide transition-all duration-150 glow-magenta">
             Contact Sales &mdash; Business
           </a>
         </div>
@@ -384,7 +430,7 @@
       <div class="mt-8 text-center">
         <p class="text-sm text-text-secondary">
           250+ endpoints? <strong class="text-text-primary">Site license &mdash; $1,499/year flat.</strong>
-          <a href="mailto:sales@freshrig.app" class="text-accent hover:text-accent-hover">Contact sales &rarr;</a>
+          <a href="mailto:sales@freshrig.app" class="text-accent-cyan hover:text-accent-hover">Contact sales &rarr;</a>
         </p>
       </div>
 
@@ -404,7 +450,7 @@
   <section id="comparison" class="py-24 px-6 bg-bg-secondary/50">
     <div class="max-w-4xl mx-auto fade-in">
       <div class="text-center mb-12">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4">FreshRig vs.<br><span class="text-accent">the legacy crowd</span></h2>
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">FreshRig vs.<br><span class="text-gradient-neon">the legacy crowd</span></h2>
         <p class="text-text-secondary text-lg">CCleaner, Iolo System Mechanic, and Avast Cleanup all charge per year, only run on Windows, and report telemetry home. We don't.</p>
       </div>
       <div class="bg-bg-secondary border border-border rounded-xl overflow-hidden">
@@ -412,18 +458,18 @@
           <thead>
             <tr class="border-b border-border">
               <th class="text-left px-5 py-3 text-text-muted font-medium"></th>
-              <th class="px-5 py-3 text-accent font-semibold text-center">FreshRig Pro Annual</th>
+              <th class="px-5 py-3 text-accent-cyan font-semibold text-center">FreshRig Pro Annual</th>
               <th class="px-5 py-3 text-text-secondary font-medium text-center">CCleaner Pro</th>
               <th class="px-5 py-3 text-text-secondary font-medium text-center">Iolo SM Pro</th>
               <th class="px-5 py-3 text-text-secondary font-medium text-center">Avast Cleanup</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border">
-            <tr><td class="px-5 py-3 text-text-primary">Year-1 cost</td><td class="px-5 py-3 text-accent text-center font-semibold">$49</td><td class="px-5 py-3 text-text-secondary text-center">$44.95</td><td class="px-5 py-3 text-text-secondary text-center">$59.94</td><td class="px-5 py-3 text-text-secondary text-center">$30 promo</td></tr>
-            <tr><td class="px-5 py-3 text-text-primary">Year-3 cost</td><td class="px-5 py-3 text-accent text-center font-semibold">$147</td><td class="px-5 py-3 text-text-secondary text-center">$134.85</td><td class="px-5 py-3 text-text-secondary text-center">$179.82</td><td class="px-5 py-3 text-text-secondary text-center">$198</td></tr>
-            <tr><td class="px-5 py-3 text-text-primary">Linux + macOS</td><td class="px-5 py-3 text-accent text-center">&#10004;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td></tr>
-            <tr><td class="px-5 py-3 text-text-primary">Open source</td><td class="px-5 py-3 text-accent text-center">&#10004;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td></tr>
-            <tr><td class="px-5 py-3 text-text-primary">No telemetry</td><td class="px-5 py-3 text-accent text-center">&#10004;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td></tr>
+            <tr><td class="px-5 py-3 text-text-primary">Year-1 cost</td><td class="px-5 py-3 text-accent-cyan text-center font-semibold">$49</td><td class="px-5 py-3 text-text-secondary text-center">$44.95</td><td class="px-5 py-3 text-text-secondary text-center">$59.94</td><td class="px-5 py-3 text-text-secondary text-center">$30 promo</td></tr>
+            <tr><td class="px-5 py-3 text-text-primary">Year-3 cost</td><td class="px-5 py-3 text-accent-cyan text-center font-semibold">$147</td><td class="px-5 py-3 text-text-secondary text-center">$134.85</td><td class="px-5 py-3 text-text-secondary text-center">$179.82</td><td class="px-5 py-3 text-text-secondary text-center">$198</td></tr>
+            <tr><td class="px-5 py-3 text-text-primary">Linux + macOS</td><td class="px-5 py-3 text-accent-cyan text-center">&#10004;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td></tr>
+            <tr><td class="px-5 py-3 text-text-primary">Open source</td><td class="px-5 py-3 text-accent-cyan text-center">&#10004;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td></tr>
+            <tr><td class="px-5 py-3 text-text-primary">No telemetry</td><td class="px-5 py-3 text-accent-cyan text-center">&#10004;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td></tr>
             <tr class="bg-amber-500/5"><td class="px-5 py-3 text-text-primary">Founder's Lifetime option</td><td class="px-5 py-3 text-amber-400 text-center font-semibold">&#10004; ($149)</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td><td class="px-5 py-3 text-text-muted text-center">&mdash;</td></tr>
           </tbody>
         </table>
@@ -436,27 +482,27 @@
   <section id="how-it-works" class="py-24 px-6">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-16 fade-in">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Three Steps to a<br><span class="text-accent">Perfect Setup</span></h2>
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Three Steps to a<br><span class="text-gradient-neon">Perfect Setup</span></h2>
       </div>
       <div class="relative fade-in">
         <div class="hidden md:block absolute left-[39px] top-10 bottom-10 w-px border-l-2 border-dashed border-border"></div>
         <div class="space-y-12">
           <div class="flex items-start gap-6">
-            <div class="flex items-center justify-center w-20 h-20 rounded-2xl bg-accent/10 border border-accent/20 text-accent text-2xl font-bold shrink-0">1</div>
+            <div class="flex items-center justify-center w-20 h-20 rounded-2xl bg-accent-soft border border-accent-rim/60 text-accent-cyan text-2xl font-bold shrink-0">1</div>
             <div class="pt-3">
               <h3 class="text-xl font-semibold mb-2">Download & Launch</h3>
               <p class="text-text-secondary">Install FreshRig (5MB). It scans your hardware automatically.</p>
             </div>
           </div>
           <div class="flex items-start gap-6">
-            <div class="flex items-center justify-center w-20 h-20 rounded-2xl bg-accent/10 border border-accent/20 text-accent text-2xl font-bold shrink-0">2</div>
+            <div class="flex items-center justify-center w-20 h-20 rounded-2xl bg-accent-soft border border-accent-rim/60 text-accent-cyan text-2xl font-bold shrink-0">2</div>
             <div class="pt-3">
               <h3 class="text-xl font-semibold mb-2">Select Your Setup</h3>
               <p class="text-text-secondary">Pick your apps, review driver recommendations, or load a saved profile.</p>
             </div>
           </div>
           <div class="flex items-start gap-6">
-            <div class="flex items-center justify-center w-20 h-20 rounded-2xl bg-accent/10 border border-accent/20 text-accent text-2xl font-bold shrink-0">3</div>
+            <div class="flex items-center justify-center w-20 h-20 rounded-2xl bg-accent-soft border border-accent-rim/60 text-accent-cyan text-2xl font-bold shrink-0">3</div>
             <div class="pt-3">
               <h3 class="text-xl font-semibold mb-2">One Click, Done</h3>
               <p class="text-text-secondary">Hit install. Grab a coffee. FreshRig handles everything silently.</p>
@@ -471,7 +517,7 @@
   <section class="py-24 px-6">
     <div class="max-w-5xl mx-auto fade-in">
       <div class="text-center mb-12">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Your Favorite Apps,<br><span class="text-accent">One Click Away</span></h2>
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Your Favorite Apps,<br><span class="text-gradient-neon">One Click Away</span></h2>
       </div>
       <div class="grid grid-cols-4 sm:grid-cols-4 gap-3 max-w-2xl mx-auto mb-8">
         <div class="flex flex-col items-center gap-2 p-3 rounded-xl bg-bg-secondary border border-border"><div class="w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center text-lg">&#127760;</div><span class="text-xs text-text-secondary">Chrome</span></div>
@@ -520,7 +566,7 @@
   <section id="faq" class="py-24 px-6">
     <div class="max-w-3xl mx-auto">
       <div class="text-center mb-16 fade-in">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Frequently Asked<br><span class="text-accent">Questions</span></h2>
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Frequently Asked<br><span class="text-gradient-neon">Questions</span></h2>
       </div>
       <div class="space-y-3 fade-in">
         <details class="bg-bg-secondary border border-border rounded-xl">
@@ -545,7 +591,7 @@
         </details>
         <details class="bg-bg-secondary border border-border rounded-xl">
           <summary class="px-6 py-4 text-text-primary font-medium">Can I switch from Pro to Pro Business?</summary>
-          <div class="px-6 pb-5 text-sm text-text-secondary leading-relaxed">Yes, prorated. Email <a href="mailto:support@freshrig.app" class="text-accent hover:text-accent-hover">support@freshrig.app</a>.</div>
+          <div class="px-6 pb-5 text-sm text-text-secondary leading-relaxed">Yes, prorated. Email <a href="mailto:support@freshrig.app" class="text-accent-cyan hover:text-accent-hover">support@freshrig.app</a>.</div>
         </details>
         <details class="bg-bg-secondary border border-border rounded-xl">
           <summary class="px-6 py-4 text-text-primary font-medium">Is my data private?</summary>
@@ -565,14 +611,14 @@
 
   <!-- CTA Banner -->
   <section class="py-24 px-6">
-    <div class="max-w-4xl mx-auto bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-2xl p-12 text-center fade-in">
-      <h2 class="text-3xl sm:text-4xl font-bold mb-4">Ready to set up your PC<br><span class="text-accent">the smart way?</span></h2>
+    <div class="max-w-4xl mx-auto bg-gradient-to-br from-accent-soft via-bg-secondary to-accent-magenta-soft border border-accent-rim/60 rounded-2xl p-12 text-center fade-in">
+      <h2 class="text-3xl sm:text-4xl font-bold mb-4">Ready to set up your PC<br><span class="text-gradient-neon">the smart way?</span></h2>
       <p class="text-text-secondary mb-8 text-lg">Hardware detected, drivers found, apps installed — in the time it used to take to find one driver.</p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="download.html" class="inline-flex items-center gap-3 px-8 py-3 bg-accent text-bg-primary font-semibold rounded-lg text-base hover:bg-accent-hover transition-all glow">
+        <a href="download.html" class="inline-flex items-center gap-3 px-8 py-3 bg-accent-soft hover:bg-[rgba(0,229,255,0.18)] text-accent-cyan hover:text-accent-hover border border-accent-rim font-semibold tracking-wide rounded-lg text-base transition-all duration-150 glow">
           Download FreshRig
         </a>
-        <a href="https://github.com/ZIPREX420/freshrig" class="inline-flex items-center gap-2 px-6 py-3 border border-border text-text-secondary rounded-lg hover:text-text-primary hover:border-text-muted transition-colors" target="_blank" rel="noopener">
+        <a href="https://github.com/ZIPREX420/freshrig" class="inline-flex items-center gap-2 px-6 py-3 border border-border text-text-secondary rounded-lg hover:text-text-primary hover:border-accent-rim transition-colors" target="_blank" rel="noopener">
           View on GitHub
         </a>
       </div>
@@ -584,7 +630,7 @@
     <div class="max-w-6xl mx-auto">
       <div class="flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="text-center md:text-left">
-          <p class="font-bold text-lg"><span class="opacity-80">Fresh</span><span class="text-accent">Rig</span></p>
+          <p class="font-bold text-lg tracking-[0.08em]"><span class="text-text-primary">FRESH</span><span class="text-accent-magenta">RIG</span></p>
           <p class="text-sm text-text-muted mt-1">The first tool you run after a fresh install.</p>
         </div>
         <div class="flex items-center gap-6 text-sm text-text-secondary">

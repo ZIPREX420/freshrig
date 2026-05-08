@@ -7,30 +7,43 @@
   <meta name="description" content="FreshRig Terms of Service.">
   <link rel="canonical" href="https://ZIPREX420.github.io/freshrig/terms.html">
   <link rel="icon" type="image/svg+xml" href="assets/og-image.svg">
+  <meta name="theme-color" content="#05060a">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            bg: { primary: '#0a0a0f', secondary: '#12121a', tertiary: '#1a1a25' },
-            accent: { DEFAULT: '#00d4aa', hover: '#00e8bc', muted: '#00d4aa33' },
-            text: { primary: '#e8e8ed', secondary: '#9898a8', muted: '#5a5a6e' },
-            border: '#2a2a38',
+            bg: { primary: '#05060a', secondary: '#0c0e16', tertiary: '#141826' },
+            accent: {
+              DEFAULT: '#00e5ff', hover: '#4df3ff',
+              cyan: '#00e5ff', magenta: '#ff2bd6',
+            },
+            text: { primary: '#e6f1ff', secondary: '#8a93a8', muted: '#525a73' },
+            border: 'rgba(0, 229, 255, 0.10)',
           },
-          fontFamily: { sans: ['"Segoe UI Variable"', '"Segoe UI"', 'system-ui', 'sans-serif'] }
+          fontFamily: { sans: ['"Segoe UI Variable"', '"Segoe UI"', '-apple-system', 'BlinkMacSystemFont', '"Inter"', '"Ubuntu"', '"Cantarell"', '"Noto Sans"', 'system-ui', 'sans-serif'] }
         }
       }
     }
   </script>
-  <style>body { background-color: #0a0a0f; }</style>
+  <style>
+    body { background-color: #05060a; position: relative; }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 0% 0%,    rgba(0,229,255,0.07), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255,43,214,0.06), transparent 70%);
+    }
+    body > * { position: relative; z-index: 1; }
+  </style>
 </head>
 <body class="bg-bg-primary text-text-primary antialiased">
 
   <!-- Nav -->
   <nav class="border-b border-border">
     <div class="max-w-3xl mx-auto flex items-center justify-between px-6 py-4">
-      <a href="index.html" class="text-lg font-bold"><span class="opacity-80">Fresh</span><span class="text-accent">Rig</span></a>
+      <a href="index.html" class="text-lg font-bold tracking-[0.08em]"><span class="text-text-primary">FRESH</span><span class="text-accent-magenta">RIG</span></a>
       <a href="index.html" class="text-sm text-text-secondary hover:text-text-primary transition-colors">&larr; Back to home</a>
     </div>
   </nav>
@@ -43,7 +56,7 @@
 
       <section>
         <h2 class="text-xl font-semibold text-text-primary mb-3">Software License</h2>
-        <p>FreshRig is licensed under the <a href="https://opensource.org/licenses/MIT" class="text-accent hover:underline" target="_blank" rel="noopener">MIT License</a>. The software is provided "AS IS", without warranty of any kind. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, subject to the license terms.</p>
+        <p>FreshRig is licensed under the <a href="https://opensource.org/licenses/MIT" class="text-accent-cyan hover:text-accent-hover hover:underline" target="_blank" rel="noopener">MIT License</a>. The software is provided "AS IS", without warranty of any kind. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, subject to the license terms.</p>
       </section>
 
       <section>
@@ -78,7 +91,7 @@
 
       <section>
         <h2 class="text-xl font-semibold text-text-primary mb-3">Contact</h2>
-        <p><a href="mailto:freshrig@proton.me" class="text-accent hover:underline">freshrig@proton.me</a></p>
+        <p><a href="mailto:freshrig@proton.me" class="text-accent-cyan hover:text-accent-hover hover:underline">freshrig@proton.me</a></p>
       </section>
 
     </div>
