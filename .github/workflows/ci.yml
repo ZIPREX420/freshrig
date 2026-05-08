@@ -73,16 +73,18 @@ jobs:
 
       - name: cargo audit
         if: matrix.platform == 'ubuntu-22.04'
-        # cargo-audit reads its config from `<cwd>/.cargo/audit.toml`. Our
-        # suppressions live in `src-tauri/.cargo/audit.toml`, so we have to
-        # run from inside `src-tauri/` for the ignore list to be picked up.
-        # Running from the repo root with `--file src-tauri/Cargo.lock` does
-        # NOT make audit.toml discovery follow the lockfile — the config is
-        # resolved against the CWD only.
-        working-directory: src-tauri
         run: |
           cargo install --locked cargo-audit
-          cargo audit --deny warnings
+          # cargo-audit searches `$CARGO_HOME/audit.toml` by default. Our
+          # suppressions live alongside the Tauri crate, so we point at
+          # them explicitly via -c/--config. Without this flag the ignore
+          # list is silently skipped and known-OK transitive advisories
+          # (RUSTSEC-2024-0429 glib via gtk-rs 0.18; RUSTSEC-2026-0097
+          # rand via kuchikiki) trigger spurious failures.
+          cargo audit \
+            --config src-tauri/.cargo/audit.toml \
+            --file src-tauri/Cargo.lock \
+            --deny warnings
 
       - name: Generate Rust SBOM
         if: matrix.platform == 'windows-latest'
