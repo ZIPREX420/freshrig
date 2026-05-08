@@ -190,7 +190,7 @@ pub const CLASSIC_SNAPS: &[&str] = &[
 ];
 
 pub fn is_classic_snap(name: &str) -> bool {
-    CLASSIC_SNAPS.iter().any(|s| *s == name)
+    CLASSIC_SNAPS.contains(&name)
 }
 
 /// Ensure the Flathub remote is configured for the current user. Idempotent.
