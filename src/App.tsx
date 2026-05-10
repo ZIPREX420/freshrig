@@ -17,6 +17,7 @@ import { DelayedFallback } from "./components/ui/DelayedFallback";
 // loading them adds a perceptible spinner exactly when the user expects
 // instant feel (Ctrl+K, first run, version-bump day).
 import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
+import { SplashScreen } from "./components/onboarding/SplashScreen";
 import { CommandPalette } from "./components/ui/CommandPalette";
 import { ShortcutHelp } from "./components/ui/ShortcutHelp";
 import { useSettingsStore } from "./stores/settingsStore";
@@ -33,6 +34,11 @@ import { isTauri, lazyNamed, preloadModule } from "./lib";
 //
 // Sidebar wires preload-on-hover for these via the same module specifiers,
 // so chunk-load typically completes before the user clicks.
+// v2.4 hub pages — new top-level destinations (Quick / Custom / Tools)
+const SnelsetupPage         = lazyNamed(() => import("./components/snelsetup/SnelsetupPage"), "SnelsetupPage");
+const AangepasteSetupPage   = lazyNamed(() => import("./components/aangepaste/AangepasteSetupPage"), "AangepasteSetupPage");
+const ToolsPage             = lazyNamed(() => import("./components/tools/ToolsPage"), "ToolsPage");
+
 const DriversPage      = lazyNamed(() => import("./components/drivers/DriversPage"), "DriversPage");
 const AppsPage         = lazyNamed(() => import("./components/apps/AppsPage"), "AppsPage");
 const ProfilesPage     = lazyNamed(() => import("./components/profiles/ProfilesPage"), "ProfilesPage");
@@ -66,16 +72,18 @@ function App() {
 
   const navigate = useCallback((view: string) => setCurrentView(view), []);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts — v2.4 hub-and-spoke nav. Ctrl+1-5 map to the
+  // primary sidebar items (mockup-aligned). The old Ctrl+6-9 shortcuts
+  // still resolve their pages, just via the Tools hub now.
   useHotkeys("ctrl+1", () => navigate("dashboard"), { preventDefault: true });
-  useHotkeys("ctrl+2", () => navigate("drivers"), { preventDefault: true });
-  useHotkeys("ctrl+3", () => navigate("apps"), { preventDefault: true });
+  useHotkeys("ctrl+2", () => navigate("snelsetup"), { preventDefault: true });
+  useHotkeys("ctrl+3", () => navigate("aangepaste"), { preventDefault: true });
   useHotkeys("ctrl+4", () => navigate("profiles"), { preventDefault: true });
-  useHotkeys("ctrl+5", () => navigate("optimize"), { preventDefault: true });
-  useHotkeys("ctrl+6", () => navigate("startup"), { preventDefault: true });
-  useHotkeys("ctrl+7", () => navigate("cleanup"), { preventDefault: true });
-  useHotkeys("ctrl+8", () => navigate("privacy"), { preventDefault: true });
-  useHotkeys("ctrl+9", () => navigate("network"), { preventDefault: true });
+  useHotkeys("ctrl+5", () => navigate("tools"), { preventDefault: true });
+  useHotkeys("ctrl+6", () => navigate("drivers"), { preventDefault: true });
+  useHotkeys("ctrl+7", () => navigate("apps"), { preventDefault: true });
+  useHotkeys("ctrl+8", () => navigate("optimize"), { preventDefault: true });
+  useHotkeys("ctrl+9", () => navigate("cleanup"), { preventDefault: true });
   useHotkeys("ctrl+comma", () => navigate("settings"), { preventDefault: true });
   useHotkeys("ctrl+k", () => setShowCommandPalette((v) => !v), { preventDefault: true });
   useHotkeys("ctrl+shift+/", () => setShowShortcuts((v) => !v), { preventDefault: true });
@@ -230,6 +238,9 @@ function App() {
                   transition={{ duration: 0.15 }}
                 >
                   {currentView === "dashboard" && <Dashboard onNavigate={navigate} />}
+                  {currentView === "snelsetup" && <SnelsetupPage onNavigate={navigate} />}
+                  {currentView === "aangepaste" && <AangepasteSetupPage onNavigate={navigate} />}
+                  {currentView === "tools" && <ToolsPage onNavigate={navigate} />}
                   {currentView === "drivers" && <DriversPage />}
                   {currentView === "apps" && <AppsPage />}
                   {currentView === "profiles" && <ProfilesPage />}
@@ -250,8 +261,18 @@ function App() {
             </Suspense>
           </ErrorBoundary>
         </AppLayout>
-        {/* Eager modals — no Suspense needed; rendered conditionally. */}
-        {loaded && !settings.hasCompletedOnboarding && (
+        {/* First-launch splash — full-bleed welcome before the user enters
+            the app. Once dismissed, the OnboardingWizard handles preset +
+            hardware scan steps. After both complete, user lands on Dashboard. */}
+        {loaded && !settings.hasCompletedOnboarding && !settings.hasSeenSplash && (
+          <div className="fixed inset-0 z-[60] bg-[var(--bg-base)]">
+            <SplashScreen
+              variant="first-launch"
+              onStart={() => setSetting("hasSeenSplash", true)}
+            />
+          </div>
+        )}
+        {loaded && !settings.hasCompletedOnboarding && settings.hasSeenSplash && (
           <OnboardingWizard onComplete={handleCompleteOnboarding} />
         )}
         {showCommandPalette && (

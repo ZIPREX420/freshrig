@@ -17,7 +17,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - `src/config/` — App constants (`app.ts`)
 
 ## Key patterns & Requirements
-- **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.3.0**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
+- **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.4.0**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
 - **Tauri IPC:** Frontend calls `invoke('command_name')`, backend uses `#[tauri::command]` in `src-tauri/src/lib.rs`.
 - **Rust ↔ TS:** Rust uses snake_case, TypeScript uses camelCase — Tauri auto-converts field names.
 - **Hardware data:** All hardware info comes from WMI queries via the `wmi` crate (v0.18+, `WMIConnection::new()` takes 0 args). WMI queries have 5-second timeouts to avoid hangs.
@@ -34,7 +34,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - **Animations:** `MotionConfig` at app root with spring `{ stiffness: 380, damping: 30, mass: 0.8 }`. Page transitions use `AnimatePresence mode="wait"`. Import from `"framer-motion"` (package name, even though the library was renamed to `"motion"`).
 - **Startup Manager:** `StartupApproved` binary format: `byte[0]` `0x02`=enabled (`0x06` also enabled), `0x03`=disabled; `bytes[4..12]`=FILETIME of the toggle. Protected items: `SecurityHealth`, `Windows Defender`, `explorer` (case-insensitive substring match in `is_protected`).
 - **Pro License Testing:** Test keys must match format `FR-XXXXX-XXXXX` where X is uppercase A-Z or 0-9. Example test key: `FR-TEST1-KEY01`. The old lowercase "FR-xxxxx" format no longer validates.
-- **Pro Features (v2.3):** Pro features gated by `ProFeatureGate` (`src/components/ui/ProFeatureGate.tsx`, modes: `overlay | blur | badge | hide`). Subscription pricing: Pro $5.99/mo or $49/yr, Business $14.99/mo or $149/yr per technician, plus a Founder's Lifetime offer at $149 one-time (first 500 customers / 30-day window) — see constants in `src/config/app.ts`. Non-Pro users see an upsell linking to `PRO_PURCHASE_URL` (currently aliased to `PRICING_PAGE_URL` while LemonSqueezy is being set up — pre-launch mode). The Pro commands registered in `lib.rs`:
+- **Pro Features (v2.4):** Pro features gated by `ProFeatureGate` (`src/components/ui/ProFeatureGate.tsx`, modes: `overlay | blur | badge | hide`). Subscription pricing: Pro $5.99/mo or $49/yr, Business $14.99/mo or $149/yr per technician, plus a Founder's Lifetime offer at $149 one-time (first 500 customers / 30-day window) — see constants in `src/config/app.ts`. Non-Pro users see an upsell linking to `PRO_PURCHASE_URL` (currently aliased to `PRICING_PAGE_URL` while LemonSqueezy is being set up — pre-launch mode). The Pro commands registered in `lib.rs`:
   - **Disk Cleanup** — `commands::cleanup::scan_cleanup`, `commands::cleanup::run_cleanup`
   - **Privacy Dashboard** — `commands::privacy::get_privacy_settings`, `get_app_permissions`, `apply_privacy_setting`, `revoke_app_permission`
   - **Network Tools** — `commands::network::network_reset_dns`, `network_reset_full`, `set_dns_servers`, `get_network_interfaces`, `get_wifi_passwords`
@@ -111,16 +111,42 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - **TypeScript:** Strict mode, no `any` types.
 - **CSS:** Tailwind v4 utility classes referencing `@theme` design tokens (e.g., `bg-bg-card`, `text-accent`).
 
-## Design Guidelines
-The UI must feel premium, dark, and modern — like a tool built by gamers for gamers. Think Discord meets HWiNFO. NOT generic light-mode corporate SaaS.
+## Design Guidelines (v2.4 — Cyber/Hex)
+The UI is a control-panel for power users — Discord meets HWiNFO meets Tron. Dark, neon-lit, hex-laden. NOT generic light-mode corporate SaaS.
 
-Key principles:
-- **Theme:** bg-primary (#0a0a0f) near-black with blue undertone; accent (#00d4aa) electric teal — used sparingly for active states, progress, key CTAs.
-- **Typography:** Segoe UI Variable (native Windows 11 font) for body; monospace for technical data (driver versions, hardware IDs).
-- **Cards:** Subtle glass-morphism — semi-transparent backgrounds with blurred borders.
-- **Animations:** 150ms fade-in on card mount, 200ms smooth hover transitions, skeleton pulse while loading.
-- **Density:** Show real technical data (clock speeds, VRAM amounts, driver dates) — this audience wants details, not simplifications.
-- **Icons:** Lucide only — no generic illustrations or stock icons.
+**Palette (in `src/styles.css`).** Deep near-black bg (`#05060a` base, `#07080f` sidebar, `#0c0e16` cards). Dual-accent system: cyan `#00e5ff` for primary / safe / "go", magenta `#ff2bd6` for creative / Pro / commit. The 6 accent presets in Settings rotate the cyan slot only; magenta is preset-independent so the dual-identity always reads.
+
+**Typography.** Segoe UI Variable on Windows, then `-apple-system` / `BlinkMacSystemFont`, then `Inter` / `Ubuntu` / `Cantarell` / `Noto Sans`. Body 14px. Section labels uppercase + letter-spacing `0.14–0.18em`. Monospace `Cascadia Code` for technical data only.
+
+**Component vocabulary (v2.4 primitives — `src/components/ui/`).** Reach for these instead of building parallel implementations:
+- **`<HexIcon>`** — pointy-top hex frame with cyan / magenta / gradient stroke + ambient glow + optional Tron-perspective floor inside. Sizes `sm` (32px) → `hero` (200px). Use for any "feature stamp" — sidebar status peg, action-tile thumbnail, page centerpiece.
+- **`<HeroCTA>`** — full-width outlined neon pill with arrow. Use as the page-level CTA (one per surface). Cyan = primary safe, magenta = creative / commit. NOT for inline buttons — use `<Button>` for those.
+- **`<ActionTile>`** + **`<ActionGrid>`** — equal-height rim-glow cards in 2 / 3 / 4-col responsive grids. Each tile = HexIcon + uppercase title + 1-2 line description + arrow. The standard "pick one of these flows" affordance.
+- **`<HexStepper>`** — horizontal hex-shaped step indicator with connecting lines that fill cyan as the user advances. Use at the top of any multi-step flow (Quick Setup, Custom Setup wizard, future onboarding).
+- **`<ProgressRing>`** — animated circular gauge with optional indeterminate scan rotation, accent-aware glow, 12 tick marks at 30°. Use for system score (Dashboard) and live scan progress (Quick Setup running state). For static health rings, the older `<HealthRing>` is still appropriate inside detail widgets.
+- **`<SidebarSystemCard>`** — bottom-of-sidebar status card. `compact` = small hex + status label + last scan; `expanded` = full hardware spec list + DETAILS button.
+- **`<PageBreadcrumb>`** — back arrow + uppercase current-page label + optional right slot. Goes at the top of every subpage. Pair with `PageShell` `title` slot — use one or the other.
+- **`<NotificationBell>`** — title-bar widget with magenta unread-count dot.
+- **`<CircuitBackdrop>`** — full-bleed deterministic SVG circuit-rain backdrop. Use for splash / welcome screens; pointer-events disabled so it never interferes.
+- **`<BrandMark>`** + **`<BrandWordmark>`** — hex "FR" monogram and "FRESH"+magenta "RIG" wordmark. Always render together at hero scale; can use BrandMark alone in chrome.
+
+**Layout patterns.**
+- Hub-and-spoke navigation: Home / Quick Setup / Custom Setup / Profiles / Tools / Settings (+ Fleet for Business). 5–7 sidebar items max.
+- Page bodies max-w-7xl mx-auto with consistent `p-8` from AppLayout. Subpage hero stacks: PageBreadcrumb → big hex centerpiece → uppercase title (`text-gradient-neon` for the headliner) → tagline → body content → HeroCTA.
+- Action-tile grids prefer 3-up at desktop (lg breakpoint), 4-up only when content is naturally categorical (Dashboard's Quick / Custom / Import / Tools).
+- Dashboard hero: 2-col `grid-cols-[1fr_auto]` — heading + verdict text on the left, big ProgressRing on the right.
+
+**Animations.** `MotionConfig` spring `{ stiffness: 380, damping: 30, mass: 0.8 }` at app root. Page transitions use `AnimatePresence mode="wait"` with `duration: 0.15` opacity+y. Hex pulse on hero icons via `.animate-hex-pulse-cyan` / `.animate-hex-pulse-magenta`. Scan rotation via `.animate-scan-rotate`. Respect `prefers-reduced-motion` (already wired in styles.css).
+
+**Density.** Show real technical data (clock speeds, VRAM, driver dates) — this audience wants details, not simplifications. But the home view (Dashboard) is intentionally spacious — detail lives one click away in Tools / Health Report.
+
+**Icons.** Lucide React only. Stroke width 2 for inline (`w-4 h-4`), 2.5 for hex thumbnails (`w-7 h-7` in xl HexIcon).
+
+## i18n (v2.4)
+- Strings live in `src/i18n/index.ts` as a typed `TRANSLATIONS` dict. EN + NL out of the box. Adding a language: extend `Locale`, add a column to each entry, surface in the sidebar locale toggle.
+- Use `const t = useT(); t("key.subkey")` in components. TypeScript enforces known keys at compile time.
+- Falls through to English when a key is missing the active-locale entry.
+- Per-page rollout strategy: wrap new pages first, backfill existing pages incrementally — don't try to translate everything at once.
 
 ## Release process
 1. Bump version in 4 files: `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `package.json`, `src/config/app.ts`.

@@ -1,4 +1,49 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.4.0": `### FreshRig v2.4.0 — Layout overhaul 🔷🔶
+
+A full UI rethink. Same FreshRig under the hood, completely rebuilt on top — the v2.3 cyber/neon palette finally has the layout it was always meant for.
+
+**New hub-and-spoke navigation.**
+The sidebar drops from 14 items to 6: Home / Quick Setup / Custom Setup / Profiles / Tools / Settings (+ Fleet for Business). Every existing feature is still one click away — driver / app / cleanup / privacy / network / services / context-menu / startup / report all live inside the new Tools hub. Keyboard shortcuts re-mapped to match (Ctrl+1–5 = primary, Ctrl+6–9 = inside-Tools quick jumps).
+
+**New hub pages.**
+Two centerpiece flows from the mockups now ship as real pages:
+- **Quick Setup** — one giant cyan hex hero, a checklist of what's included, an outlined neon CTA. Click Start, watch a 5-step wizard run with a circular progress gauge and live scan-item list (Hardware → OS → Drivers → Software → Settings → Network).
+- **Custom Setup** — magenta hex hero, category grid, then a 5-step wizard with a 3-column layout (Categories | Items | Selection summary). Search filter, live total / disk / time estimates.
+
+**Brand-new visual primitives.**
+- \`<HexIcon>\` — pointy-top hex frame with cyan / magenta / gradient stroke, optional Tron-perspective floor inside, ambient glow. Sizes from 32px (sidebar status peg) to 200px (page centerpiece).
+- \`<HeroCTA>\` — full-width outlined neon pill button with arrow. Cyan = safe / primary, magenta = creative / commit.
+- \`<ActionTile>\` + \`<ActionGrid>\` — equal-height rim-glow cards in 2 / 3 / 4 column responsive grids. Drives the new Dashboard, Tools hub, and Aangepaste category picker.
+- \`<HexStepper>\` — horizontal hex-shaped step indicator with connector lines that fill cyan as you progress. Used in both wizards.
+- \`<ProgressRing>\` — animated circular gauge with optional indeterminate scan rotation, accent-aware glow, tick marks at 30° intervals.
+- \`<SidebarSystemCard>\` — bottom-of-sidebar status card with two variants: compact (status pill + last scan) and expanded (full hardware spec list).
+- \`<PageBreadcrumb>\` — back arrow + current-page label header for every subpage.
+- \`<NotificationBell>\` — title-bar widget with unread red-dot indicator.
+- \`<CircuitBackdrop>\` — full-bleed deterministic SVG circuit-rain backdrop for splash screens and inside hex frames.
+
+**Welcome / Splash screen.**
+First-launch users now see a true full-bleed splash matching mockup-1: large hex monogram, FRESHRIG wordmark, "Setup any PC. In minutes." tagline, outlined cyan CTA. A second variant ("returning") shows the mockup-2 left-logo + right-greeting layout for repeat launches. Tracked via new \`hasSeenSplash\` setting; shown once per fresh install.
+
+**Redesigned Dashboard.**
+The home view now matches mockup-2: big hero heading + system-score ProgressRing on the right, 4-tile action grid (Quick / Custom / Import / Tools), Recent Setups row with View-all link. Detailed hardware widgets (GPU / disk / network / audio cards, Smart health, driver issues) preserved in the tree and reachable from the Tools hub or the Health Report.
+
+**Lightweight i18n.**
+New \`src/i18n/\` module — zero-dependency, type-safe \`useT()\` hook. English (default) and Dutch shipped together; cycle between them from the sidebar footer pill. The redesigned splash is fully translated; the rest of the new pages are scaffolded for translation in incremental follow-ups. Plan: extend coverage one feature at a time, fall through to English when keys are missing.
+
+**Landing page caught up.**
+\`site/index.html\` hero rebuilt to match the splash screen — hex monogram, gradient wordmark, outlined cyan CTA. New "Four ways to set up your PC" tile section directly under the hero showcases Quick / Custom / Import / Tools with the same hex thumbnails as the desktop app.
+
+**Architecture preserved.**
+- Every IPC command and Zustand store untouched. Profiles, license keys, hardware data, settings — all carry over exactly.
+- All cross-platform code paths intact (Windows / Linux / macOS-stub).
+- Hardening from v2.3 (CSP, capabilities tightening, headless ACL, panic-log scrubbing, license release-gate) inherited as-is.
+
+**Migration notes.**
+- The old Sidebar groups (Overview / Setup / Tune-up / Maintain / Protect / Business) are gone — bookmark Ctrl+5 (Tools) for the closest equivalent if you used the secondary nav heavily.
+- The Dashboard's old detail widgets (DashboardHero, SystemMetricsBar, GpuCard, etc.) still live under \`src/components/dashboard/\` and remain importable; the home view just doesn't render them anymore. Future iteration may bring a "detailed view" toggle.
+- \`Edit\` users may notice old keyboard shortcuts re-mapped — Ctrl+2 was Drivers, now Quick Setup. Drivers moved to Ctrl+6.
+`,
   "2.3.0": `### FreshRig v2.3.0 — Cyber/Neon redesign 🟦🟪
 
 A top-to-bottom visual refresh plus a serious security/perf hardening pass. Same FreshRig under the hood — every IPC command, route, store, and saved profile keeps working — but the surface looks like the control panel it always wanted to be.

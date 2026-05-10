@@ -175,6 +175,30 @@
   --shadow-glow-cyan:    0 0 0 1px var(--accent-cyan-rim), 0 0 24px -2px var(--accent-cyan-glow);
   --shadow-glow-magenta: 0 0 0 1px var(--accent-magenta-rim), 0 0 24px -2px var(--accent-magenta-glow);
   --shadow-inner-rim:    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* === Mockup-redesign additions (v2.4 — hex/hero vocabulary) ===
+     Hero CTA = the full-width outlined pill button used as section-level
+     call-to-action ("START NU", "SNELSETUP STARTEN"). Stronger glow than
+     the inline Button so it reads as the primary action of the whole page. */
+  --shadow-hero-cta-cyan:    0 0 0 1px var(--accent-cyan-rim),
+                             0 0 32px -4px var(--accent-cyan-glow),
+                             inset 0 0 24px -8px var(--accent-cyan-glow);
+  --shadow-hero-cta-magenta: 0 0 0 1px var(--accent-magenta-rim),
+                             0 0 32px -4px var(--accent-magenta-glow),
+                             inset 0 0 24px -8px var(--accent-magenta-glow);
+  --shadow-hero-cta-cyan-hover:    0 0 0 1px var(--accent-cyan-rim),
+                                   0 0 48px -2px var(--accent-cyan-glow),
+                                   inset 0 0 32px -8px var(--accent-cyan-glow);
+  --shadow-hero-cta-magenta-hover: 0 0 0 1px var(--accent-magenta-rim),
+                                   0 0 48px -2px var(--accent-magenta-glow),
+                                   inset 0 0 32px -8px var(--accent-magenta-glow);
+
+  /* HexIcon outer glow — much heavier than the inline shadow-glow, sized
+     so the bloom radiates well past the hex frame without losing definition. */
+  --shadow-hex-cyan:    0 0 64px -8px var(--accent-cyan-glow),
+                        0 0 32px -4px var(--accent-cyan-glow);
+  --shadow-hex-magenta: 0 0 64px -8px var(--accent-magenta-glow),
+                        0 0 32px -4px var(--accent-magenta-glow);
 }
 
 html, body {
@@ -265,6 +289,24 @@ body::after {
   50%      { box-shadow: 0 0 0 1px var(--accent-cyan-rim), 0 0 28px 0   var(--accent-cyan-glow); }
 }
 
+/* HexIcon hero pulse — slow ambient breathing on the SVG glow filter so the
+   centerpiece feels alive without being distracting. Used at the hero size. */
+@keyframes hex-pulse-cyan {
+  0%, 100% { filter: drop-shadow(0 0 16px var(--accent-cyan-glow)) drop-shadow(0 0 32px var(--accent-cyan-glow)); }
+  50%      { filter: drop-shadow(0 0 24px var(--accent-cyan-glow)) drop-shadow(0 0 48px var(--accent-cyan-glow)); }
+}
+@keyframes hex-pulse-magenta {
+  0%, 100% { filter: drop-shadow(0 0 16px var(--accent-magenta-glow)) drop-shadow(0 0 32px var(--accent-magenta-glow)); }
+  50%      { filter: drop-shadow(0 0 24px var(--accent-magenta-glow)) drop-shadow(0 0 48px var(--accent-magenta-glow)); }
+}
+
+/* ProgressRing scan rotation — sweep the leading dash around the ring at
+   constant speed during indeterminate / scanning states. */
+@keyframes scan-rotate {
+  from { transform: rotate(-90deg); }
+  to   { transform: rotate(270deg); }
+}
+
 .animate-fade-in           { animation: fade-in           150ms ease-out; }
 .animate-fade-in-soft      { animation: fade-in-soft      200ms ease-out; }
 .animate-check-pop         { animation: check-pop         500ms ease-out; }
@@ -272,6 +314,9 @@ body::after {
 .animate-drawer-in         { animation: drawer-in         200ms cubic-bezier(0.32, 0.72, 0, 1); }
 .animate-drawer-overlay-in { animation: drawer-overlay-in 200ms ease-out; }
 .animate-neon-pulse        { animation: neon-pulse       3200ms ease-in-out infinite; }
+.animate-hex-pulse-cyan    { animation: hex-pulse-cyan   4200ms ease-in-out infinite; }
+.animate-hex-pulse-magenta { animation: hex-pulse-magenta 4200ms ease-in-out infinite; }
+.animate-scan-rotate       { animation: scan-rotate      1400ms linear infinite; transform-origin: center; }
 
 .skeleton-shimmer {
   background: linear-gradient(

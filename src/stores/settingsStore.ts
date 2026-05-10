@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { load, Store } from "@tauri-apps/plugin-store";
 import { invoke } from "@tauri-apps/api/core";
 import type { AppCategory } from "../types/apps";
+import type { Locale } from "../i18n";
 
 export type AccentColor = "teal" | "blue" | "purple" | "orange" | "rose" | "green";
 export const ACCENT_COLORS: AccentColor[] = [
@@ -37,6 +38,12 @@ export interface AppSettings {
   lastSeenVersion: string;
   // Onboarding
   hasCompletedOnboarding: boolean;
+  /** v2.4: tracks whether the first-launch SplashScreen has been dismissed.
+   *  Splash shows once per fresh install; subsequent launches go straight
+   *  to the OnboardingWizard or Dashboard depending on hasCompletedOnboarding. */
+  hasSeenSplash: boolean;
+  /** v2.4: UI language. en = English (default), nl = Nederlands. */
+  locale: Locale;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -51,6 +58,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   startMinimized: false,
   lastSeenVersion: "0.3.0",
   hasCompletedOnboarding: false,
+  hasSeenSplash: false,
+  locale: "en",
 };
 
 interface SettingsState {

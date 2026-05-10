@@ -1,18 +1,10 @@
 // Copyright (c) 2026 Seppe Willemsens (ZIPREX420). MIT License.
 import {
-  LayoutDashboard,
-  Cpu,
-  Package,
+  Home,
+  Zap,
+  Layers,
   BookMarked,
-  Sparkles,
-  Rocket,
-  Trash2,
-  Shield,
-  Globe,
-  Menu,
-  Cog,
-  Eye,
-  FileChartColumn,
+  Wrench,
   Server,
   Settings,
   Keyboard,
@@ -21,8 +13,10 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { APP_VERSION } from "../../config/app";
 import { BrandMark, BrandWordmark } from "../ui/BrandMark";
-import { usePlatform } from "../../hooks/usePlatform";
+import { SidebarSystemCard } from "./SidebarSystemCard";
 import { useLicenseStore } from "../../stores/licenseStore";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { SUPPORTED_LOCALES } from "../../i18n";
 import { preloadModule } from "../../lib";
 
 // Preload-on-hover map. Each entry mirrors a `lazyNamed(...)` call in App.tsx
@@ -32,6 +26,11 @@ import { preloadModule } from "../../lib";
 // Keep this in sync with the lazy routes in App.tsx. If a key is missing,
 // the click still works; the chunk just loads on demand instead of warmed.
 const ROUTE_PRELOADERS: Record<string, () => Promise<unknown>> = {
+  // Hub pages (new in v2.4)
+  snelsetup:   () => import("../snelsetup/SnelsetupPage"),
+  aangepaste:  () => import("../aangepaste/AangepasteSetupPage"),
+  tools:       () => import("../tools/ToolsPage"),
+  // Existing pages — still routable from the Tools hub or shortcuts
   drivers:     () => import("../drivers/DriversPage"),
   apps:        () => import("../apps/AppsPage"),
   profiles:    () => import("../profiles/ProfilesPage"),
@@ -64,87 +63,35 @@ interface NavItem {
   shortcut?: string;
   /** When set, item shows a tier badge. Free items omit this field. */
   tier?: Tier;
-  /** When true, item is hidden on non-Windows platforms. */
-  windowsOnly?: boolean;
+  /** Hidden when isBusiness === false (sidebar-level filter). */
+  businessOnly?: boolean;
 }
 
-interface NavGroup {
-  label: string;
-  items: NavItem[];
-  /** When provided, the entire group is hidden unless the predicate passes. */
-  visibleWhen?: (ctx: { isBusiness: boolean }) => boolean;
-}
-
-// Six functional groups, each capped at <=4 items so the working-memory load
-// stays manageable. Tier badges signal Pro/Business gating up front so users
-// don't hit a paywall by surprise. Keep IDs in sync with App.tsx routing.
-const navGroups: NavGroup[] = [
-  {
-    label: "Overview",
-    items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, shortcut: "Ctrl+1" },
-    ],
-  },
-  {
-    label: "Setup",
-    items: [
-      { id: "drivers", label: "Drivers", icon: Cpu, shortcut: "Ctrl+2" },
-      { id: "apps", label: "Apps", icon: Package, shortcut: "Ctrl+3" },
-      { id: "profiles", label: "Profiles", icon: BookMarked, shortcut: "Ctrl+4", windowsOnly: true },
-    ],
-  },
-  {
-    label: "Tune-up",
-    items: [
-      { id: "optimize", label: "Optimize", icon: Sparkles, shortcut: "Ctrl+5", windowsOnly: true },
-      { id: "startup", label: "Startup", icon: Rocket, shortcut: "Ctrl+6" },
-      { id: "services", label: "Services", icon: Cog, tier: "pro" },
-      { id: "contextMenu", label: "Context Menu", icon: Menu, tier: "pro", windowsOnly: true },
-    ],
-  },
-  {
-    label: "Maintain",
-    items: [
-      { id: "cleanup", label: "Cleanup", icon: Trash2, shortcut: "Ctrl+7", tier: "pro" },
-      { id: "watchdog", label: "Watchdog", icon: Eye, tier: "pro" },
-      { id: "report", label: "Health Report", icon: FileChartColumn, tier: "pro" },
-    ],
-  },
-  {
-    label: "Protect",
-    items: [
-      { id: "privacy", label: "Privacy", icon: Shield, shortcut: "Ctrl+8", tier: "pro" },
-      { id: "network", label: "Network", icon: Globe, shortcut: "Ctrl+9", tier: "pro" },
-    ],
-  },
-  {
-    label: "Business",
-    visibleWhen: ({ isBusiness }) => isBusiness,
-    items: [
-      { id: "fleet", label: "Fleet", icon: Server, tier: "business" },
-    ],
-  },
+// v2.4 hub-and-spoke nav (mockup-aligned). Each item is a top-level
+// destination that either shows a hero hex page directly (Snelsetup,
+// Aangepaste) or routes into a sub-hub (Tools). About / Changelog /
+// Help / Upgrade all live inside Settings now.
+const PRIMARY_NAV: NavItem[] = [
+  { id: "dashboard",  label: "Home",         icon: Home,       shortcut: "Ctrl+1" },
+  { id: "snelsetup",  label: "Quick setup",  icon: Zap,        shortcut: "Ctrl+2" },
+  { id: "aangepaste", label: "Custom setup", icon: Layers,     shortcut: "Ctrl+3" },
+  { id: "profiles",   label: "Profiles",     icon: BookMarked, shortcut: "Ctrl+4" },
+  { id: "tools",      label: "Tools",        icon: Wrench,     shortcut: "Ctrl+5" },
+  { id: "fleet",      label: "Fleet",        icon: Server,     tier: "business", businessOnly: true },
 ];
 
-const secondaryNav: NavItem[] = [
+const SECONDARY_NAV: NavItem[] = [
   { id: "settings", label: "Settings", icon: Settings, shortcut: "Ctrl+," },
-  { id: "about", label: "About", icon: Info },
+  { id: "about",    label: "About",    icon: Info },
 ];
 
 export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarProps) {
-  const { isWindows } = usePlatform();
   const isBusiness = useLicenseStore((s) => s.isBusiness());
   const isPro = useLicenseStore((s) => s.isPro());
 
-  // Filter platform-specific items, drop empty groups, drop groups gated by
-  // visibleWhen. Keeps the rendering loop simple and side-effect-free.
-  const visibleGroups = navGroups
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => !(item.windowsOnly && !isWindows)),
-    }))
-    .filter((group) => group.items.length > 0)
-    .filter((group) => !group.visibleWhen || group.visibleWhen({ isBusiness }));
+  const visiblePrimary = PRIMARY_NAV.filter(
+    (item) => !item.businessOnly || isBusiness,
+  );
 
   return (
     <aside className="flex flex-col w-[260px] shrink-0 h-full bg-[var(--bg-sidebar)] border-r border-[var(--border)] overflow-y-auto">
@@ -157,38 +104,80 @@ export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarPro
         </div>
       </div>
 
-      {/* Primary navigation -- grouped by function */}
-      <nav className="flex-1 px-3 pb-2">
-        {visibleGroups.map((group) => (
-          <NavSection
-            key={group.label}
-            label={group.label}
-            items={group.items}
-            currentView={currentView}
-            onNavigate={onNavigate}
-            isPro={isPro}
-            isBusiness={isBusiness}
-          />
-        ))}
+      {/* Primary navigation -- flat list, no group headers (mockup style) */}
+      <nav className="flex-1 px-3 py-2">
+        <ul className="space-y-1">
+          {visiblePrimary.map((item) => (
+            <NavButton
+              key={item.id}
+              item={item}
+              active={currentView === item.id}
+              onSelect={() => onNavigate(item.id)}
+              isPro={isPro}
+              isBusiness={isBusiness}
+            />
+          ))}
+        </ul>
+
+        {/* Subtle divider before secondary nav */}
+        <div className="mt-6 mb-3 h-px bg-[var(--border)]" />
+
+        <ul className="space-y-1">
+          {SECONDARY_NAV.map((item) => (
+            <NavButton
+              key={item.id}
+              item={item}
+              active={currentView === item.id}
+              onSelect={() => onNavigate(item.id)}
+              isPro={isPro}
+              isBusiness={isBusiness}
+            />
+          ))}
+        </ul>
       </nav>
 
-      {/* Secondary navigation */}
-      <div className="px-3 pt-3 pb-3 border-t border-[var(--border)]">
-        <NavSection
-          label="More"
-          items={secondaryNav}
-          currentView={currentView}
-          onNavigate={onNavigate}
-          isPro={isPro}
-          isBusiness={isBusiness}
-        />
-      </div>
+      {/* System status card — bottom slot per mockup. Compact variant by
+          default; the dashboard surfaces the expanded view if desired. */}
+      <SidebarSystemCard
+        variant="compact"
+        health="optimal"
+        lastScanLabel="Today"
+        onDetailsClick={() => onNavigate("dashboard")}
+      />
 
-      {/* Footer: version chip + shortcut helper */}
-      <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
-        <span className="text-[10px] font-mono text-[var(--text-muted)] tracking-wider">
-          v{APP_VERSION}
-        </span>
+      {/* Footer: version chip + locale toggle + shortcut helper */}
+      <SidebarFooter onShowShortcuts={onShowShortcuts} />
+    </aside>
+  );
+}
+
+function SidebarFooter({
+  onShowShortcuts,
+}: {
+  onShowShortcuts?: () => void;
+}) {
+  const locale = useSettingsStore((s) => s.settings.locale);
+  const setSetting = useSettingsStore((s) => s.setSetting);
+  const cycleLocale = () => {
+    const idx = SUPPORTED_LOCALES.findIndex((l) => l.id === locale);
+    const next = SUPPORTED_LOCALES[(idx + 1) % SUPPORTED_LOCALES.length];
+    setSetting("locale", next.id);
+  };
+  const current = SUPPORTED_LOCALES.find((l) => l.id === locale) ?? SUPPORTED_LOCALES[0];
+  return (
+    <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)]">
+      <span className="text-[10px] font-mono text-[var(--text-muted)] tracking-wider">
+        v{APP_VERSION}
+      </span>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={cycleLocale}
+          className="flex items-center gap-1 px-2 h-6 rounded-md text-[10px] uppercase tracking-wider text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/[0.04] transition-colors active:scale-[0.97]"
+          title={`Language: ${current.label} (click to switch)`}
+        >
+          <span>{current.flag}</span>
+          <span className="font-semibold">{current.id.toUpperCase()}</span>
+        </button>
         {onShowShortcuts && (
           <button
             onClick={onShowShortcuts}
@@ -199,42 +188,6 @@ export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarPro
           </button>
         )}
       </div>
-    </aside>
-  );
-}
-
-function NavSection({
-  label,
-  items,
-  currentView,
-  onNavigate,
-  isPro,
-  isBusiness,
-}: {
-  label: string;
-  items: NavItem[];
-  currentView: string;
-  onNavigate: (view: string) => void;
-  isPro: boolean;
-  isBusiness: boolean;
-}) {
-  return (
-    <div className="space-y-1 mt-3 first:mt-1">
-      <p className="text-[10.5px] uppercase tracking-[0.1em] font-semibold text-[var(--text-muted)] px-3 pt-1 pb-1.5">
-        {label}
-      </p>
-      <ul className="space-y-0.5">
-        {items.map((item) => (
-          <NavButton
-            key={item.id}
-            item={item}
-            active={currentView === item.id}
-            onSelect={() => onNavigate(item.id)}
-            isPro={isPro}
-            isBusiness={isBusiness}
-          />
-        ))}
-      </ul>
     </div>
   );
 }
@@ -253,8 +206,6 @@ function NavButton({
   isBusiness: boolean;
 }) {
   const Icon = item.icon;
-  // A tier is "owned" when the user already has access -- badge dims to imply
-  // "you have this" instead of "buy this".
   const tierOwned =
     (item.tier === "pro" && isPro) || (item.tier === "business" && isBusiness);
 
@@ -263,7 +214,7 @@ function NavButton({
       {active && (
         <span
           aria-hidden="true"
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full"
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-[3px] rounded-full"
           style={{
             background: "var(--gradient-neon-edge)",
             boxShadow: "0 0 8px var(--accent-cyan-glow)",
@@ -284,16 +235,15 @@ function NavButton({
           const loader = ROUTE_PRELOADERS[item.id];
           if (loader) preloadModule(loader);
         }}
-        className={`flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm transition-colors ${
+        className={`flex items-center gap-3 w-full rounded-md px-3 py-2.5 text-[13px] uppercase tracking-[0.08em] font-semibold transition-colors ${
           active
-            ? "bg-[var(--accent-cyan-soft)] text-[var(--text-primary)] font-medium"
+            ? "bg-[var(--accent-cyan-soft)] text-[var(--text-primary)]"
             : "text-[var(--text-secondary)] hover:bg-white/[0.03] hover:text-[var(--text-primary)]"
         }`}
       >
         <Icon className={`w-4 h-4 shrink-0 ${active ? "text-[var(--accent)]" : ""}`} />
         <span className="truncate">{item.label}</span>
 
-        {/* Right-aligned slot: tier badge (if any) wins over keyboard shortcut. */}
         <span className="ml-auto flex items-center gap-1.5">
           {item.tier === "pro" && (
             <TierBadge label="PRO" owned={tierOwned} variant="pro" />
@@ -302,7 +252,7 @@ function NavButton({
             <TierBadge label="BIZ" owned={tierOwned} variant="business" />
           )}
           {item.shortcut && !item.tier && (
-            <span className="text-[10px] font-mono text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-[10px] font-mono text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity normal-case tracking-normal">
               {item.shortcut}
             </span>
           )}

@@ -1,6 +1,6 @@
 {
   "productName": "FreshRig",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "identifier": "com.freshrig.app",
   "build": {
     "frontendDist": "../dist",
@@ -28,7 +28,14 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "deb", "rpm", "appimage", "dmg", "app"],
+    "targets": [
+      "nsis",
+      "deb",
+      "rpm",
+      "appimage",
+      "dmg",
+      "app"
+    ],
     "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
@@ -41,7 +48,9 @@
       "nsis": {
         "installMode": "both",
         "displayLanguageSelector": false,
-        "languages": ["English"],
+        "languages": [
+          "English"
+        ],
         "startMenuFolder": "FreshRig"
       },
       "webviewInstallMode": {
@@ -50,10 +59,16 @@
     },
     "linux": {
       "deb": {
-        "depends": ["libwebkit2gtk-4.1-0", "libayatana-appindicator3-1"]
+        "depends": [
+          "libwebkit2gtk-4.1-0",
+          "libayatana-appindicator3-1"
+        ]
       },
       "rpm": {
-        "depends": ["webkit2gtk4.1", "libayatana-appindicator3"]
+        "depends": [
+          "webkit2gtk4.1",
+          "libayatana-appindicator3"
+        ]
       },
       "appimage": {
         "bundleMediaFramework": false
@@ -63,9 +78,18 @@
       "minimumSystemVersion": "11.0",
       "hardenedRuntime": true,
       "dmg": {
-        "windowSize": { "width": 660, "height": 400 },
-        "appPosition": { "x": 180, "y": 170 },
-        "applicationFolderPosition": { "x": 480, "y": 170 }
+        "windowSize": {
+          "width": 660,
+          "height": 400
+        },
+        "appPosition": {
+          "x": 180,
+          "y": 170
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 170
+        }
       }
     }
   },
@@ -73,7 +97,9 @@
     "os": {},
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcxQUEyMTkxN0YwM0Q0Q0YKUldUUDFBTi9rU0dxY2NKL2VpZlQzWHR6STd6eURyenQ0Vi9FWjdrRkY0ZXh0SVNyRmJqMXdkaDAK",
-      "endpoints": ["https://github.com/ZIPREX420/freshrig/releases/latest/download/latest.json"],
+      "endpoints": [
+        "https://github.com/ZIPREX420/freshrig/releases/latest/download/latest.json"
+      ],
       "windows": {
         "installMode": "passive"
       }
