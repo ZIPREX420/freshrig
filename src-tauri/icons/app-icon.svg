@@ -4,12 +4,16 @@
     1024×1024 master. Tauri's `tauri icon app-icon.svg` regenerates the
     full PNG/ICO/ICNS family from this file.
 
-    Design:
-      * Outlined "FR" letterforms, slight italic lean
-      * Hollow neon tube effect: gradient outer stroke + dark cutout + white highlight
-      * Cyan → violet → magenta linear gradient (left to right, userSpaceOnUse)
-      * Layered gaussian blur bloom (cyan + magenta) for the glow halo
-      * Dark rounded plate behind, with subtle ambient corner glows + grid
+    Design intent (matches the operator-supplied reference):
+      * Outlined "FR" letterforms with subtle italic lean (top shifted right
+        by ~22 units over 540 height ≈ 2.3°).
+      * Hollow neon-tube effect: 64-wide gradient outer stroke, 44-wide
+        dark cutout, 4-wide bright highlight — so the visible neon edges
+        are ~10 units wide on each side and the dark hollow dominates the
+        stroke interior.
+      * Layered cyan + magenta gaussian-blur bloom for the rich neon halo.
+      * Cyan → violet → magenta linear gradient (left to right).
+      * Dark rounded plate with very subtle ambient corner glows + grid.
   -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -24,26 +28,28 @@
     </linearGradient>
 
     <radialGradient id="glow-cyan" cx="20%" cy="20%" r="60%">
-      <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.30"/>
+      <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.20"/>
       <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="glow-magenta" cx="80%" cy="80%" r="60%">
-      <stop offset="0%"   stop-color="#ff2bd6" stop-opacity="0.24"/>
+      <stop offset="0%"   stop-color="#ff2bd6" stop-opacity="0.16"/>
       <stop offset="100%" stop-color="#ff2bd6" stop-opacity="0"/>
     </radialGradient>
 
     <!--
-      Bloom: a wide cyan halo and a slightly tighter magenta halo, both
-      derived from the source-alpha silhouette and merged under the live
-      stroke. A thin tight blur in front softens the highlight.
+      Bloom: a wide cyan halo (b3) and a tighter magenta halo (b2), both
+      derived from the source-alpha silhouette and merged BEHIND the live
+      stroke. b1 is a tight blur applied last for a soft bright bloom on
+      top. Flood opacities 0.7 give the stronger neon-sign halo intensity
+      visible in the reference.
     -->
     <filter id="bloom" x="-30%" y="-30%" width="160%" height="160%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="4"  result="b1"/>
       <feGaussianBlur in="SourceAlpha" stdDeviation="14" result="b2"/>
-      <feGaussianBlur in="SourceAlpha" stdDeviation="32" result="b3"/>
-      <feFlood flood-color="#00e5ff" flood-opacity="0.55" result="cyan"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="34" result="b3"/>
+      <feFlood flood-color="#00e5ff" flood-opacity="0.70" result="cyan"/>
       <feComposite in="cyan" in2="b3" operator="in" result="cyan-glow"/>
-      <feFlood flood-color="#ff2bd6" flood-opacity="0.55" result="mag"/>
+      <feFlood flood-color="#ff2bd6" flood-opacity="0.70" result="mag"/>
       <feComposite in="mag" in2="b2" operator="in" result="mag-glow"/>
       <feMerge>
         <feMergeNode in="cyan-glow"/>
@@ -54,31 +60,29 @@
     </filter>
 
     <!--
-      FR letterforms.
-      F: thick vertical with slight italic lean, top arm, mid arm.
-      R: thick vertical with matching lean, rounded bowl, diagonal leg.
-      The geometry is shared between this file, og-image.svg, and BrandMark.tsx
-      (the React component scales the same shapes to a 64-unit viewBox).
+      FR letterforms with subtle italic lean baked into the coordinates
+      (no skewX transform, so stroke widths stay uniform).
+      Shared with og-image.svg and BrandMark.tsx (1/16 scale).
     -->
     <g id="fr-glyph" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <!-- F -->
-      <path d="M 260 240 L 245 760"/>
-      <path d="M 252 240 L 480 240"/>
-      <path d="M 248 510 L 425 510"/>
-      <!-- R -->
-      <path d="M 590 240 L 575 760"/>
-      <path d="M 582 240 L 720 240 C 844 240 844 510 720 510 L 605 510"/>
-      <path d="M 660 510 L 870 760"/>
+      <!-- F: italic vertical, top arm, mid arm -->
+      <path d="M 252 230 L 230 770"/>
+      <path d="M 250 230 L 480 230"/>
+      <path d="M 240 510 L 380 510"/>
+      <!-- R: italic vertical, bowl, leg -->
+      <path d="M 600 230 L 578 770"/>
+      <path d="M 598 230 L 720 230 C 850 230 850 510 720 510 L 595 510"/>
+      <path d="M 658 510 L 868 770"/>
     </g>
   </defs>
 
-  <!-- Base plate + ambient corner glows -->
+  <!-- Base plate + ambient corner glows (toned down so the FR is the focal point) -->
   <rect width="1024" height="1024" rx="180" fill="url(#bg)"/>
   <rect width="1024" height="1024" rx="180" fill="url(#glow-cyan)"/>
   <rect width="1024" height="1024" rx="180" fill="url(#glow-magenta)"/>
 
-  <!-- Subtle grid (5% opacity, near-invisible at app-icon sizes) -->
-  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+  <!-- Subtle grid (4% opacity) -->
+  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
     <line x1="0"   y1="256" x2="1024" y2="256"/>
     <line x1="0"   y1="512" x2="1024" y2="512"/>
     <line x1="0"   y1="768" x2="1024" y2="768"/>
@@ -88,15 +92,16 @@
   </g>
 
   <!--
-    Hollow neon tube:
-      1. Outer gradient stroke (62) — the "tube"
-      2. Dark cutout stroke (24) — punches the inside out, leaving a ring
-      3. Bright white highlight (6) — the inner specular/glass core
-    Bloom on the parent group adds the halo around the whole composition.
+    Hollow neon tube — three concentric strokes on the same path:
+      1. 64-wide gradient outer stroke (the tube body)
+      2. 44-wide dark cutout (punches the inside out, leaving 10-wide
+         bright rings on each side — the visible neon edges)
+      3. 4-wide bright highlight (subtle inner specular glint, 0.7 opacity)
+    Bloom on the parent group adds the rich halo around the silhouette.
   -->
   <g filter="url(#bloom)">
-    <use href="#fr-glyph" stroke="url(#neon)" stroke-width="62"/>
-    <use href="#fr-glyph" stroke="#0a0c14"   stroke-width="24"/>
-    <use href="#fr-glyph" stroke="#ffffff"   stroke-width="6" opacity="0.85"/>
+    <use href="#fr-glyph" stroke="url(#neon)" stroke-width="64"/>
+    <use href="#fr-glyph" stroke="#0a0c14"   stroke-width="44"/>
+    <use href="#fr-glyph" stroke="#ffffff"   stroke-width="4" opacity="0.7"/>
   </g>
 </svg>

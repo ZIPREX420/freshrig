@@ -31,10 +31,10 @@
     <filter id="bloom" x="-30%" y="-30%" width="160%" height="160%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="3"  result="b1"/>
       <feGaussianBlur in="SourceAlpha" stdDeviation="9"  result="b2"/>
-      <feGaussianBlur in="SourceAlpha" stdDeviation="20" result="b3"/>
-      <feFlood flood-color="#00e5ff" flood-opacity="0.55" result="cyan"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="22" result="b3"/>
+      <feFlood flood-color="#00e5ff" flood-opacity="0.70" result="cyan"/>
       <feComposite in="cyan" in2="b3" operator="in" result="cyan-glow"/>
-      <feFlood flood-color="#ff2bd6" flood-opacity="0.55" result="mag"/>
+      <feFlood flood-color="#ff2bd6" flood-opacity="0.70" result="mag"/>
       <feComposite in="mag" in2="b2" operator="in" result="mag-glow"/>
       <feMerge>
         <feMergeNode in="cyan-glow"/>
@@ -46,12 +46,12 @@
 
     <!-- Same glyph geometry as src-tauri/icons/app-icon.svg. Scaled by the parent transform. -->
     <g id="fr-glyph" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M 260 240 L 245 760"/>
-      <path d="M 252 240 L 480 240"/>
-      <path d="M 248 510 L 425 510"/>
-      <path d="M 590 240 L 575 760"/>
-      <path d="M 582 240 L 720 240 C 844 240 844 510 720 510 L 605 510"/>
-      <path d="M 660 510 L 870 760"/>
+      <path d="M 252 230 L 230 770"/>
+      <path d="M 250 230 L 480 230"/>
+      <path d="M 240 510 L 380 510"/>
+      <path d="M 600 230 L 578 770"/>
+      <path d="M 598 230 L 720 230 C 850 230 850 510 720 510 L 595 510"/>
+      <path d="M 658 510 L 868 770"/>
     </g>
   </defs>
 
@@ -66,9 +66,9 @@
     tall mark, centred horizontally and sitting above the wordmark.
   -->
   <g transform="translate(446 30) scale(0.30)" filter="url(#bloom)">
-    <use href="#fr-glyph" stroke="url(#neon)" stroke-width="62"/>
-    <use href="#fr-glyph" stroke="#0a0c14"   stroke-width="24"/>
-    <use href="#fr-glyph" stroke="#ffffff"   stroke-width="6" opacity="0.85"/>
+    <use href="#fr-glyph" stroke="url(#neon)" stroke-width="64"/>
+    <use href="#fr-glyph" stroke="#0a0c14"   stroke-width="44"/>
+    <use href="#fr-glyph" stroke="#ffffff"   stroke-width="4" opacity="0.7"/>
   </g>
 
   <!-- Wordmark -->
