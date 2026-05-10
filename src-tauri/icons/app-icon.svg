@@ -1,39 +1,84 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!--
+    FreshRig app icon — neon FR ligature.
+    1024×1024 master. Tauri's `tauri icon app-icon.svg` regenerates the
+    full PNG/ICO/ICNS family from this file.
+
+    Design:
+      * Outlined "FR" letterforms, slight italic lean
+      * Hollow neon tube effect: gradient outer stroke + dark cutout + white highlight
+      * Cyan → violet → magenta linear gradient (left to right, userSpaceOnUse)
+      * Layered gaussian blur bloom (cyan + magenta) for the glow halo
+      * Dark rounded plate behind, with subtle ambient corner glows + grid
+  -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#0a0c14"/>
       <stop offset="100%" stop-color="#05060a"/>
     </linearGradient>
-    <linearGradient id="neon" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00e5ff"/>
+
+    <linearGradient id="neon" x1="0" y1="0" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#00e5ff"/>
+      <stop offset="50%"  stop-color="#9b6bff"/>
       <stop offset="100%" stop-color="#ff2bd6"/>
     </linearGradient>
+
     <radialGradient id="glow-cyan" cx="20%" cy="20%" r="60%">
-      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.28"/>
+      <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.30"/>
       <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="glow-magenta" cx="80%" cy="80%" r="60%">
-      <stop offset="0%" stop-color="#ff2bd6" stop-opacity="0.22"/>
+      <stop offset="0%"   stop-color="#ff2bd6" stop-opacity="0.24"/>
       <stop offset="100%" stop-color="#ff2bd6" stop-opacity="0"/>
     </radialGradient>
-    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
+
+    <!--
+      Bloom: a wide cyan halo and a slightly tighter magenta halo, both
+      derived from the source-alpha silhouette and merged under the live
+      stroke. A thin tight blur in front softens the highlight.
+    -->
+    <filter id="bloom" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"  result="b1"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="14" result="b2"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="32" result="b3"/>
+      <feFlood flood-color="#00e5ff" flood-opacity="0.55" result="cyan"/>
+      <feComposite in="cyan" in2="b3" operator="in" result="cyan-glow"/>
+      <feFlood flood-color="#ff2bd6" flood-opacity="0.55" result="mag"/>
+      <feComposite in="mag" in2="b2" operator="in" result="mag-glow"/>
       <feMerge>
-        <feMergeNode in="blur"/>
+        <feMergeNode in="cyan-glow"/>
+        <feMergeNode in="mag-glow"/>
+        <feMergeNode in="b1"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+
+    <!--
+      FR letterforms.
+      F: thick vertical with slight italic lean, top arm, mid arm.
+      R: thick vertical with matching lean, rounded bowl, diagonal leg.
+      The geometry is shared between this file, og-image.svg, and BrandMark.tsx
+      (the React component scales the same shapes to a 64-unit viewBox).
+    -->
+    <g id="fr-glyph" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <!-- F -->
+      <path d="M 260 240 L 245 760"/>
+      <path d="M 252 240 L 480 240"/>
+      <path d="M 248 510 L 425 510"/>
+      <!-- R -->
+      <path d="M 590 240 L 575 760"/>
+      <path d="M 582 240 L 720 240 C 844 240 844 510 720 510 L 605 510"/>
+      <path d="M 660 510 L 870 760"/>
+    </g>
   </defs>
 
-  <!-- Background tile with rounded corners -->
+  <!-- Base plate + ambient corner glows -->
   <rect width="1024" height="1024" rx="180" fill="url(#bg)"/>
-
-  <!-- Corner ambient glows -->
   <rect width="1024" height="1024" rx="180" fill="url(#glow-cyan)"/>
   <rect width="1024" height="1024" rx="180" fill="url(#glow-magenta)"/>
 
-  <!-- Subtle grid -->
-  <g opacity="0.06" stroke="#ffffff" stroke-width="1">
+  <!-- Subtle grid (5% opacity, near-invisible at app-icon sizes) -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
     <line x1="0"   y1="256" x2="1024" y2="256"/>
     <line x1="0"   y1="512" x2="1024" y2="512"/>
     <line x1="0"   y1="768" x2="1024" y2="768"/>
@@ -42,21 +87,16 @@
     <line x1="768" y1="0"   x2="768"  y2="1024"/>
   </g>
 
-  <!-- Hexagon frame -->
-  <g filter="url(#soft-glow)">
-    <polygon points="512,112 896,320 896,704 512,912 128,704 128,320"
-             fill="none" stroke="url(#neon)" stroke-width="28" stroke-linejoin="round"/>
-  </g>
-
-  <!-- "FR" monogram (matches BrandMark.tsx, scaled to 1024) -->
-  <g fill="none" stroke="url(#neon)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft-glow)">
-    <!-- F -->
-    <path d="M 320 320 L 320 736"/>
-    <path d="M 320 320 L 512 320"/>
-    <path d="M 320 528 L 480 528"/>
-    <!-- R -->
-    <path d="M 576 736 L 576 320"/>
-    <path d="M 576 320 L 672 320 Q 752 320 752 416 Q 752 512 672 512 L 576 512"/>
-    <path d="M 656 512 L 752 736"/>
+  <!--
+    Hollow neon tube:
+      1. Outer gradient stroke (62) — the "tube"
+      2. Dark cutout stroke (24) — punches the inside out, leaving a ring
+      3. Bright white highlight (6) — the inner specular/glass core
+    Bloom on the parent group adds the halo around the whole composition.
+  -->
+  <g filter="url(#bloom)">
+    <use href="#fr-glyph" stroke="url(#neon)" stroke-width="62"/>
+    <use href="#fr-glyph" stroke="#0a0c14"   stroke-width="24"/>
+    <use href="#fr-glyph" stroke="#ffffff"   stroke-width="6" opacity="0.85"/>
   </g>
 </svg>

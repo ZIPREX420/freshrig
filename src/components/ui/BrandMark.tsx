@@ -11,17 +11,22 @@ export interface BrandMarkProps {
 }
 
 /**
- * Hexagonal "FR" monogram. Cyan→magenta gradient stroke with a soft outer
- * glow. Used in Sidebar / TitleBar / splash. The shape is intentionally
- * angular (cyber/instrument-panel feel) rather than rounded.
+ * Outlined "FR" monogram — neon hollow-tube look.
  *
- * The stroke is drawn as a path so the gradient applies cleanly across the
- * whole mark. `idSuffix` lets multiple instances coexist without colliding
- * `<defs>` IDs.
+ * Matches the master `src-tauri/icons/app-icon.svg` at 1/16 scale (64-unit
+ * viewBox vs 1024). Cyan→violet→magenta gradient stroke wraps the
+ * letterforms; a tighter dark stroke punches the inside, leaving a thin
+ * ring; a bright highlight runs through the centre. A layered gaussian
+ * bloom on the parent group adds the cyan + magenta halo.
+ *
+ * `idSuffix` lets multiple instances coexist without colliding `<defs>` IDs.
+ * `size` is the rendered pixel square — at <= 16px the bloom collapses
+ * visually and the mark degrades cleanly to a chunky gradient FR.
  */
 export function BrandMark({ size = 32, className = "", idSuffix = "" }: BrandMarkProps) {
-  const gradId = `brand-grad${idSuffix}`;
-  const glowId = `brand-glow${idSuffix}`;
+  const gradId = `fr-grad${idSuffix}`;
+  const bloomId = `fr-bloom${idSuffix}`;
+  const glyphId = `fr-glyph${idSuffix}`;
   return (
     <svg
       width={size}
@@ -33,46 +38,58 @@ export function BrandMark({ size = 32, className = "", idSuffix = "" }: BrandMar
       className={className}
     >
       <defs>
-        <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient
+          id={gradId}
+          x1="0"
+          y1="0"
+          x2="64"
+          y2="0"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0%" style={{ stopColor: "var(--accent-cyan)" }} />
+          <stop offset="50%" stopColor="#9b6bff" />
           <stop offset="100%" style={{ stopColor: "var(--accent-magenta)" }} />
         </linearGradient>
-        <filter id={glowId} x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="1.2" result="blur" />
+
+        <filter id={bloomId} x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="0.3" result="b1" />
+          <feGaussianBlur in="SourceAlpha" stdDeviation="1.0" result="b2" />
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="b3" />
+          <feFlood floodColor="#00e5ff" floodOpacity="0.5" result="cyan" />
+          <feComposite in="cyan" in2="b3" operator="in" result="cyan-glow" />
+          <feFlood floodColor="#ff2bd6" floodOpacity="0.5" result="mag" />
+          <feComposite in="mag" in2="b2" operator="in" result="mag-glow" />
           <feMerge>
-            <feMergeNode in="blur" />
+            <feMergeNode in="cyan-glow" />
+            <feMergeNode in="mag-glow" />
+            <feMergeNode in="b1" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+
+        {/*
+          Shared FR letterforms — six paths reused by the three layered <use>
+          calls below. Geometry mirrors the 1024-unit master glyph at 1/16:
+          F  → vertical (slight italic), top arm, mid arm.
+          R  → vertical (matching lean), bowl, diagonal leg.
+        */}
+        <g id={glyphId} fill="none" strokeLinecap="round" strokeLinejoin="round">
+          {/* F */}
+          <path d="M 16.25 15 L 15.31 47.5" />
+          <path d="M 15.75 15 L 30 15" />
+          <path d="M 15.5 31.875 L 26.56 31.875" />
+          {/* R */}
+          <path d="M 36.875 15 L 35.94 47.5" />
+          <path d="M 36.375 15 L 45 15 C 52.75 15 52.75 31.875 45 31.875 L 37.81 31.875" />
+          <path d="M 41.25 31.875 L 54.375 47.5" />
+        </g>
       </defs>
 
-      {/* Hexagon frame */}
-      <polygon
-        points="32,4 56,18 56,46 32,60 8,46 8,18"
-        fill="none"
-        stroke={`url(#${gradId})`}
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-        filter={`url(#${glowId})`}
-      />
-
-      {/* "F" — left vertical + two horizontal arms */}
-      <g
-        stroke={`url(#${gradId})`}
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        filter={`url(#${glowId})`}
-      >
-        <path d="M 20 18 L 20 46" />
-        <path d="M 20 18 L 32 18" />
-        <path d="M 20 31 L 30 31" />
-
-        {/* "R" — right vertical, arch, diagonal leg */}
-        <path d="M 36 46 L 36 18" />
-        <path d="M 36 18 L 42 18 Q 47 18 47 24 Q 47 30 42 30 L 36 30" />
-        <path d="M 41 30 L 47 46" />
+      {/* Hollow neon tube: outer gradient + dark cutout + bright highlight + bloom */}
+      <g filter={`url(#${bloomId})`}>
+        <use href={`#${glyphId}`} stroke={`url(#${gradId})`} strokeWidth="3.875" />
+        <use href={`#${glyphId}`} stroke="#0a0c14" strokeWidth="1.5" />
+        <use href={`#${glyphId}`} stroke="#ffffff" strokeWidth="0.4" opacity="0.85" />
       </g>
     </svg>
   );
