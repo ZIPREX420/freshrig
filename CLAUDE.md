@@ -17,7 +17,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - `src/config/` — App constants (`app.ts`)
 
 ## Key patterns & Requirements
-- **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.2.0**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
+- **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.3.0**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
 - **Tauri IPC:** Frontend calls `invoke('command_name')`, backend uses `#[tauri::command]` in `src-tauri/src/lib.rs`.
 - **Rust ↔ TS:** Rust uses snake_case, TypeScript uses camelCase — Tauri auto-converts field names.
 - **Hardware data:** All hardware info comes from WMI queries via the `wmi` crate (v0.18+, `WMIConnection::new()` takes 0 args). WMI queries have 5-second timeouts to avoid hangs.
@@ -34,7 +34,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - **Animations:** `MotionConfig` at app root with spring `{ stiffness: 380, damping: 30, mass: 0.8 }`. Page transitions use `AnimatePresence mode="wait"`. Import from `"framer-motion"` (package name, even though the library was renamed to `"motion"`).
 - **Startup Manager:** `StartupApproved` binary format: `byte[0]` `0x02`=enabled (`0x06` also enabled), `0x03`=disabled; `bytes[4..12]`=FILETIME of the toggle. Protected items: `SecurityHealth`, `Windows Defender`, `explorer` (case-insensitive substring match in `is_protected`).
 - **Pro License Testing:** Test keys must match format `FR-XXXXX-XXXXX` where X is uppercase A-Z or 0-9. Example test key: `FR-TEST1-KEY01`. The old lowercase "FR-xxxxx" format no longer validates.
-- **Pro Features (v2.2):** Pro features gated by `ProFeatureGate` (`src/components/ui/ProFeatureGate.tsx`, modes: `overlay | blur | badge | hide`). Subscription pricing: Pro $5.99/mo or $49/yr, Business $14.99/mo or $149/yr per technician, plus a Founder's Lifetime offer at $149 one-time (first 500 customers / 30-day window) — see constants in `src/config/app.ts`. Non-Pro users see an upsell linking to `PRO_PURCHASE_URL` (currently aliased to `PRICING_PAGE_URL` while LemonSqueezy is being set up — pre-launch mode). The Pro commands registered in `lib.rs`:
+- **Pro Features (v2.3):** Pro features gated by `ProFeatureGate` (`src/components/ui/ProFeatureGate.tsx`, modes: `overlay | blur | badge | hide`). Subscription pricing: Pro $5.99/mo or $49/yr, Business $14.99/mo or $149/yr per technician, plus a Founder's Lifetime offer at $149 one-time (first 500 customers / 30-day window) — see constants in `src/config/app.ts`. Non-Pro users see an upsell linking to `PRO_PURCHASE_URL` (currently aliased to `PRICING_PAGE_URL` while LemonSqueezy is being set up — pre-launch mode). The Pro commands registered in `lib.rs`:
   - **Disk Cleanup** — `commands::cleanup::scan_cleanup`, `commands::cleanup::run_cleanup`
   - **Privacy Dashboard** — `commands::privacy::get_privacy_settings`, `get_app_permissions`, `apply_privacy_setting`, `revoke_app_permission`
   - **Network Tools** — `commands::network::network_reset_dns`, `network_reset_full`, `set_dns_servers`, `get_network_interfaces`, `get_wifi_passwords`

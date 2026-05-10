@@ -102,15 +102,39 @@ jobs:
           echo "RELEASE_TAG=${TAG}" >> "$GITHUB_ENV"
           echo "APP_VERSION=${TAG#v}" >> "$GITHUB_ENV"
 
+      # Defence against the v2.3.0 release artifact gap (4-of-11 assets shipped):
+      # when TAURI_SIGNING_PRIVATE_KEY is empty/missing, tauri-action silently
+      # skips signing AND latest.json generation, producing a release the
+      # auto-updater can't see. Fail loudly here instead. The length echo helps
+      # diagnose accidental rotations without leaking the key.
+      - name: Verify signing key is configured
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            echo "::error::TAURI_SIGNING_PRIVATE_KEY secret is empty - release would ship without .sig files and without latest.json (auto-updater would break for existing installs). Set the secret in repo Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          echo "TAURI_SIGNING_PRIVATE_KEY is set (length: ${#TAURI_SIGNING_PRIVATE_KEY} chars)"
+
       # Pinned to a specific minor to avoid silent supply-chain shifts when
       # the @v0 mutable major tag is updated. Bump deliberately when needed.
+      #
+      # Per-platform `--bundles`: tauri-action 0.5.21 with `args: ''` reads
+      # tauri.conf.json's full `bundle.targets` list, but a single failing
+      # bundle (e.g. rpm if rpmbuild is broken) can leave the others missing
+      # while tauri-action still exits 0. The v2.3.0 Linux job emitted only
+      # `.deb` despite targets listing deb/rpm/appimage. Pinning per platform
+      # makes the expected output explicit and lets a failure surface as a
+      # red CI step instead of a silently-half-empty release.
       - uses: tauri-apps/tauri-action@v0.5.21
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          args: ''
+          args: ${{ matrix.platform == 'ubuntu-22.04' && '--bundles deb,rpm,appimage' || (matrix.platform == 'windows-latest' && '--bundles nsis' || '') }}
           tagName: ${{ env.RELEASE_TAG }}
           releaseName: 'FreshRig ${{ env.RELEASE_TAG }}'
           releaseBody: |

@@ -1,4 +1,34 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.3.0": `### FreshRig v2.3.0 — Cyber/Neon redesign 🟦🟪
+
+A top-to-bottom visual refresh plus a serious security/perf hardening pass. Same FreshRig under the hood — every IPC command, route, store, and saved profile keeps working — but the surface looks like the control panel it always wanted to be.
+
+**Cyber/neon visual identity.**
+Dual-accent system in \`src/styles.css\`: cyan (\`#00e5ff\`) for primary/safe/"go", magenta (\`#ff2bd6\`) for creative/Pro/danger. The 6 accent presets in Settings rotate the cyan slot; magenta stays constant so the dual-accent identity is always present. Deeper near-black palette, ambient body glow + faint grid, neon edge shadows, tighter radii.
+
+**New brand mark.**
+Hexagonal "FR" monogram with a cyan→magenta gradient stroke + soft glow filter, paired with a "FRESH"/magenta-"RIG" wordmark. Both render in the Sidebar and TitleBar. The full Tauri icon family was regenerated from a new high-detail \`app-icon.svg\` — installer icons, taskbar, alt-tab, all platforms.
+
+**Re-themed landing page.**
+Every page on the public site (index, download, privacy, terms) was repainted with the new palette and outlined-neon CTAs. \`og-image.svg\` rewritten so social shares pick up the new identity.
+
+**Hardening pass (carried over from the v2.2 audit).**
+Content-Security-Policy is now properly set in \`tauri.conf.json\` (was \`null\`), with a separate \`devCsp\` for HMR. The \`tauri-plugin-shell\` capability has been fully removed — no part of the webview can spawn shells anymore. The headless apply-profile flow's marker file is now versioned (\`{ "v": 1, ... }\`) and chmod-0600 on Unix. Panic logs scrub usernames, MAC addresses, and serial numbers before writing — covered by 7 new unit tests. A release-readiness gate test refuses to compile a tagged release if \`EXPECTED_STORE_ID\` / \`EXPECTED_PRODUCT_ID\` in license.rs are still placeholder zeros.
+
+**Bundle splitting + lazy routes.**
+Route-level code splitting via a \`lazyNamed\` helper means the entry chunk only loads what the dashboard needs. Every other page hydrates on hover/focus via a preload map in the Sidebar — clicks feel instant, but the initial paint downloads ~40% less JS. Vendor chunks (recharts, framer-motion, etc.) split out separately so they cache independently across releases.
+
+**Build chain caught up.**
+Node pinned to 22.22.2 (Vite 8 needs ≥22.12). Three small clippy fixes shipped along the way (\`doc_lazy_continuation\`, \`iter_overeager_cloned\`). The \`cargo audit\` step now copies \`src-tauri/.cargo/audit.toml\` into \`$CARGO_HOME\` before running so the suppression list is honoured (cargo-audit v0.22+ no longer auto-discovers it). The 18-ID upstream-Tauri suppression list is now grouped + commented so it's easy to re-evaluate when Tauri bumps gtk-rs / replaces urlpattern.
+
+No business-logic, route, IPC, store, or data-shape changes. Profiles, license keys, and settings carry over unchanged.
+`,
+  "2.2.1": `### FreshRig v2.2.1 — Agent definitions 🤖
+
+Adds 6 GitHub Copilot agent definition files at the repo root (\`freshrig-docs-auditor.agent.md\`, \`freshrig-issue-fix.agent.md\`, \`freshrig-launch-audit.agent.md\`, \`freshrig-platform-parity.agent.md\`, \`freshrig-release-manager.agent.md\`, \`github-ci-monitor.agent.md\`). Each is a focused agent for one slice of the FreshRig contributor workflow (docs consistency, issue triage, launch audits, cross-platform parity, version-bump hygiene, CI triage).
+
+No code, UI, or behaviour changes — pure contributor tooling. The auto-updater will skip past this release on the next check.
+`,
   "2.2.0": `### FreshRig v2.2.0 — Cross-platform polish 🐧🍎
 
 The first release where the Linux and macOS builds stop feeling like ports. Driver and app installs now work end-to-end on Ubuntu/Fedora/Arch/openSUSE, the type renders with native fonts on every OS, and there's finally a single source of truth for which features work where.
