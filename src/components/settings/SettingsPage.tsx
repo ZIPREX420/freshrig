@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { invoke } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useSettingsStore, type AccentColor } from "../../stores/settingsStore";
+import { SUPPORTED_LOCALES, type Locale } from "../../i18n";
 import { useProfileStore } from "../../stores/profileStore";
 import { useUpdateStore } from "../../stores/updateStore";
 import { useLicenseStore } from "../../stores/licenseStore";
@@ -178,6 +179,22 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
               )}
             </div>
           </SettingRow>
+          <SettingRow
+            label="Replay welcome / onboarding"
+            description="Show the splash screen + onboarding wizard again on next app launch — useful for previewing the first-launch UX or starting fresh after big config changes."
+          >
+            <button
+              type="button"
+              onClick={async () => {
+                await setSetting("hasSeenSplash", false);
+                await setSetting("hasCompletedOnboarding", false);
+                toast.success("Welcome flow will replay on next launch");
+              }}
+              className="px-3 py-1.5 rounded-md text-xs uppercase tracking-wider font-semibold text-[var(--accent-cyan)] border border-[var(--accent-cyan-rim)] bg-transparent hover:bg-[var(--accent-cyan-soft)] transition-colors active:scale-[0.97]"
+            >
+              Replay
+            </button>
+          </SettingRow>
         </div>
       </section>
 
@@ -307,6 +324,29 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
                 </button>
               );
             })}
+          </div>
+
+          {/* Language picker — duplicates the sidebar footer toggle so users
+              who don't notice the pill have a clear, labelled control here. */}
+          <div className="border-t border-border pt-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-text-primary">Language</p>
+                <p className="text-xs text-text-muted mt-0.5">UI display language. Falls back to English where translations are missing.</p>
+              </div>
+              <select
+                value={settings.locale}
+                onChange={(e) => setSetting("locale", e.target.value as Locale)}
+                className="bg-bg-tertiary border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:border-accent/50"
+                aria-label="UI language"
+              >
+                {SUPPORTED_LOCALES.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.flag}  {l.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </section>

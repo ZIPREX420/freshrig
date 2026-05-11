@@ -1,4 +1,5 @@
 // Copyright (c) 2026 Seppe Willemsens (ZIPREX420). MIT License.
+import { useMemo } from "react";
 import type { ReactNode } from "react";
 
 export type ProgressRingAccent = "cyan" | "magenta" | "success" | "warning" | "error";
@@ -73,6 +74,31 @@ export function ProgressRing({
   const dashLen = indeterminate ? circumference * 0.25 : (clampedValue / 100) * circumference;
   const dashGap = circumference - dashLen;
 
+  // Tick marks are static for a given size — useMemo so we don't rebuild
+  // 12 React elements on every value tick.
+  const tickMarks = useMemo(() => {
+    if (size === "sm") return null;
+    return Array.from({ length: 12 }).map((_, i) => {
+      const angle = (i * 30 * Math.PI) / 180 - Math.PI / 2;
+      const x1 = px / 2 + (r - strokeW * 0.6) * Math.cos(angle);
+      const y1 = px / 2 + (r - strokeW * 0.6) * Math.sin(angle);
+      const x2 = px / 2 + (r + strokeW * 0.4) * Math.cos(angle);
+      const y2 = px / 2 + (r + strokeW * 0.4) * Math.sin(angle);
+      return (
+        <line
+          key={i}
+          x1={x1}
+          y1={y1}
+          x2={x2}
+          y2={y2}
+          stroke="var(--border-hover)"
+          strokeWidth={1}
+          opacity={0.6}
+        />
+      );
+    });
+  }, [size, px, r, strokeW]);
+
   const stroke =
     accent === "magenta"
       ? "var(--accent-magenta)"
@@ -110,27 +136,10 @@ export function ProgressRing({
           stroke="var(--border)"
           strokeWidth={strokeW}
         />
-        {/* Tick marks every 30deg — subtle, reinforces the "instrument panel" feel */}
-        {size !== "sm" &&
-          Array.from({ length: 12 }).map((_, i) => {
-            const angle = (i * 30 * Math.PI) / 180 - Math.PI / 2;
-            const x1 = px / 2 + (r - strokeW * 0.6) * Math.cos(angle);
-            const y1 = px / 2 + (r - strokeW * 0.6) * Math.sin(angle);
-            const x2 = px / 2 + (r + strokeW * 0.4) * Math.cos(angle);
-            const y2 = px / 2 + (r + strokeW * 0.4) * Math.sin(angle);
-            return (
-              <line
-                key={i}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="var(--border-hover)"
-                strokeWidth={1}
-                opacity={0.6}
-              />
-            );
-          })}
+        {/* Tick marks every 30deg — subtle, reinforces the "instrument panel" feel.
+            Memoized — depends only on (size, strokeW, r, px) which only change with
+            `size` prop, so re-renders triggered by `value` updates skip this work. */}
+        {size !== "sm" && tickMarks}
         {/* Animated progress arc */}
         <circle
           cx={px / 2}

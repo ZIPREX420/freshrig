@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Search,
-  LayoutDashboard,
   Cpu,
   Package,
   BookMarked,
@@ -23,6 +22,9 @@ import {
   Camera,
   Server,
   Briefcase,
+  Home,
+  Layers,
+  Wrench,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
@@ -88,30 +90,30 @@ export function CommandPalette({ onClose, onNavigate }: CommandPaletteProps) {
   }, []);
 
   const commands: Command[] = [
-    // Pages
+    // Pages — primary v2.4 hub-and-spoke nav (Ctrl+1–5)
     {
       id: "nav-dashboard",
-      label: "Go to Dashboard",
+      label: "Go to Home",
       category: "Pages",
-      icon: LayoutDashboard,
+      icon: Home,
       shortcut: "Ctrl+1",
       action: () => onNavigate("dashboard"),
     },
     {
-      id: "nav-drivers",
-      label: "Go to Drivers",
+      id: "nav-snelsetup",
+      label: "Go to Quick Setup",
       category: "Pages",
-      icon: Cpu,
+      icon: Zap,
       shortcut: "Ctrl+2",
-      action: () => onNavigate("drivers"),
+      action: () => onNavigate("snelsetup"),
     },
     {
-      id: "nav-apps",
-      label: "Go to Apps",
+      id: "nav-aangepaste",
+      label: "Go to Custom Setup",
       category: "Pages",
-      icon: Package,
+      icon: Layers,
       shortcut: "Ctrl+3",
-      action: () => onNavigate("apps"),
+      action: () => onNavigate("aangepaste"),
     },
     {
       id: "nav-profiles",
@@ -122,35 +124,59 @@ export function CommandPalette({ onClose, onNavigate }: CommandPaletteProps) {
       action: () => onNavigate("profiles"),
     },
     {
+      id: "nav-tools",
+      label: "Go to Tools",
+      category: "Pages",
+      icon: Wrench,
+      shortcut: "Ctrl+5",
+      action: () => onNavigate("tools"),
+    },
+    // Pages — individual tools, reachable via Tools hub or directly (Ctrl+6–9)
+    {
+      id: "nav-drivers",
+      label: "Go to Drivers",
+      category: "Pages",
+      icon: Cpu,
+      shortcut: "Ctrl+6",
+      action: () => onNavigate("drivers"),
+    },
+    {
+      id: "nav-apps",
+      label: "Go to Apps",
+      category: "Pages",
+      icon: Package,
+      shortcut: "Ctrl+7",
+      action: () => onNavigate("apps"),
+    },
+    {
       id: "nav-optimize",
       label: "Go to Optimize",
       category: "Pages",
       icon: Sparkles,
-      shortcut: "Ctrl+5",
+      shortcut: "Ctrl+8",
       action: () => onNavigate("optimize"),
-    },
-    {
-      id: "nav-startup",
-      label: "Go to Startup",
-      category: "Pages",
-      icon: Rocket,
-      shortcut: "Ctrl+6",
-      action: () => onNavigate("startup"),
     },
     {
       id: "nav-cleanup",
       label: "Go to Cleanup",
       category: "Pages",
       icon: Trash2,
-      shortcut: "Ctrl+7",
+      shortcut: "Ctrl+9",
       action: () => onNavigate("cleanup"),
+    },
+    // Remaining tools (no Ctrl+N shortcut, still searchable from palette)
+    {
+      id: "nav-startup",
+      label: "Go to Startup",
+      category: "Pages",
+      icon: Rocket,
+      action: () => onNavigate("startup"),
     },
     {
       id: "nav-privacy",
       label: "Go to Privacy",
       category: "Pages",
       icon: Shield,
-      shortcut: "Ctrl+8",
       action: () => onNavigate("privacy"),
     },
     {
@@ -158,7 +184,6 @@ export function CommandPalette({ onClose, onNavigate }: CommandPaletteProps) {
       label: "Go to Network",
       category: "Pages",
       icon: Globe,
-      shortcut: "Ctrl+9",
       action: () => onNavigate("network"),
     },
     {

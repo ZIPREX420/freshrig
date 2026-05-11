@@ -1,47 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <!--
-    FreshRig app icon — neon FR ligature.
-    1024×1024 master. Tauri's `tauri icon app-icon.svg` regenerates the
-    full PNG/ICO/ICNS family from this file.
+    FreshRig app icon — neon FR monogram, words intentionally omitted
+    (clean OS icon).
+    1024×1024 master. Tauri's `npx @tauri-apps/cli icon app-icon.svg`
+    regenerates the full PNG/ICO/ICNS family from this file.
 
     Design intent (matches the operator-supplied reference):
-      * Outlined "FR" letterforms with subtle italic lean (top shifted right
-        by ~22 units over 540 height ≈ 2.3°).
+      * UPRIGHT (not italic) F + R letterforms — vertical strokes are
+        perfectly straight, top arms horizontal.
       * Hollow neon-tube effect: 64-wide gradient outer stroke, 44-wide
-        dark cutout, 4-wide bright highlight — so the visible neon edges
-        are ~10 units wide on each side and the dark hollow dominates the
-        stroke interior.
+        dark cutout, 4-wide bright highlight — leaves ~10-wide bright
+        rings on each side and the dark hollow dominates the centre.
       * Layered cyan + magenta gaussian-blur bloom for the rich neon halo.
-      * Cyan → violet → magenta linear gradient (left to right).
-      * Dark rounded plate with very subtle ambient corner glows + grid.
+      * Cyan ⟶ violet ⟶ magenta linear gradient (left to right) so the
+        F reads cyan, the R reads magenta, with a kiss between.
+      * Transparent background — OS applies its own dock / taskbar surface;
+        no baked-in plate so the icon looks native on every desktop.
   -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0a0c14"/>
-      <stop offset="100%" stop-color="#05060a"/>
-    </linearGradient>
-
     <linearGradient id="neon" x1="0" y1="0" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
       <stop offset="0%"   stop-color="#00e5ff"/>
-      <stop offset="50%"  stop-color="#9b6bff"/>
+      <stop offset="42%"  stop-color="#00e5ff"/>
+      <stop offset="50%"  stop-color="#a060ff"/>
+      <stop offset="58%"  stop-color="#ff2bd6"/>
       <stop offset="100%" stop-color="#ff2bd6"/>
     </linearGradient>
-
-    <radialGradient id="glow-cyan" cx="20%" cy="20%" r="60%">
-      <stop offset="0%"   stop-color="#00e5ff" stop-opacity="0.20"/>
-      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="glow-magenta" cx="80%" cy="80%" r="60%">
-      <stop offset="0%"   stop-color="#ff2bd6" stop-opacity="0.16"/>
-      <stop offset="100%" stop-color="#ff2bd6" stop-opacity="0"/>
-    </radialGradient>
 
     <!--
       Bloom: a wide cyan halo (b3) and a tighter magenta halo (b2), both
       derived from the source-alpha silhouette and merged BEHIND the live
       stroke. b1 is a tight blur applied last for a soft bright bloom on
-      top. Flood opacities 0.7 give the stronger neon-sign halo intensity
-      visible in the reference.
+      top. Flood opacities tuned so the FR reads "lit neon sign" rather
+      than "watercolour smear".
     -->
     <filter id="bloom" x="-30%" y="-30%" width="160%" height="160%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="4"  result="b1"/>
@@ -60,36 +50,21 @@
     </filter>
 
     <!--
-      FR letterforms with subtle italic lean baked into the coordinates
-      (no skewX transform, so stroke widths stay uniform).
-      Shared with og-image.svg and BrandMark.tsx (1/16 scale).
+      FR letterforms — UPRIGHT (no italic lean). Coordinates target a
+      ~520-tall × 700-wide centred area in the 1024² icon, with breathing
+      room around the edges so the bloom radiates without clipping.
     -->
     <g id="fr-glyph" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <!-- F: italic vertical, top arm, mid arm -->
-      <path d="M 252 230 L 230 770"/>
-      <path d="M 250 230 L 480 230"/>
-      <path d="M 240 510 L 380 510"/>
-      <!-- R: italic vertical, bowl, leg -->
-      <path d="M 600 230 L 578 770"/>
-      <path d="M 598 230 L 720 230 C 850 230 850 510 720 510 L 595 510"/>
-      <path d="M 658 510 L 868 770"/>
+      <!-- F: vertical, top arm, mid arm -->
+      <path d="M 240 230 L 240 770"/>
+      <path d="M 240 230 L 480 230"/>
+      <path d="M 240 510 L 410 510"/>
+      <!-- R: vertical, bowl, diagonal leg -->
+      <path d="M 600 230 L 600 770"/>
+      <path d="M 600 230 L 720 230 C 850 230 850 510 720 510 L 600 510"/>
+      <path d="M 720 510 L 868 770"/>
     </g>
   </defs>
-
-  <!-- Base plate + ambient corner glows (toned down so the FR is the focal point) -->
-  <rect width="1024" height="1024" rx="180" fill="url(#bg)"/>
-  <rect width="1024" height="1024" rx="180" fill="url(#glow-cyan)"/>
-  <rect width="1024" height="1024" rx="180" fill="url(#glow-magenta)"/>
-
-  <!-- Subtle grid (4% opacity) -->
-  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
-    <line x1="0"   y1="256" x2="1024" y2="256"/>
-    <line x1="0"   y1="512" x2="1024" y2="512"/>
-    <line x1="0"   y1="768" x2="1024" y2="768"/>
-    <line x1="256" y1="0"   x2="256"  y2="1024"/>
-    <line x1="512" y1="0"   x2="512"  y2="1024"/>
-    <line x1="768" y1="0"   x2="768"  y2="1024"/>
-  </g>
 
   <!--
     Hollow neon tube — three concentric strokes on the same path:
@@ -98,10 +73,11 @@
          bright rings on each side — the visible neon edges)
       3. 4-wide bright highlight (subtle inner specular glint, 0.7 opacity)
     Bloom on the parent group adds the rich halo around the silhouette.
+    Transparent canvas — no baseplate so the icon looks native on every OS.
   -->
   <g filter="url(#bloom)">
     <use href="#fr-glyph" stroke="url(#neon)" stroke-width="64"/>
-    <use href="#fr-glyph" stroke="#0a0c14"   stroke-width="44"/>
+    <use href="#fr-glyph" stroke="#05060a"   stroke-width="44"/>
     <use href="#fr-glyph" stroke="#ffffff"   stroke-width="4" opacity="0.7"/>
   </g>
 </svg>

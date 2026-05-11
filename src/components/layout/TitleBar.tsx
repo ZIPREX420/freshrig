@@ -1,10 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { BrandMark, BrandWordmark } from "../ui/BrandMark";
+import { NotificationBell } from "../ui/NotificationBell";
+import { useUpdateStore } from "../../stores/updateStore";
 import { isTauri } from "../../lib";
 
-export function TitleBar() {
+export interface TitleBarProps {
+  /** Triggered when the bell is clicked. App.tsx wires this to open the
+   *  notifications surface (currently the WhatsNewModal). */
+  onShowNotifications?: () => void;
+}
+
+export function TitleBar({ onShowNotifications }: TitleBarProps = {}) {
   const [maximized, setMaximized] = useState(false);
+  const updateStatus = useUpdateStore((s) => s.status);
+
+  // Unread = pending app update (1) + any session-stashed privacy drift
+  // toast hint (1). Cheap derivation; recomputed only when its inputs move.
+  const unread = useMemo(() => {
+    let n = 0;
+    if (updateStatus === "available" || updateStatus === "downloading" || updateStatus === "installing") n += 1;
+    try {
+      if (
+        typeof sessionStorage !== "undefined" &&
+        sessionStorage.getItem("freshrig.driftToastShown") === "1"
+      ) {
+        n += 1;
+      }
+    } catch {
+      /* sessionStorage unavailable in some sandbox contexts — ignore */
+    }
+    return n;
+  }, [updateStatus]);
 
   useEffect(() => {
     if (!isTauri()) return;
@@ -62,8 +89,12 @@ export function TitleBar() {
       {/* Spacer (draggable) */}
       <div data-tauri-drag-region className="flex-1" />
 
-      {/* Right: Window controls */}
-      <div className="flex h-full">
+      {/* Right: Notification bell + window controls */}
+      <div className="flex h-full items-center">
+        <div className="px-1.5">
+          <NotificationBell unread={unread} onClick={onShowNotifications} />
+        </div>
+
         <button
           onClick={handleMinimize}
           className="flex items-center justify-center w-11 h-full hover:bg-[var(--titlebar-btn-hover)] transition-colors"

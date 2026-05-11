@@ -147,23 +147,43 @@
     <div class="absolute inset-0 bg-gradient-to-b from-accent-cyan/5 via-transparent to-transparent pointer-events-none"></div>
 
     <div class="relative max-w-3xl mx-auto px-6 text-center pt-24 pb-20">
-      <!-- Hex brand monogram -->
-      <div class="inline-flex items-center justify-center mb-8" style="filter: drop-shadow(0 0 24px rgba(0, 229, 255, 0.45)) drop-shadow(0 0 48px rgba(255, 43, 214, 0.35));">
-        <svg width="140" height="140" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="FreshRig logo">
+      <!-- FR neon-tube monogram (no frame, matches BrandMark + app-icon) -->
+      <div class="inline-flex items-center justify-center mb-8">
+        <svg width="280" height="140" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" aria-label="FreshRig logo">
           <defs>
-            <linearGradient id="hero-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#00e5ff" />
-              <stop offset="100%" style="stop-color:#ff2bd6" />
+            <linearGradient id="hero-fr-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#00e5ff" />
+              <stop offset="42%" stop-color="#00e5ff" />
+              <stop offset="50%" stop-color="#a060ff" />
+              <stop offset="58%" stop-color="#ff2bd6" />
+              <stop offset="100%" stop-color="#ff2bd6" />
             </linearGradient>
+            <filter id="hero-fr-bloom" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" result="b1" />
+              <feGaussianBlur in="SourceAlpha" stdDeviation="3.2" result="b2" />
+              <feFlood flood-color="#00e5ff" flood-opacity="0.55" result="cyan" />
+              <feComposite in="cyan" in2="b2" operator="in" result="cyan-glow" />
+              <feFlood flood-color="#ff2bd6" flood-opacity="0.50" result="mag" />
+              <feComposite in="mag" in2="b1" operator="in" result="mag-glow" />
+              <feMerge>
+                <feMergeNode in="cyan-glow" />
+                <feMergeNode in="mag-glow" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <g id="hero-fr-paths" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 30 18 L 30 82" />
+              <path d="M 30 18 L 78 18" />
+              <path d="M 30 50 L 64 50" />
+              <path d="M 100 18 L 100 82" />
+              <path d="M 100 18 L 136 18 C 168 18 168 54 136 54 L 100 54" />
+              <path d="M 136 54 L 176 82" />
+            </g>
           </defs>
-          <polygon points="32,4 56,18 56,46 32,60 8,46 8,18" fill="rgba(0, 229, 255, 0.06)" stroke="url(#hero-grad)" stroke-width="2.25" stroke-linejoin="round" />
-          <g stroke="url(#hero-grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
-            <path d="M 20 18 L 20 46" />
-            <path d="M 20 18 L 32 18" />
-            <path d="M 20 31 L 30 31" />
-            <path d="M 36 46 L 36 18" />
-            <path d="M 36 18 L 42 18 Q 47 18 47 24 Q 47 30 42 30 L 36 30" />
-            <path d="M 41 30 L 47 46" />
+          <g filter="url(#hero-fr-bloom)">
+            <use href="#hero-fr-paths" stroke="url(#hero-fr-grad)" stroke-width="9" />
+            <use href="#hero-fr-paths" stroke="#05060a" stroke-width="5" />
+            <use href="#hero-fr-paths" stroke="rgba(255,255,255,0.65)" stroke-width="1.2" />
           </g>
         </svg>
       </div>

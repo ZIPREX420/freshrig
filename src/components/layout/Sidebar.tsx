@@ -14,6 +14,7 @@ import type { LucideIcon } from "lucide-react";
 import { APP_VERSION } from "../../config/app";
 import { BrandMark, BrandWordmark } from "../ui/BrandMark";
 import { SidebarSystemCard } from "./SidebarSystemCard";
+import { useHardwareStore } from "../../stores/hardwareStore";
 import { useLicenseStore } from "../../stores/licenseStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { SUPPORTED_LOCALES } from "../../i18n";
@@ -136,12 +137,11 @@ export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarPro
         </ul>
       </nav>
 
-      {/* System status card — bottom slot per mockup. Compact variant by
-          default; the dashboard surfaces the expanded view if desired. */}
-      <SidebarSystemCard
-        variant="compact"
-        health="optimal"
-        lastScanLabel="Today"
+      {/* System status card — bottom slot per mockup. Expanded variant on
+          the Home/Dashboard view (matches mockup-2 with full hardware specs);
+          compact variant elsewhere to give nav more vertical room. */}
+      <SidebarSystemCardConnected
+        currentView={currentView}
         onDetailsClick={() => onNavigate("dashboard")}
       />
 
@@ -286,3 +286,51 @@ function TierBadge({
     </span>
   );
 }
+
+function SidebarSystemCardConnected({
+  currentView,
+  onDetailsClick,
+}: {
+  currentView: string;
+  onDetailsClick: () => void;
+}) {
+  const summary = useHardwareStore((s) => s.summary);
+  const driverIssues = useHardwareStore((s) => s.driverIssues);
+
+  // On the home/dashboard view we render the expanded variant matching
+  // mockup-2; everywhere else we use compact so the nav has room to breathe.
+  const variant = currentView === "dashboard" ? "expanded" : "compact";
+
+  // Health derives from driver-issue count: 0 = optimal, 1-2 = warning,
+  // 3+ = critical. Mirrors the dashboard score thresholds at low cost.
+  const health: "optimal" | "warning" | "critical" | "unknown" = !summary
+    ? "unknown"
+    : driverIssues.length === 0
+    ? "optimal"
+    : driverIssues.length <= 2
+    ? "warning"
+    : "critical";
+
+  // Pull short forms of the spec fields for the expanded card. Trim aggressively
+  // — the sidebar is 260px wide so anything past ~24 chars wraps awkwardly.
+  const osName = summary
+    ? `${summary.system.osVersion}${summary.system.osBuild ? " " + summary.system.osBuild : ""}`.slice(0, 28)
+    : undefined;
+  const cpu = summary?.cpu?.name?.slice(0, 28);
+  const gpu = summary?.gpus?.[0]?.name?.slice(0, 28);
+  const ram = summary ? `${Math.round(summary.system.totalRamGb)} GB` : undefined;
+
+  return (
+    <SidebarSystemCard
+      variant={variant}
+      health={health}
+      lastScanLabel="Today"
+      osName={osName}
+      cpu={cpu}
+      gpu={gpu}
+      ram={ram}
+      onDetailsClick={onDetailsClick}
+    />
+  );
+}
+
