@@ -48,9 +48,14 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
+      # NO rust-cache here — releases must be hermetic. Caching `target/`
+      # across runs caused v2.4.0 to ship only the .deb on Linux: stale
+      # bundle output from a prior run was restored, tauri-action treated
+      # the bundles as "already built", skipped the full bundle + signing
+      # sweep, and emitted a 4-of-11-asset release in 3m14s (vs ~12m for a
+      # clean v2.2.0 build). CI keeps swatinem/rust-cache for speed;
+      # release.yml runs rarely enough that the 5–7 min compile time is
+      # worth correctness.
 
       - name: Install Linux dependencies
         if: matrix.platform == 'ubuntu-22.04'
