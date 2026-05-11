@@ -36,7 +36,7 @@ aes-gcm = "0.10"
 rand = "0.10"
 cfg-if = "1"
 os_info = "3"
-sysinfo = "0.38"
+sysinfo = "0.39"
 rusqlite = { version = "0.32", features = ["bundled"] }
 uuid = { version = "1", features = ["v4"] }
 age = "0.11"
