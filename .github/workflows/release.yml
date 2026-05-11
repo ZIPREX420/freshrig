@@ -54,6 +54,10 @@ jobs:
 
       - name: Install Linux dependencies
         if: matrix.platform == 'ubuntu-22.04'
+        # `rpm` provides rpmbuild, which tauri-bundler needs to produce the
+        # .rpm asset. Without it the rpm bundle silently no-ops (v2.4.0 ran
+        # in 3m19s because only .deb built — see project memory). libfuse2
+        # is needed for AppImage runtime.
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -64,7 +68,8 @@ jobs:
             libxdo-dev \
             patchelf \
             libfuse2 \
-            libssl-dev
+            libssl-dev \
+            rpm
 
       - name: Install frontend dependencies
         run: npm ci
@@ -123,20 +128,19 @@ jobs:
       # Pinned to a specific minor to avoid silent supply-chain shifts when
       # the @v0 mutable major tag is updated. Bump deliberately when needed.
       #
-      # Per-platform `--bundles`: tauri-action 0.5.21 with `args: ''` reads
-      # tauri.conf.json's full `bundle.targets` list, but a single failing
-      # bundle (e.g. rpm if rpmbuild is broken) can leave the others missing
-      # while tauri-action still exits 0. The v2.3.0 Linux job emitted only
-      # `.deb` despite targets listing deb/rpm/appimage. Pinning per platform
-      # makes the expected output explicit and lets a failure surface as a
-      # red CI step instead of a silently-half-empty release.
+      # `args: ''` lets tauri-action read tauri.conf.json's full
+      # `bundle.targets` list (nsis on Windows, deb/rpm/appimage on Linux,
+      # dmg/app on macOS). v2.4.0 attempted an explicit `--bundles X,Y,Z`
+      # override here, which interacted badly with the missing rpmbuild dep
+      # (only .deb built; .rpm + .AppImage silently no-op'd). Reverting to
+      # the v2.2.0-era default + adding rpm to apt-get fixes this.
       - uses: tauri-apps/tauri-action@v0.5.21
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          args: ${{ matrix.platform == 'ubuntu-22.04' && '--bundles deb,rpm,appimage' || (matrix.platform == 'windows-latest' && '--bundles nsis' || '') }}
+          args: ''
           tagName: ${{ env.RELEASE_TAG }}
           releaseName: 'FreshRig ${{ env.RELEASE_TAG }}'
           releaseBody: |
