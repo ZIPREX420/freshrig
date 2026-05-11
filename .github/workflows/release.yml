@@ -139,7 +139,7 @@ jobs:
       # override here, which interacted badly with the missing rpmbuild dep
       # (only .deb built; .rpm + .AppImage silently no-op'd). Reverting to
       # the v2.2.0-era default + adding rpm to apt-get fixes this.
-      - uses: tauri-apps/tauri-action@v0.5.21
+      - uses: tauri-apps/tauri-action@v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
