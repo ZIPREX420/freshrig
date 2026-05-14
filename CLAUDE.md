@@ -18,6 +18,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 
 ## Key patterns & Requirements
 - **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.4.2**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
+- **Brand assets:** The logo is a raster mark and the single source of truth (it replaced the old hand-drawn SVG monogram in v2.4.2). Full-res masters live in `brand/` — `logo-source.png` (original framed render), `logo-icon.png` (framed rounded tile with transparent corners — the icon-generation master), `logo-mark.png` (frameless neon "FR"). `src/assets/brand/logo.png` is the app-bundled copy imported by `<BrandMark>`; `site/assets/{logo,logo-mark,og-image}.png` back the landing page. The desktop icon family in `src-tauri/icons/` is regenerated from `brand/logo-icon.png` via `npx @tauri-apps/cli icon`. `src-tauri/icons/app-icon.svg` is the retired legacy monogram, kept only as a record.
 - **Tauri IPC:** Frontend calls `invoke('command_name')`, backend uses `#[tauri::command]` in `src-tauri/src/lib.rs`.
 - **Rust ↔ TS:** Rust uses snake_case, TypeScript uses camelCase — Tauri auto-converts field names.
 - **Hardware data:** All hardware info comes from WMI queries via the `wmi` crate (v0.18+, `WMIConnection::new()` takes 0 args). WMI queries have 5-second timeouts to avoid hangs.
@@ -100,7 +101,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - `npm run tauri build` — creates production NSIS installer in `src-tauri/target/release/bundle/nsis/`
 - `cargo clippy --manifest-path src-tauri/Cargo.toml` — lint Rust code
 - `npx tsc --noEmit` — type-check frontend
-- `npx @tauri-apps/cli icon <source>` — regenerate all icon sizes from a source image
+- `npx @tauri-apps/cli icon brand/logo-icon.png` — regenerate the full app-icon family in `src-tauri/icons/` from the brand master
 - **Mandatory validation after EVERY phase:**
   `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && npx tsc --noEmit`
 - **Git:** Commit each completed phase separately after successful validation.
@@ -128,7 +129,7 @@ The UI is a control-panel for power users — Discord meets HWiNFO meets Tron. D
 - **`<PageBreadcrumb>`** — back arrow + uppercase current-page label + optional right slot. Goes at the top of every subpage. Pair with `PageShell` `title` slot — use one or the other.
 - **`<NotificationBell>`** — title-bar widget with magenta unread-count dot.
 - **`<CircuitBackdrop>`** — full-bleed deterministic SVG circuit-rain backdrop. Use for splash / welcome screens; pointer-events disabled so it never interferes.
-- **`<BrandMark>`** + **`<BrandWordmark>`** — hex "FR" monogram and "FRESH"+magenta "RIG" wordmark. Always render together at hero scale; can use BrandMark alone in chrome.
+- **`<BrandMark>`** + **`<BrandWordmark>`** — the FreshRig logo (the framed neon "FR" raster mark, `src/assets/brand/logo.png`) and the "FRESH"+magenta "RIG" wordmark. `<BrandMark>` is square 1:1 and takes a `size` prop; render it with the wordmark at hero scale, or alone in chrome. See the **Brand assets** note in Key patterns for the full asset pipeline.
 
 **Layout patterns.**
 - Hub-and-spoke navigation: Home / Quick Setup / Custom Setup / Profiles / Tools / Settings (+ Fleet for Business). 5–7 sidebar items max.
