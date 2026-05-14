@@ -104,6 +104,8 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - `npx @tauri-apps/cli icon brand/logo-icon.png` — regenerate the full app-icon family in `src-tauri/icons/` from the brand master
 - **Mandatory validation after EVERY phase:**
   `cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && npx tsc --noEmit`
+- **File edits (Cowork / agent sessions):** Write all file changes through the shell (`python`/`sed`/redirects via bash) — **this is the standard**. The Edit/Write tools corrupt files on this mount (null-byte padding and mid-file truncation); the shell is the only reliable path. Always verify after writing (no null bytes, file ends correctly, `tsc` still passes).
+- **Git from the sandbox:** `.git/` is protected here — a stale `.git/index.lock` cannot be removed from the sandbox, so `git add`/`commit`/`rm` may fail. `git` *reads* (`show`, `log`, `status`, `diff`) work fine; run staging/commits from outside the sandbox (e.g. native Windows git) if the lock blocks them.
 - **Git:** Commit each completed phase separately after successful validation.
 
 ## Code conventions
