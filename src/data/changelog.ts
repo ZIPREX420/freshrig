@@ -1,4 +1,19 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.4.1": `### FreshRig v2.4.1 — Dependency maintenance 🔧
+
+Routine dependency update batch. No user-facing changes; safe upgrade for all v2.4.0 users.
+
+**npm updates.**
+react + react-dom 19.2.5 → 19.2.6, react-hotkeys-hook 5.2.4 → 5.3.2, tailwindcss + @tailwindcss/vite 4.2.2 → 4.3.0, @tauri-apps/cli 2.11.0 → 2.11.1, vite 8.0.10 → 8.0.13, zustand 5.0.12 → 5.0.13.
+
+**Cargo update.**
+sysinfo 0.38 → 0.39.1.
+
+**CI fix.**
+The release-readiness LemonSqueezy gate carve-out now covers the full v2.4.x family via \`startsWith()\` instead of individual tag checks, so future patch releases in this pre-launch cycle don't require a manual carve-out edit.
+
+Auto-updater will pull this for all v2.4.0 installs on their next check.
+`,
   "2.4.0": `### FreshRig v2.4.0 — Layout overhaul 🔷🔶
 
 A full UI rethink. Same FreshRig under the hood, completely rebuilt on top — the v2.3 cyber/neon palette finally has the layout it was always meant for.
