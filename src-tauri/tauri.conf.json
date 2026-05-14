@@ -1,6 +1,6 @@
 {
   "productName": "FreshRig",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "identifier": "com.freshrig.app",
   "build": {
     "frontendDist": "../dist",

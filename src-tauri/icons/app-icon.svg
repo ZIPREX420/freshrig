@@ -2,8 +2,11 @@
   <!--
     FreshRig app icon — neon FR monogram, words intentionally omitted
     (clean OS icon).
-    1024×1024 master. Tauri's `npx @tauri-apps/cli icon app-icon.svg`
-    regenerates the full PNG/ICO/ICNS family from this file.
+    LEGACY ARTWORK — superseded by the v2.4.2 logo refresh. The shipped
+    icon family is now regenerated from the raster master
+    `brand/logo-icon.png` via `npx @tauri-apps/cli icon brand/logo-icon.png`.
+    This SVG is kept only as a record of the earlier frameless monogram;
+    editing it no longer affects the built icons.
 
     Design intent (matches the operator-supplied reference):
       * UPRIGHT (not italic) F + R letterforms — vertical strokes are

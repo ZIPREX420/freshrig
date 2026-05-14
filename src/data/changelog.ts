@@ -1,4 +1,19 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.4.2": `### FreshRig v2.4.2 — New logo 🎨
+
+FreshRig has a fresh face. The neon "FR" mark was redrawn as a proper framed app icon and threaded through every surface — app, installer, and landing page.
+
+**App icon.**
+A new desktop icon on Windows, Linux, and macOS. The full \`.ico\` / \`.icns\` / PNG icon family — plus the Windows Store tiles and mobile icon sets — is now regenerated from a single raster master (\`brand/logo-icon.png\`).
+
+**In-app.**
+The title bar, sidebar, and splash screen render the new logo via the reworked \`BrandMark\` component, now backed by the real artwork instead of a hand-drawn SVG.
+
+**Landing page.**
+The site hero, favicons, and social-share image all use the new mark.
+
+No functional changes — a purely visual refresh. The auto-updater will pull this for all v2.4.x installs on their next check.
+`,
   "2.4.1": `### FreshRig v2.4.1 — Dependency maintenance 🔧
 
 Routine dependency update batch. No user-facing changes; safe upgrade for all v2.4.0 users.
