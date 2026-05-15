@@ -1491,7 +1491,7 @@ dependencies = [
 
 [[package]]
 name = "freshrig"
-version = "2.4.2"
+version = "2.5.0"
 dependencies = [
  "aes-gcm",
  "age",

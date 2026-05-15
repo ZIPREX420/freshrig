@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { HexIcon } from "../ui/HexIcon";
+import { CircuitBackdrop } from "../ui/CircuitBackdrop";
 import { HeroCTA } from "../ui/HeroCTA";
 import { HexStepper } from "../ui/HexStepper";
 import type { HexStep } from "../ui/HexStepper";
@@ -228,15 +229,14 @@ export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
                     : "text-text-secondary hover:bg-white/[0.03] hover:text-text-primary"
                 }`}
               >
-                <span
-                  className={`flex items-center justify-center w-7 h-7 rounded-md ${
-                    activeCategory === cat.id
-                      ? "bg-[var(--accent-magenta-soft)] text-[var(--accent-magenta)]"
-                      : "bg-white/[0.03] text-text-secondary"
-                  }`}
+                <HexIcon
+                  size="sm"
+                  accent={activeCategory === cat.id ? cat.accent : "cyan"}
+                  idSuffix={`wiz-cat-${cat.id}`}
+                  className={activeCategory === cat.id ? "" : "opacity-40"}
                 >
                   {cat.icon}
-                </span>
+                </HexIcon>
                 <span className="flex-1 min-w-0">
                   <span className="block text-[13px] font-medium truncate">
                     {cat.label}
@@ -344,26 +344,33 @@ export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
         }
       />
 
-      <div className="flex flex-col items-center text-center mb-12">
-        <HexIcon
-          size="hero"
-          accent="magenta"
-          pulse
-          perspectiveFloor
-          idSuffix="aangepaste-hero"
-        >
-          <Layers className="w-16 h-16" strokeWidth={2.5} />
-        </HexIcon>
-        <h1 className="mt-8 text-[40px] font-semibold uppercase tracking-[0.14em] text-gradient-neon leading-tight">
-          Custom Setup
-        </h1>
-        <p className="mt-4 text-text-primary text-[15px] max-w-md">
-          You decide. Full control.
-        </p>
-        <p className="mt-3 text-text-secondary text-body max-w-xl">
-          Build your own configuration — choose exactly what gets installed,
-          optimised, and configured. Down to the smallest detail.
-        </p>
+      {/* Atmospheric hero — magenta-tinted circuit backdrop */}
+      <div className="relative flex flex-col items-center text-center mb-12 rounded-xl overflow-hidden py-12 px-6"
+           style={{ background: "linear-gradient(180deg, rgba(255,43,214,0.04) 0%, transparent 60%)" }}>
+        <CircuitBackdrop accent="magenta" density="normal" showCityscape />
+        <div className="absolute inset-0 pointer-events-none"
+             style={{ background: "radial-gradient(ellipse 70% 60% at 50% 40%, transparent 40%, var(--bg-base) 100%)" }} />
+        <div className="relative z-10 flex flex-col items-center">
+          <HexIcon
+            size="hero"
+            accent="magenta"
+            pulse
+            perspectiveFloor
+            idSuffix="aangepaste-hero"
+          >
+            <Layers className="w-16 h-16" strokeWidth={2.5} />
+          </HexIcon>
+          <h1 className="mt-8 text-[40px] font-semibold uppercase tracking-[0.14em] text-gradient-neon leading-tight">
+            Custom Setup
+          </h1>
+          <p className="mt-4 text-text-primary text-[15px] max-w-md">
+            You decide. Full control.
+          </p>
+          <p className="mt-3 text-text-secondary text-body max-w-xl">
+            Build your own configuration — choose exactly what gets installed,
+            optimised, and configured. Down to the smallest detail.
+          </p>
+        </div>
       </div>
 
       <div className="mb-10">
@@ -379,27 +386,18 @@ export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
                   setActiveCategory(cat.id);
                   startWizard();
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-md bg-bg-card border border-border hover:border-[var(--accent-magenta-rim)] hover:bg-bg-card-hover transition-colors text-left group`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-md bg-bg-card border border-border hover:border-[${cat.accent === "magenta" ? "var(--accent-magenta-rim)" : "var(--accent-cyan-rim)"}] hover:bg-bg-card-hover transition-colors text-left group`}
               >
-                <span
-                  className={`flex items-center justify-center w-9 h-9 rounded-md ${
-                    cat.accent === "magenta"
-                      ? "bg-[var(--accent-magenta-soft)] text-[var(--accent-magenta)]"
-                      : "bg-[var(--accent-cyan-soft)] text-[var(--accent-cyan)]"
-                  }`}
-                >
+                <HexIcon size="sm" accent={cat.accent} idSuffix={`cat-${cat.id}`}>
                   {cat.icon}
-                </span>
+                </HexIcon>
                 <span className="flex-1 min-w-0">
                   <span className="block text-[14px] font-medium text-text-primary truncate">
                     {cat.label}
                   </span>
                   <span
-                    className={`block text-[11px] truncate ${
-                      cat.accent === "magenta"
-                        ? "text-[var(--accent-magenta)]"
-                        : "text-[var(--accent-cyan)]"
-                    }`}
+                    className="block text-[11px] truncate"
+                    style={{ color: cat.accent === "magenta" ? "var(--accent-magenta)" : "var(--accent-cyan)" }}
                   >
                     {cat.count} options
                   </span>

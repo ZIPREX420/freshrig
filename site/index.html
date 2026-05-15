@@ -118,6 +118,34 @@
     details summary::-webkit-details-marker { display: none; }
     details summary::after { content: '+'; float: right; font-size: 1.25rem; color: #525a73; transition: transform 0.2s; }
     details[open] summary::after { content: '-'; }
+
+    /* Hex icon for landing page tiles — pure CSS clip-path hexagon */
+    .lp-hex {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      position: relative;
+    }
+    .lp-hex svg {
+      position: absolute;
+      inset: 0;
+    }
+    .lp-hex-icon {
+      position: relative;
+      z-index: 1;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .tile-hex-cyan  { filter: drop-shadow(0 0 10px rgba(0,229,255,0.5)); }
+    .tile-hex-magenta { filter: drop-shadow(0 0 10px rgba(255,43,214,0.5)); }
+    /* Roofline shimmer animation for cityscape */
+    @keyframes skyline-shimmer {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 1; }
+    }
+    .city-fg { animation: skyline-shimmer 4s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-bg-primary text-text-primary antialiased">
@@ -149,6 +177,69 @@
       radial-gradient(ellipse 60% 40% at 25% 30%, rgba(0, 229, 255, 0.10), transparent 70%),
       radial-gradient(ellipse 60% 40% at 75% 70%, rgba(255, 43, 214, 0.08), transparent 70%);"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-accent-cyan/5 via-transparent to-transparent pointer-events-none"></div>
+
+    <!-- Data-rain circuit lines -->
+    <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none"
+         style="mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 40%, transparent 90%);
+                -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 40%, transparent 90%);">
+      <!-- Vertical data streams -->
+      <line x1="8"  y1="5"  x2="8"  y2="45" stroke="#00e5ff" stroke-width="0.15" opacity="0.12"/>
+      <line x1="15" y1="10" x2="15" y2="60" stroke="#00e5ff" stroke-width="0.15" opacity="0.09"/>
+      <line x1="22" y1="2"  x2="22" y2="38" stroke="#00e5ff" stroke-width="0.15" opacity="0.14"/>
+      <line x1="29" y1="8"  x2="29" y2="52" stroke="#00e5ff" stroke-width="0.15" opacity="0.10"/>
+      <line x1="36" y1="15" x2="36" y2="55" stroke="#00e5ff" stroke-width="0.15" opacity="0.08"/>
+      <line x1="64" y1="12" x2="64" y2="56" stroke="#ff2bd6" stroke-width="0.15" opacity="0.10"/>
+      <line x1="71" y1="5"  x2="71" y2="42" stroke="#ff2bd6" stroke-width="0.15" opacity="0.12"/>
+      <line x1="78" y1="18" x2="78" y2="60" stroke="#ff2bd6" stroke-width="0.15" opacity="0.09"/>
+      <line x1="85" y1="8"  x2="85" y2="48" stroke="#ff2bd6" stroke-width="0.15" opacity="0.11"/>
+      <line x1="92" y1="14" x2="92" y2="58" stroke="#ff2bd6" stroke-width="0.15" opacity="0.08"/>
+      <!-- Horizontal connectors -->
+      <line x1="5"  y1="25" x2="28" y2="25" stroke="#00e5ff" stroke-width="0.15" opacity="0.10"/>
+      <line x1="12" y1="38" x2="35" y2="38" stroke="#00e5ff" stroke-width="0.15" opacity="0.08"/>
+      <line x1="62" y1="28" x2="88" y2="28" stroke="#ff2bd6" stroke-width="0.15" opacity="0.10"/>
+      <line x1="68" y1="42" x2="94" y2="42" stroke="#ff2bd6" stroke-width="0.15" opacity="0.08"/>
+      <!-- Trace nodes -->
+      <circle cx="8"  cy="25" r="0.4" fill="#00e5ff" opacity="0.35"/>
+      <circle cx="22" cy="38" r="0.4" fill="#00e5ff" opacity="0.30"/>
+      <circle cx="71" cy="28" r="0.4" fill="#ff2bd6" opacity="0.35"/>
+      <circle cx="85" cy="42" r="0.4" fill="#ff2bd6" opacity="0.30"/>
+    </svg>
+
+    <!-- City skyline silhouette — distant layer -->
+    <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1200 500" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <linearGradient id="lp-skyline-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0a0c15" stop-opacity="0.90"/>
+          <stop offset="100%" stop-color="#05060a" stop-opacity="1"/>
+        </linearGradient>
+        <linearGradient id="lp-glow-cyan" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.18"/>
+          <stop offset="40%" stop-color="#00e5ff" stop-opacity="0.05"/>
+          <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="lp-glow-magenta" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ff2bd6" stop-opacity="0.14"/>
+          <stop offset="40%" stop-color="#ff2bd6" stop-opacity="0.04"/>
+          <stop offset="100%" stop-color="#ff2bd6" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- Distant buildings -->
+      <path d="M0,500 L0,320 L30,320 L30,300 L60,300 L60,285 L90,285 L90,270 L120,270 L120,285 L150,285 L150,268 L180,268 L180,252 L210,252 L210,268 L240,268 L240,255 L270,255 L270,240 L300,240 L300,255 L330,255 L330,242 L360,242 L360,228 L390,228 L390,242 L420,242 L420,230 L450,230 L450,218 L480,218 L480,230 L510,230 L510,218 L540,218 L540,232 L570,232 L570,218 L600,218 L600,205 L630,205 L630,218 L660,218 L660,232 L690,232 L690,218 L720,218 L720,230 L750,230 L750,242 L780,242 L780,228 L810,228 L810,242 L840,242 L840,255 L870,255 L870,240 L900,240 L900,255 L930,255 L930,268 L960,268 L960,252 L990,252 L990,268 L1020,268 L1020,285 L1050,285 L1050,270 L1080,270 L1080,285 L1110,285 L1110,300 L1140,300 L1140,318 L1170,318 L1170,330 L1200,330 L1200,500 Z" fill="url(#lp-skyline-fill)" opacity="0.5"/>
+      <path d="M0,500 L0,320 L30,320 L30,300 L60,300 L60,285 L90,285 L90,270 L120,270 L120,285 L150,285 L150,268 L180,268 L180,252 L210,252 L210,268 L240,268 L240,255 L270,255 L270,240 L300,240 L300,255 L330,255 L330,242 L360,242 L360,228 L390,228 L390,242 L420,242 L420,230 L450,230 L450,218 L480,218 L480,230 L510,230 L510,218 L540,218 L540,232 L570,232 L570,218 L600,218 L600,205 L630,205 L630,218 L660,218 L660,232 L690,232 L690,218 L720,218 L720,230 L750,230 L750,242 L780,242 L780,228 L810,228 L810,242 L840,242 L840,255 L870,255 L870,240 L900,240 L900,255 L930,255 L930,268 L960,268 L960,252 L990,252 L990,268 L1020,268 L1020,285 L1050,285 L1050,270 L1080,270 L1080,285 L1110,285 L1110,300 L1140,300 L1140,318 L1170,318 L1170,330 L1200,330 L1200,500 Z" fill="url(#lp-glow-cyan)" opacity="0.9"/>
+      <!-- Foreground buildings — left half cyan, right half magenta glow -->
+      <path d="M0,500 L0,390 L40,390 L40,355 L70,355 L70,330 L100,330 L100,305 L125,305 L125,280 L145,280 L145,258 L160,258 L160,238 L175,238 L175,220 L185,220 L185,200 L195,200 L195,182 L205,182 L205,165 L212,165 L212,150 L220,150 L220,138 L228,138 L228,150 L236,150 L236,165 L244,165 L244,182 L252,182 L252,200 L260,200 L260,218 L268,218 L268,238 L276,238 L276,255 L284,255 L284,275 L295,275 L295,295 L310,295 L310,312 L330,312 L330,330 L355,330 L355,352 L385,352 L385,372 L415,372 L415,390 L445,390 L445,372 L480,372 L480,352 L510,352 L510,340 L535,340 L535,325 L560,325 L560,310 L580,310 L580,295 L595,295 L595,278 L608,278 L608,262 L620,262 L620,248 L630,248 L630,235 L638,235 L638,222 L645,222 L645,210 L650,210 L650,198 L656,198 L656,188 L662,188 L662,178 L668,178 L668,188 L674,188 L674,200 L680,200 L680,215 L688,215 L688,230 L696,230 L696,248 L705,248 L705,265 L716,265 L716,282 L730,282 L730,300 L748,300 L748,320 L768,320 L768,340 L792,340 L792,360 L820,360 L820,375 L850,375 L850,390 L880,390 L880,375 L910,375 L910,390 L945,390 L945,380 L980,380 L980,395 L1010,395 L1010,382 L1040,382 L1040,396 L1070,396 L1070,385 L1100,385 L1100,396 L1130,396 L1130,388 L1160,388 L1160,398 L1185,398 L1185,390 L1200,390 L1200,500 Z" fill="url(#lp-skyline-fill)" opacity="0.85"/>
+      <path d="M0,500 L0,390 L40,390 L40,355 L70,355 L70,330 L100,330 L100,305 L125,305 L125,280 L145,280 L145,258 L160,258 L160,238 L175,238 L175,220 L185,220 L185,200 L195,200 L195,182 L205,182 L205,165 L212,165 L212,150 L220,150 L220,138 L228,138 L228,150 L236,150 L236,165 L244,165 L244,182 L252,182 L252,200 L260,200 L260,218 L268,218 L268,238 L276,238 L276,255 L284,255 L284,275 L295,275 L295,295 L310,295 L310,312 L330,312 L330,330 L355,330 L355,352 L385,352 L385,372 L415,372 L415,390 L600,390 L600,500 Z" fill="url(#lp-glow-cyan)" opacity="0.6"/>
+      <path d="M600,500 L600,390 L650,390 L650,198 L656,198 L656,188 L662,188 L662,178 L668,178 L668,188 L674,188 L674,200 L680,200 L680,215 L688,215 L688,230 L696,230 L696,248 L705,248 L705,265 L716,265 L716,282 L730,282 L730,300 L748,300 L748,320 L768,320 L768,340 L792,340 L792,360 L820,360 L820,375 L850,375 L850,390 L880,390 L880,375 L910,375 L910,390 L945,390 L945,380 L980,380 L980,395 L1010,395 L1010,382 L1040,382 L1040,396 L1070,396 L1070,385 L1100,385 L1100,396 L1130,396 L1130,388 L1160,388 L1160,398 L1185,398 L1185,390 L1200,390 L1200,500 Z" fill="url(#lp-glow-magenta)" opacity="0.6"/>
+      <!-- Window lights -->
+      <circle cx="195" cy="210" r="2" fill="#00e5ff" opacity="0.40"/>
+      <circle cx="205" cy="195" r="2" fill="#00e5ff" opacity="0.35"/>
+      <circle cx="220" cy="158" r="2" fill="#00e5ff" opacity="0.45"/>
+      <circle cx="228" cy="165" r="2" fill="#00e5ff" opacity="0.30"/>
+      <circle cx="650" cy="220" r="2" fill="#ff2bd6" opacity="0.40"/>
+      <circle cx="662" cy="195" r="2" fill="#ff2bd6" opacity="0.35"/>
+      <circle cx="668" cy="188" r="2" fill="#ff2bd6" opacity="0.45"/>
+      <circle cx="680" cy="210" r="2" fill="#ff2bd6" opacity="0.30"/>
+    </svg>
 
     <div class="relative max-w-3xl mx-auto px-6 text-center pt-24 pb-20">
       <!-- FreshRig brand mark — frameless neon "FR" (same artwork as the app icon) -->
@@ -205,6 +296,7 @@
       <div class="text-center mb-12">
         <p class="text-xs uppercase tracking-[0.18em] text-text-muted mb-2">Inside FreshRig</p>
         <h2 class="text-3xl sm:text-4xl font-bold text-text-primary">Four ways to set up your PC</h2>
+        <p class="text-text-secondary mt-3 max-w-xl mx-auto">Each mode adapts to how you want to work. Start fresh or tweak everything.</p>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Quick -->

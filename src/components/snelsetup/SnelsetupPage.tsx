@@ -7,9 +7,9 @@ import { HexStepper } from "../ui/HexStepper";
 import type { HexStep } from "../ui/HexStepper";
 import { ProgressRing } from "../ui/ProgressRing";
 import { PageBreadcrumb } from "../ui/PageBreadcrumb";
-import { StatusPill } from "../ui/StatusPill";
 import { Button } from "../ui/Button";
 import { Cpu, Shield, Package, Settings, Lock, Boxes } from "lucide-react";
+import { CircuitBackdrop } from "../ui/CircuitBackdrop";
 
 interface SnelsetupPageProps {
   /** Optional navigate handler — wired to App.tsx so the back arrow on the
@@ -173,38 +173,79 @@ export function SnelsetupPage({ onNavigate }: SnelsetupPageProps) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div className="flex flex-col items-center gap-3">
-            <ProgressRing
-              value={progress}
-              size="xl"
-              accent="cyan"
-              indeterminate={progress < 100}
-              sublabel={progress < 100 ? "Scanning…" : "Complete"}
-            />
-            <p className="text-text-secondary text-[13px] text-center max-w-[280px]">
+          {/* Big progress ring — dominant visual during scanning phase */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <ProgressRing
+                value={progress}
+                size="xl"
+                accent="cyan"
+                indeterminate={progress < 100}
+                label={
+                  progress < 100 ? (
+                    <span className="flex flex-col items-center">
+                      <span className="text-[11px] uppercase tracking-[0.18em] text-text-muted font-semibold mb-1">
+                        {progress < 100 ? "Scanning…" : "Done"}
+                      </span>
+                      <span className="text-[44px] leading-none font-semibold" style={{ color: "var(--accent-cyan)" }}>
+                        {Math.round(progress)}
+                      </span>
+                      <span className="text-[13px] text-text-muted mt-0.5">%</span>
+                    </span>
+                  ) : (
+                    <span className="text-[13px] uppercase tracking-wider" style={{ color: "var(--success)" }}>
+                      Complete
+                    </span>
+                  )
+                }
+              />
+            </div>
+            <p className="text-text-muted text-[12px] text-center max-w-[260px] leading-relaxed">
               {progress < 100
                 ? "Analysing your system to choose the right defaults."
-                : "Scan complete. Ready for the next step."}
+                : "Scan complete — ready for the next step."}
             </p>
           </div>
 
+          {/* Scan checklist — matches mockup's VOLTOOID / SCANNEN / WACHTEN badges */}
           <ul className="space-y-2">
             {scanItems.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center justify-between gap-3 px-4 py-3 rounded-md bg-bg-card border border-border"
+                className={`flex items-center justify-between gap-3 px-4 py-3 rounded-md border transition-colors ${
+                  item.status === "done"
+                    ? "bg-[var(--success-soft)] border-[var(--success-rim)]"
+                    : item.status === "running"
+                    ? "bg-[var(--accent-cyan-soft)] border-[var(--accent-cyan-rim)]"
+                    : "bg-bg-card border-border"
+                }`}
               >
-                <span className="text-text-primary text-[13px] truncate">
+                {/* Status icon dot */}
+                <span className={`w-2 h-2 rounded-full shrink-0 ${
+                  item.status === "done"
+                    ? "bg-[var(--success)]"
+                    : item.status === "running"
+                    ? "bg-[var(--accent-cyan)] animate-pulse"
+                    : "bg-[var(--text-muted)]"
+                }`} />
+                <span className="flex-1 text-text-primary text-[13px] truncate">
                   {item.label}
                 </span>
                 {item.status === "done" && (
-                  <StatusPill kind="success" size="sm">Complete</StatusPill>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.1em] bg-[var(--success-soft)] text-[var(--success)]">
+                    ✓ Complete
+                  </span>
                 )}
                 {item.status === "running" && (
-                  <StatusPill kind="accent" size="sm" pulse>Scanning…</StatusPill>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--accent-cyan)]" style={{ background: "var(--accent-cyan-soft)" }}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-cyan)] animate-pulse" />
+                    Scanning…
+                  </span>
                 )}
                 {item.status === "pending" && (
-                  <StatusPill kind="neutral" size="sm">Waiting</StatusPill>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted bg-white/[0.03]">
+                    Waiting
+                  </span>
                 )}
               </li>
             ))}
@@ -234,20 +275,28 @@ export function SnelsetupPage({ onNavigate }: SnelsetupPageProps) {
         }
       />
 
-      <div className="flex flex-col items-center text-center mb-12">
-        <HexIcon size="hero" accent="cyan" pulse perspectiveFloor idSuffix="snelsetup-hero">
-          <Zap className="w-16 h-16" strokeWidth={2.5} />
-        </HexIcon>
-        <h1 className="mt-8 text-[40px] font-semibold uppercase tracking-[0.14em] text-gradient-neon leading-tight">
-          Quick Setup
-        </h1>
-        <p className="mt-4 text-text-primary text-[15px] max-w-md">
-          Full installation. Automatic.
-        </p>
-        <p className="mt-3 text-text-secondary text-body max-w-xl">
-          Let FreshRig optimise your PC automatically with the best drivers,
-          essential software, and tuned settings — based on your hardware.
-        </p>
+      {/* Atmospheric hero — circuit rain + city skyline behind the hex centerpiece */}
+      <div className="relative flex flex-col items-center text-center mb-12 rounded-xl overflow-hidden py-12 px-6"
+           style={{ background: "linear-gradient(180deg, rgba(0,229,255,0.04) 0%, transparent 60%)" }}>
+        <CircuitBackdrop accent="cyan" density="normal" showCityscape />
+        {/* Subtle vignette so the backdrop doesn't fight the content */}
+        <div className="absolute inset-0 pointer-events-none"
+             style={{ background: "radial-gradient(ellipse 70% 60% at 50% 40%, transparent 40%, var(--bg-base) 100%)" }} />
+        <div className="relative z-10 flex flex-col items-center">
+          <HexIcon size="hero" accent="cyan" pulse perspectiveFloor idSuffix="snelsetup-hero">
+            <Zap className="w-16 h-16" strokeWidth={2.5} />
+          </HexIcon>
+          <h1 className="mt-8 text-[40px] font-semibold uppercase tracking-[0.14em] text-gradient-neon leading-tight">
+            Quick Setup
+          </h1>
+          <p className="mt-4 text-text-primary text-[15px] max-w-md">
+            Full installation. Automatic.
+          </p>
+          <p className="mt-3 text-text-secondary text-body max-w-xl">
+            Let FreshRig optimise your PC automatically with the best drivers,
+            essential software, and tuned settings — based on your hardware.
+          </p>
+        </div>
       </div>
 
       <div className="mb-10">

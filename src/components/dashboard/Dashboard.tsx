@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Gamepad2,
   ChevronRight,
+  Monitor,
 } from "lucide-react";
 import { useHardwareStore } from "../../stores/hardwareStore";
 import { ActionTile } from "../ui/ActionTile";
@@ -170,13 +171,15 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         </div>
       </section>
 
-      <section className="mb-12">
+      <div className="flex flex-col xl:flex-row gap-6 items-start">
+        <div className="flex-1 min-w-0 space-y-6">
+        <section>
         <ActionGrid columns={4}>
           <ActionTile
             icon={<Zap className="w-7 h-7" strokeWidth={2} />}
             title="Quick Setup"
             description="Automatic install of drivers, software, and settings."
-            accent="cyan"
+           
             variant="compact"
             idSuffix="dash-quick"
             onClick={() => onNavigate?.("snelsetup")}
@@ -185,7 +188,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             icon={<Layers className="w-7 h-7" strokeWidth={2} />}
             title="Custom Setup"
             description="Build your own. Pick exactly what gets installed."
-            accent="magenta"
+           
             variant="compact"
             idSuffix="dash-custom"
             onClick={() => onNavigate?.("aangepaste")}
@@ -194,7 +197,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             icon={<Download className="w-7 h-7" strokeWidth={2} />}
             title="Import"
             description="Load a previously saved configuration / setup file."
-            accent="magenta"
+           
             variant="compact"
             idSuffix="dash-import"
             onClick={() => onNavigate?.("profiles")}
@@ -203,7 +206,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             icon={<Wrench className="w-7 h-7" strokeWidth={2} />}
             title="Tools"
             description="Every individual tool, ready to use."
-            accent="cyan"
+           
             variant="compact"
             idSuffix="dash-tools"
             onClick={() => onNavigate?.("tools")}
@@ -231,7 +234,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
               key={setup.id}
               className="flex items-center gap-3 px-4 py-3 rounded-md bg-bg-card border border-border hover:border-[var(--accent-cyan-rim)] transition-colors"
             >
-              <HexIcon size="sm" accent="cyan" idSuffix={`recent-${setup.id}`}>
+              <HexIcon size="sm" idSuffix={`recent-${setup.id}`}>
                 <Gamepad2 className="w-3.5 h-3.5" />
               </HexIcon>
               <span className="flex-1 min-w-0">
@@ -249,6 +252,97 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           ))}
         </ul>
       </section>
+        </div>{/* end left col */}
+
+        {/* Right column: Your System card (mockup-aligned hardware spec panel) */}
+        <aside className="w-full xl:w-[280px] shrink-0">
+          <YourSystemCard onNavigate={onNavigate} />
+        </aside>
+      </div>{/* end flex wrapper */}
+    </div>
+  );
+}
+
+/** Compact hardware-at-a-glance card matching the mockup's "JOUW SYSTEEM" panel. */
+function YourSystemCard({ onNavigate }: { onNavigate?: (v: string) => void }) {
+  const { summary, loading, fetchHardware } = useHardwareStore();
+  if (loading && !summary) {
+    return (
+      <div className="rounded-lg border border-border bg-bg-card p-5 space-y-3 animate-pulse">
+        <div className="h-3 bg-bg-elevated rounded w-2/3" />
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-2.5 bg-bg-elevated rounded w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!summary) {
+    return (
+      <div className="rounded-lg border border-border bg-bg-card p-5 text-center">
+        <Monitor className="w-6 h-6 text-text-muted mx-auto mb-2" />
+        <p className="text-[12px] text-text-muted">No hardware data yet</p>
+        <button
+          onClick={fetchHardware}
+          className="mt-3 text-[11px] uppercase tracking-wider text-accent-cyan hover:text-accent-cyan-hover transition-colors"
+        >
+          Scan now
+        </button>
+      </div>
+    );
+  }
+
+  const gpu = summary.gpus?.[0];
+  const disk = summary.disks?.[0];
+  const ramGb = `${Math.round(summary.system.totalRamGb)} GB`;
+  const diskLabel = disk
+    ? (disk.mediaType ? `${disk.mediaType}` : undefined)
+    : undefined;
+
+  return (
+    <div className="rounded-lg border border-[var(--accent-cyan-rim)] bg-bg-card overflow-hidden"
+         style={{ boxShadow: "0 0 0 1px var(--accent-cyan-rim), 0 0 24px -8px var(--accent-cyan-glow)" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+          Your system
+        </span>
+        <Monitor className="w-3.5 h-3.5 text-accent" />
+      </div>
+
+      {/* Spec rows */}
+      <dl className="px-4 py-3 space-y-2.5">
+        <SpecLine label="CPU"        value={summary.cpu?.name}              />
+        <SpecLine label="GPU"        value={gpu?.name}                      />
+        <SpecLine label="RAM"        value={ramGb}                          />
+        <SpecLine label="OS"         value={summary.system?.osVersion}      />
+        {diskLabel && <SpecLine label="Storage"  value={diskLabel}          />}
+        <SpecLine label="Board"      value={`${summary.motherboard?.manufacturer ?? ""} ${summary.motherboard?.product ?? ""}`.trim() || undefined} />
+      </dl>
+
+      {/* Footer CTA */}
+      <button
+        type="button"
+        onClick={() => onNavigate?.("dashboard")}
+        className="group w-full flex items-center justify-between px-4 py-2.5 text-[10.5px] uppercase tracking-[0.14em] font-semibold text-text-secondary hover:text-accent border-t border-border hover:bg-bg-card-hover transition-colors"
+      >
+        <span>Full report</span>
+        <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+      </button>
+    </div>
+  );
+}
+
+function SpecLine({ label, value }: { label: string; value?: string }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-start gap-2">
+      <dt className="text-[10px] font-mono uppercase tracking-[0.1em] text-text-muted w-14 shrink-0 pt-0.5">
+        {label}
+      </dt>
+      <dd className="text-[11.5px] font-mono text-text-secondary leading-tight min-w-0 truncate" title={value}>
+        {value}
+      </dd>
     </div>
   );
 }
