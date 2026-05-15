@@ -100,8 +100,10 @@ jobs:
           matrix.platform == 'windows-latest' &&
           github.ref_name != 'v2.3.0' &&
           !startsWith(github.ref_name, 'v2.4.') &&
+          !startsWith(github.ref_name, 'v2.5.') &&
           inputs.tag != 'v2.3.0' &&
-          !startsWith(inputs.tag, 'v2.4.')
+          !startsWith(inputs.tag, 'v2.4.') &&
+          !startsWith(inputs.tag, 'v2.5.')
         run: |
           cargo test --release --manifest-path src-tauri/Cargo.toml release_gate::lemonsqueezy_ids_set_for_release
 
