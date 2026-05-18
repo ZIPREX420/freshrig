@@ -13,7 +13,7 @@ export interface ActionTileProps {
   title: string;
   /** 1–2 line description sitting below the title. */
   description?: string;
-  /** Click handler — typically onNavigate("snelsetup"). */
+  /** Click handler — typically onNavigate("quickSetup"). */
   onClick?: () => void;
   /** Hex thumbnail accent. cyan = primary safe, magenta = creative / pro. */
   accent?: HexAccent;

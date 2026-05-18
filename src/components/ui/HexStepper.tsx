@@ -28,7 +28,7 @@ type StepStatus = "complete" | "current" | "pending";
 
 /**
  * Horizontal hexagonal step indicator. Mirrors the 5-step wizard at the top
- * of mockup-2's Snelsetup and Aangepaste setup screens.
+ * of mockup-2's Quick Setup and Custom Setup setup screens.
  *
  * Layout: row of hex-shaped step badges, each with a number (or icon when
  * complete) inside, and a label below. Connecting lines between hexes show

@@ -12,7 +12,7 @@ export interface HexIconProps {
    *  - md   = 48px (sidebar header, action-tile thumbnail)
    *  - lg   = 80px (in-page accent)
    *  - xl   = 128px (action-tile hero icon)
-   *  - hero = 200px (page-level centerpiece — Snelsetup / Aangepaste hero) */
+   *  - hero = 200px (page-level centerpiece — Quick Setup / Custom Setup hero) */
   size?: HexSize;
   /** Stroke colour. `gradient` paints the cyan→magenta brand gradient; `cyan`
    *  / `magenta` are flat single-colour strokes. Match the surrounding section's

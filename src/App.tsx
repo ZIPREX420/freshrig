@@ -35,8 +35,8 @@ import { isTauri, lazyNamed, preloadModule } from "./lib";
 // Sidebar wires preload-on-hover for these via the same module specifiers,
 // so chunk-load typically completes before the user clicks.
 // v2.4 hub pages — new top-level destinations (Quick / Custom / Tools)
-const SnelsetupPage         = lazyNamed(() => import("./components/snelsetup/SnelsetupPage"), "SnelsetupPage");
-const AangepasteSetupPage   = lazyNamed(() => import("./components/aangepaste/AangepasteSetupPage"), "AangepasteSetupPage");
+const QuickSetupPage        = lazyNamed(() => import("./components/quick-setup/QuickSetupPage"), "QuickSetupPage");
+const CustomSetupPage       = lazyNamed(() => import("./components/custom-setup/CustomSetupPage"), "CustomSetupPage");
 const ToolsPage             = lazyNamed(() => import("./components/tools/ToolsPage"), "ToolsPage");
 
 const DriversPage      = lazyNamed(() => import("./components/drivers/DriversPage"), "DriversPage");
@@ -76,8 +76,8 @@ function App() {
   // primary sidebar items (mockup-aligned). The old Ctrl+6-9 shortcuts
   // still resolve their pages, just via the Tools hub now.
   useHotkeys("ctrl+1", () => navigate("dashboard"), { preventDefault: true });
-  useHotkeys("ctrl+2", () => navigate("snelsetup"), { preventDefault: true });
-  useHotkeys("ctrl+3", () => navigate("aangepaste"), { preventDefault: true });
+  useHotkeys("ctrl+2", () => navigate("quickSetup"), { preventDefault: true });
+  useHotkeys("ctrl+3", () => navigate("customSetup"), { preventDefault: true });
   useHotkeys("ctrl+4", () => navigate("profiles"), { preventDefault: true });
   useHotkeys("ctrl+5", () => navigate("tools"), { preventDefault: true });
   useHotkeys("ctrl+6", () => navigate("drivers"), { preventDefault: true });
@@ -238,8 +238,8 @@ function App() {
                   transition={{ duration: 0.15 }}
                 >
                   {currentView === "dashboard" && <Dashboard onNavigate={navigate} />}
-                  {currentView === "snelsetup" && <SnelsetupPage onNavigate={navigate} />}
-                  {currentView === "aangepaste" && <AangepasteSetupPage onNavigate={navigate} />}
+                  {currentView === "quickSetup" && <QuickSetupPage onNavigate={navigate} />}
+                  {currentView === "customSetup" && <CustomSetupPage onNavigate={navigate} />}
                   {currentView === "tools" && <ToolsPage onNavigate={navigate} />}
                   {currentView === "drivers" && <DriversPage />}
                   {currentView === "apps" && <AppsPage />}

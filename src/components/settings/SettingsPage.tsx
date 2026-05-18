@@ -31,12 +31,12 @@ import { PortableSection } from "./PortableSection";
 import { IntegrationsSection } from "./IntegrationsSection";
 
 const ACCENT_PRESETS: { value: AccentColor; label: string; swatch: string }[] = [
-  { value: "teal", label: "Teal", swatch: "#00d4aa" },
-  { value: "blue", label: "Blue", swatch: "#3b82f6" },
-  { value: "purple", label: "Purple", swatch: "#a855f7" },
-  { value: "orange", label: "Orange", swatch: "#f97316" },
-  { value: "rose", label: "Rose", swatch: "#f43f5e" },
-  { value: "green", label: "Green", swatch: "#22c55e" },
+  { value: "teal",   label: "Cyan",   swatch: "#00e5ff" },
+  { value: "blue",   label: "Blue",   swatch: "#3a8bff" },
+  { value: "purple", label: "Purple", swatch: "#b06bff" },
+  { value: "orange", label: "Orange", swatch: "#ff8a3d" },
+  { value: "rose",   label: "Rose",   swatch: "#ff5d8f" },
+  { value: "green",  label: "Green",  swatch: "#3dffa6" },
 ];
 
 const CATEGORIES: { value: AppCategory | "all"; label: string }[] = [

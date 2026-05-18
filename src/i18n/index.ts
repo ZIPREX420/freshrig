@@ -46,8 +46,8 @@ export const TRANSLATIONS = {
 
   // Sidebar
   "nav.home":                  { en: "Home",                 nl: "Home" },
-  "nav.snelsetup":             { en: "Quick setup",          nl: "Snelsetup" },
-  "nav.aangepaste":            { en: "Custom setup",         nl: "Aangepaste setup" },
+  "nav.quickSetup":             { en: "Quick setup",          nl: "Snelsetup" },
+  "nav.customSetup":            { en: "Custom setup",         nl: "Aangepaste setup" },
   "nav.profiles":              { en: "Profiles",             nl: "Profielen" },
   "nav.tools":                 { en: "Tools",                nl: "Tools" },
   "nav.fleet":                 { en: "Fleet",                nl: "Fleet" },
@@ -76,38 +76,38 @@ export const TRANSLATIONS = {
   "dashboard.open":            { en: "Open",                 nl: "Openen" },
 
   // Quick Setup
-  "snelsetup.title":           { en: "Quick Setup",          nl: "Snelsetup" },
-  "snelsetup.tagline":         { en: "Full installation. Automatic.", nl: "Volledige installatie. Automatisch." },
-  "snelsetup.intro":           {
+  "quickSetup.title":           { en: "Quick Setup",          nl: "Snelsetup" },
+  "quickSetup.tagline":         { en: "Full installation. Automatic.", nl: "Volledige installatie. Automatisch." },
+  "quickSetup.intro":           {
     en: "Let FreshRig optimise your PC automatically with the best drivers, essential software, and tuned settings — based on your hardware.",
     nl: "Laat FreshRig je pc automatisch optimaliseren met de beste drivers, software en instellingen op basis van jouw hardware.",
   },
-  "snelsetup.included":        { en: "What's included",      nl: "Wat zit erbij?" },
-  "snelsetup.startCta":        { en: "Start Quick Setup",    nl: "Snelsetup starten" },
-  "snelsetup.cancel":          { en: "Cancel",               nl: "Annuleren" },
+  "quickSetup.included":        { en: "What's included",      nl: "Wat zit erbij?" },
+  "quickSetup.startCta":        { en: "Start Quick Setup",    nl: "Snelsetup starten" },
+  "quickSetup.cancel":          { en: "Cancel",               nl: "Annuleren" },
 
   // Custom Setup
-  "aangepaste.title":          { en: "Custom Setup",         nl: "Aangepaste setup" },
-  "aangepaste.tagline":        { en: "You decide. Full control.", nl: "Jij bepaalt. Volledige controle." },
-  "aangepaste.intro":          {
+  "customSetup.title":          { en: "Custom Setup",         nl: "Aangepaste setup" },
+  "customSetup.tagline":        { en: "You decide. Full control.", nl: "Jij bepaalt. Volledige controle." },
+  "customSetup.intro":          {
     en: "Build your own configuration — choose exactly what gets installed, optimised, and configured. Down to the smallest detail.",
     nl: "Stel zelf samen wat er geïnstalleerd, geoptimaliseerd en aangepast moet worden. Tot in elk detail.",
   },
-  "aangepaste.categories":     { en: "Categories",           nl: "Categorieën" },
-  "aangepaste.startCta":       { en: "Build Custom Setup",   nl: "Aangepaste setup maken" },
-  "aangepaste.next":           { en: "Next: Settings",       nl: "Volgende: Instellingen" },
-  "aangepaste.back":           { en: "Back",                 nl: "Terug" },
-  "aangepaste.search":         { en: "Search software…",     nl: "Zoek software…" },
-  "aangepaste.summary":        { en: "Selection summary",    nl: "Selectie overzicht" },
-  "aangepaste.totalSelected":  { en: "Total selected",       nl: "Totaal geselecteerd" },
-  "aangepaste.diskNeeded":     { en: "Disk space needed",    nl: "Opslagruimte nodig" },
-  "aangepaste.estimatedTime":  { en: "Estimated time",       nl: "Geschatte installatietijd" },
+  "customSetup.categories":     { en: "Categories",           nl: "Categorieën" },
+  "customSetup.startCta":       { en: "Build Custom Setup",   nl: "Aangepaste setup maken" },
+  "customSetup.next":           { en: "Next: Settings",       nl: "Volgende: Instellingen" },
+  "customSetup.back":           { en: "Back",                 nl: "Terug" },
+  "customSetup.search":         { en: "Search software…",     nl: "Zoek software…" },
+  "customSetup.summary":        { en: "Selection summary",    nl: "Selectie overzicht" },
+  "customSetup.totalSelected":  { en: "Total selected",       nl: "Totaal geselecteerd" },
+  "customSetup.diskNeeded":     { en: "Disk space needed",    nl: "Opslagruimte nodig" },
+  "customSetup.estimatedTime":  { en: "Estimated time",       nl: "Geschatte installatietijd" },
 
   // Tools
   "tools.title":               { en: "Tools",                nl: "Tools" },
   "tools.intro":               {
     en: "Every individual tool, ready to use. Pick what you need — or use Quick Setup to run the recommended bundle automatically.",
-    nl: "Elke tool afzonderlijk, klaar voor gebruik. Kies wat je nodig hebt — of gebruik Snelsetup voor het aanbevolen pakket.",
+    nl: "Elke tool afzonderlijk, klaar voor gebruik. Kies wat je nodig hebt — of gebruik de snelsetup voor het aanbevolen pakket.",
   },
 
   // Status pills

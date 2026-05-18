@@ -11,6 +11,7 @@ import {
   Monitor,
 } from "lucide-react";
 import { useHardwareStore } from "../../stores/hardwareStore";
+import { useProfileStore } from "../../stores/profileStore";
 import { ActionTile } from "../ui/ActionTile";
 import { ActionGrid } from "../ui/ActionGrid";
 import { ProgressRing } from "../ui/ProgressRing";
@@ -76,23 +77,30 @@ function scoreVerdict(score: number): {
   };
 }
 
-interface RecentSetup {
-  id: string;
-  label: string;
-  detail: string;
-}
-
-const SAMPLE_RECENT: RecentSetup[] = [
-  { id: "gaming-2024", label: "Gaming Boost 2024", detail: "Last used 2 days ago" },
-  { id: "streaming", label: "Streaming & Editing", detail: "Last used 1 week ago" },
-];
-
 export function Dashboard({ onNavigate }: DashboardProps) {
   const { summary, driverIssues, loading, fetchHardware } = useHardwareStore();
 
   useEffect(() => {
     fetchHardware();
   }, [fetchHardware]);
+
+  const profiles = useProfileStore((p) => p.profiles);
+  const fetchProfiles = useProfileStore((p) => p.fetchProfiles);
+  useEffect(() => {
+    fetchProfiles();
+  }, [fetchProfiles]);
+
+  const recent = useMemo(() => {
+    if (!profiles?.length) return [] as { id: string; label: string; detail: string }[];
+    const sorted = [...profiles].sort((a, b) =>
+      (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""),
+    );
+    return sorted.slice(0, 3).map((p) => ({
+      id: p.filePath,
+      label: p.name,
+      detail: p.appCount === 1 ? "1 app" : `${p.appCount} apps`,
+    }));
+  }, [profiles]);
 
   const score = useMemo(() => {
     if (!summary) return null;
@@ -182,7 +190,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
            
             variant="compact"
             idSuffix="dash-quick"
-            onClick={() => onNavigate?.("snelsetup")}
+            onClick={() => onNavigate?.("quickSetup")}
           />
           <ActionTile
             icon={<Layers className="w-7 h-7" strokeWidth={2} />}
@@ -191,7 +199,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
            
             variant="compact"
             idSuffix="dash-custom"
-            onClick={() => onNavigate?.("aangepaste")}
+            onClick={() => onNavigate?.("customSetup")}
           />
           <ActionTile
             icon={<Download className="w-7 h-7" strokeWidth={2} />}
@@ -228,29 +236,45 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
-        <ul className="space-y-2">
-          {SAMPLE_RECENT.map((setup) => (
-            <li
-              key={setup.id}
-              className="flex items-center gap-3 px-4 py-3 rounded-md bg-bg-card border border-border hover:border-[var(--accent-cyan-rim)] transition-colors"
-            >
-              <HexIcon size="sm" idSuffix={`recent-${setup.id}`}>
-                <Gamepad2 className="w-3.5 h-3.5" />
-              </HexIcon>
-              <span className="flex-1 min-w-0">
-                <span className="block text-[13px] font-medium text-text-primary truncate">
-                  {setup.label}
+        {recent.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 px-4 py-8 rounded-md bg-bg-card border border-border text-center">
+            <HexIcon size="sm" idSuffix="recent-empty">
+              <Gamepad2 className="w-3.5 h-3.5" />
+            </HexIcon>
+            <span className="text-[13px] text-text-primary">No recent setups yet</span>
+            <span className="text-[11px] text-text-muted max-w-xs">
+              Save your first profile from Quick or Custom setup — it'll show
+              up here for fast re-runs.
+            </span>
+            <Button variant="secondary" size="sm" onClick={() => onNavigate?.("profiles")}>
+              Open profiles
+            </Button>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {recent.map((setup, i) => (
+              <li
+                key={setup.id}
+                className="flex items-center gap-3 px-4 py-3 rounded-md bg-bg-card border border-border hover:border-[var(--accent-cyan-rim)] transition-colors"
+              >
+                <HexIcon size="sm" idSuffix={`recent-${i}`}>
+                  <Gamepad2 className="w-3.5 h-3.5" />
+                </HexIcon>
+                <span className="flex-1 min-w-0">
+                  <span className="block text-[13px] font-medium text-text-primary truncate">
+                    {setup.label}
+                  </span>
+                  <span className="block text-[11px] text-text-muted truncate">
+                    {setup.detail}
+                  </span>
                 </span>
-                <span className="block text-[11px] text-text-muted truncate">
-                  {setup.detail}
-                </span>
-              </span>
-              <Button variant="secondary" size="sm" onClick={() => onNavigate?.("profiles")}>
-                Open
-              </Button>
-            </li>
-          ))}
-        </ul>
+                <Button variant="secondary" size="sm" onClick={() => onNavigate?.("profiles")}>
+                  Open
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
         </div>{/* end left col */}
 
@@ -263,7 +287,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   );
 }
 
-/** Compact hardware-at-a-glance card matching the mockup's "JOUW SYSTEEM" panel. */
+/** Compact hardware-at-a-glance card — small spec list pinned to the dashboard right rail. */
 function YourSystemCard({ onNavigate }: { onNavigate?: (v: string) => void }) {
   const { summary, loading, fetchHardware } = useHardwareStore();
   if (loading && !summary) {

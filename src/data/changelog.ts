@@ -44,7 +44,7 @@ Two centerpiece flows from the mockups now ship as real pages:
 **Brand-new visual primitives.**
 - \`<HexIcon>\` — pointy-top hex frame with cyan / magenta / gradient stroke, optional Tron-perspective floor inside, ambient glow. Sizes from 32px (sidebar status peg) to 200px (page centerpiece).
 - \`<HeroCTA>\` — full-width outlined neon pill button with arrow. Cyan = safe / primary, magenta = creative / commit.
-- \`<ActionTile>\` + \`<ActionGrid>\` — equal-height rim-glow cards in 2 / 3 / 4 column responsive grids. Drives the new Dashboard, Tools hub, and Aangepaste category picker.
+- \`<ActionTile>\` + \`<ActionGrid>\` — equal-height rim-glow cards in 2 / 3 / 4 column responsive grids. Drives the new Dashboard, Tools hub, and Custom Setup category picker.
 - \`<HexStepper>\` — horizontal hex-shaped step indicator with connector lines that fill cyan as you progress. Used in both wizards.
 - \`<ProgressRing>\` — animated circular gauge with optional indeterminate scan rotation, accent-aware glow, tick marks at 30° intervals.
 - \`<SidebarSystemCard>\` — bottom-of-sidebar status card with two variants: compact (status pill + last scan) and expanded (full hardware spec list).

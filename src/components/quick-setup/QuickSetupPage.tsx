@@ -11,7 +11,7 @@ import { Button } from "../ui/Button";
 import { Cpu, Shield, Package, Settings, Lock, Boxes } from "lucide-react";
 import { CircuitBackdrop } from "../ui/CircuitBackdrop";
 
-interface SnelsetupPageProps {
+interface QuickSetupPageProps {
   /** Optional navigate handler — wired to App.tsx so the back arrow on the
    *  intro screen returns to Home / Dashboard. */
   onNavigate?: (view: string) => void;
@@ -89,18 +89,17 @@ const INITIAL_SCAN_ITEMS: ScanItem[] = [
 ];
 
 /**
- * Quick Setup hub page (mockup-1 bottom-left + mockup-2 bottom-left).
+ * Quick Setup hub page — one-click full PC setup.
  *
  * Two phases:
  *   1. `intro` — hex hero + included-features list + "Start" CTA
  *   2. `running` — hex stepper at top, big progress ring + scan list
  *
  * Glues to existing functionality (drivers / debloat / apps / privacy)
- * once the user clicks Start. For now the running state is wired to a
- * mock animation so the visual flow can be validated end-to-end before
- * the real backend orchestration lands.
+ * once the user clicks Start. The running state currently animates the
+ * visual flow; real backend orchestration is wired phase-by-phase.
  */
-export function SnelsetupPage({ onNavigate }: SnelsetupPageProps) {
+export function QuickSetupPage({ onNavigate }: QuickSetupPageProps) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [currentStep, setCurrentStep] = useState(0);
   const [scanItems, setScanItems] = useState(INITIAL_SCAN_ITEMS);
@@ -155,7 +154,7 @@ export function SnelsetupPage({ onNavigate }: SnelsetupPageProps) {
           current="Quick setup"
           onBack={() => onNavigate?.("dashboard")}
           rightSlot={
-            <HexIcon size="sm" accent="cyan" idSuffix="snelsetup-pin">
+            <HexIcon size="sm" accent="cyan" idSuffix="quick-setup-pin">
               <Zap className="w-3.5 h-3.5" />
             </HexIcon>
           }
@@ -269,7 +268,7 @@ export function SnelsetupPage({ onNavigate }: SnelsetupPageProps) {
         current="Quick setup"
         onBack={() => onNavigate?.("dashboard")}
         rightSlot={
-          <HexIcon size="sm" accent="cyan" idSuffix="snelsetup-pin">
+          <HexIcon size="sm" accent="cyan" idSuffix="quick-setup-pin">
             <Zap className="w-3.5 h-3.5" />
           </HexIcon>
         }
@@ -283,7 +282,7 @@ export function SnelsetupPage({ onNavigate }: SnelsetupPageProps) {
         <div className="absolute inset-0 pointer-events-none"
              style={{ background: "radial-gradient(ellipse 70% 60% at 50% 40%, transparent 40%, var(--bg-base) 100%)" }} />
         <div className="relative z-10 flex flex-col items-center">
-          <HexIcon size="hero" accent="cyan" pulse perspectiveFloor idSuffix="snelsetup-hero">
+          <HexIcon size="hero" accent="cyan" pulse perspectiveFloor idSuffix="quick-setup-hero">
             <Zap className="w-16 h-16" strokeWidth={2.5} />
           </HexIcon>
           <h1 className="mt-8 text-[40px] font-semibold uppercase tracking-[0.14em] text-gradient-neon leading-tight">
@@ -338,4 +337,4 @@ export function SnelsetupPage({ onNavigate }: SnelsetupPageProps) {
   );
 }
 
-export default SnelsetupPage;
+export default QuickSetupPage;

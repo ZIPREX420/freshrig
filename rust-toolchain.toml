@@ -1,0 +1,12 @@
+# Pins the Rust toolchain so local builds and CI use the same compiler.
+#
+# Without this, a dependency bump that raises the MSRV — e.g. sysinfo 0.39.1
+# requiring rustc 1.95 — can pass CI (whose runners track current stable)
+# while failing on a developer machine still on an older stable.
+#
+# This pins the *channel*. For a fully drift-proof hard pin, replace
+# "stable" with the exact version from `rustc --version` after a
+# `rustup update`, e.g. channel = "1.95.0".
+[toolchain]
+channel = "stable"
+components = ["clippy", "rustfmt"]

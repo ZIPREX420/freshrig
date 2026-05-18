@@ -51,7 +51,7 @@ const SUBLABEL_PX: Record<ProgressRingSize, number> = {
 
 /**
  * Animated circular gauge — used for the dashboard health score (98/100,
- * mockup-2 top-right) and the Snelsetup scan progress (76% scanning,
+ * mockup-2 top-right) and the Quick Setup scan progress (76% scanning,
  * mockup-2 bottom-left). Distinct from the dashboard `HealthRing` which is
  * static / score-only; this one supports indeterminate scanning + colour-
  * shifts mid-scan.

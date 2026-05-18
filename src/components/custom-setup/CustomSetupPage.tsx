@@ -19,7 +19,7 @@ import type { HexStep } from "../ui/HexStepper";
 import { PageBreadcrumb } from "../ui/PageBreadcrumb";
 import { Button } from "../ui/Button";
 
-interface AangepasteSetupPageProps {
+interface CustomSetupPageProps {
   onNavigate?: (view: string) => void;
 }
 
@@ -28,7 +28,6 @@ type Phase = "intro" | "wizard";
 interface CategoryDef {
   id: string;
   label: string;
-  count: number;
   icon: React.ReactNode;
   /** Hex thumbnail tint for this category in the picker grid. */
   accent: "cyan" | "magenta";
@@ -38,42 +37,36 @@ const CATEGORIES: CategoryDef[] = [
   {
     id: "drivers",
     label: "Drivers",
-    count: 12,
     icon: <Cpu className="w-5 h-5" />,
     accent: "cyan",
   },
   {
     id: "software",
     label: "Software",
-    count: 36,
     icon: <Package className="w-5 h-5" />,
     accent: "cyan",
   },
   {
     id: "windows",
     label: "Windows settings",
-    count: 18,
     icon: <Boxes className="w-5 h-5" />,
     accent: "cyan",
   },
   {
     id: "optimisations",
     label: "Optimisations",
-    count: 24,
     icon: <Sparkles className="w-5 h-5" />,
     accent: "magenta",
   },
   {
     id: "security",
     label: "Security & Privacy",
-    count: 14,
     icon: <Shield className="w-5 h-5" />,
     accent: "magenta",
   },
   {
     id: "tuning",
     label: "System tuning",
-    count: 22,
     icon: <Settings className="w-5 h-5" />,
     accent: "magenta",
   },
@@ -136,7 +129,7 @@ const SAMPLE_ITEMS: Record<string, SoftwareItem[]> = {
 };
 
 /**
- * Custom Setup hub page (mockup-1 bottom-right + mockup-2 bottom-right).
+ * Custom Setup hub page — fine-grained category picker + wizard.
  *
  * Two phases:
  *   1. `intro` — magenta hex hero + category grid + "Start" CTA
@@ -144,10 +137,10 @@ const SAMPLE_ITEMS: Record<string, SoftwareItem[]> = {
  *      selection summary)
  *
  * For the MVP the items panel uses sample data for the "software" category.
- * Real wiring will pull from the existing app catalog / driver / debloat
- * stores once the visual flow is signed off.
+ * Real wiring pulls from the existing app catalog / driver / debloat
+ * stores phase by phase.
  */
-export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
+export function CustomSetupPage({ onNavigate }: CustomSetupPageProps) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [currentStep, setCurrentStep] = useState(0);
   const [activeCategory, setActiveCategory] = useState<string>("software");
@@ -242,7 +235,7 @@ export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
                     {cat.label}
                   </span>
                   <span className="block text-[10.5px] text-text-muted">
-                    {cat.count} available
+                    Browse options
                   </span>
                 </span>
                 {activeCategory === cat.id && (
@@ -299,17 +292,20 @@ export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
               Selection summary
             </h2>
             <div className="bg-bg-card border border-border rounded-md p-4 space-y-3">
-              <SummaryRow label="Software" count={`${selectedCount} items`} />
-              <SummaryRow label="Drivers" count="9 items" />
-              <SummaryRow label="Windows settings" count="13 items" />
-              <div className="border-t border-border pt-3 mt-3 space-y-2">
+              <SummaryRow
+                label={CATEGORIES.find((c) => c.id === activeCategory)?.label ?? "Items"}
+                count={`${selectedCount} selected`}
+              />
+              <div className="border-t border-border pt-3 mt-3">
                 <SummaryRow
                   label="Total selected"
-                  count={`${selectedCount + 22} items`}
+                  count={`${selectedCount} item${selectedCount === 1 ? "" : "s"}`}
                   emphasis
                 />
-                <SummaryRow label="Disk space needed" count="4.2 GB" />
-                <SummaryRow label="Estimated time" count="8–12 min" />
+                <p className="mt-3 text-[10.5px] text-text-muted leading-relaxed">
+                  Disk space and install time will be estimated once you reach
+                  the Review step.
+                </p>
               </div>
             </div>
           </aside>
@@ -338,7 +334,7 @@ export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
         current="Custom setup"
         onBack={() => onNavigate?.("dashboard")}
         rightSlot={
-          <HexIcon size="sm" accent="magenta" idSuffix="aangepaste-pin">
+          <HexIcon size="sm" accent="magenta" idSuffix="custom-setup-pin">
             <Layers className="w-3.5 h-3.5" />
           </HexIcon>
         }
@@ -356,7 +352,7 @@ export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
             accent="magenta"
             pulse
             perspectiveFloor
-            idSuffix="aangepaste-hero"
+            idSuffix="custom-setup-hero"
           >
             <Layers className="w-16 h-16" strokeWidth={2.5} />
           </HexIcon>
@@ -399,7 +395,7 @@ export function AangepasteSetupPage({ onNavigate }: AangepasteSetupPageProps) {
                     className="block text-[11px] truncate"
                     style={{ color: cat.accent === "magenta" ? "var(--accent-magenta)" : "var(--accent-cyan)" }}
                   >
-                    {cat.count} options
+                    Browse
                   </span>
                 </span>
                 <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-text-primary group-hover:translate-x-0.5 transition-all" />
@@ -445,4 +441,4 @@ function SummaryRow({
   );
 }
 
-export default AangepasteSetupPage;
+export default CustomSetupPage;

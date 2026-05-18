@@ -2,21 +2,21 @@
   <h1>🖥️ FreshRig</h1>
   <p><strong>The maintenance tool that reads like a tech, not a salesman.</strong></p>
   <p>Hardware detection • Driver setup • App batch install • Privacy drift • Watchdog snapshots • SMART trend alerts</p>
-  <p><strong>Now with a Pro Business tier for repair shops and a Founder's Lifetime offer (first 500 only).</strong></p>
+  <p><strong>Pro Business tier for repair shops. Founder's Lifetime — first 500 only.</strong></p>
 
   <p>
-    <a href="https://github.com/ZIPREX420/freshrig/releases/latest"><img src="https://img.shields.io/github/v/release/ZIPREX420/freshrig?style=flat-square&color=00d4aa" alt="Latest Release"></a>
-    <a href="https://github.com/ZIPREX420/freshrig/releases"><img src="https://img.shields.io/github/downloads/ZIPREX420/freshrig/total?style=flat-square&color=00d4aa" alt="Downloads"></a>
-    <a href="https://github.com/ZIPREX420/freshrig/stargazers"><img src="https://img.shields.io/github/stars/ZIPREX420/freshrig?style=flat-square&color=00d4aa" alt="Stars"></a>
+    <a href="https://github.com/ZIPREX420/freshrig/releases/latest"><img src="https://img.shields.io/github/v/release/ZIPREX420/freshrig?style=flat-square&color=00e5ff" alt="Latest Release"></a>
+    <a href="https://github.com/ZIPREX420/freshrig/releases"><img src="https://img.shields.io/github/downloads/ZIPREX420/freshrig/total?style=flat-square&color=00e5ff" alt="Downloads"></a>
+    <a href="https://github.com/ZIPREX420/freshrig/stargazers"><img src="https://img.shields.io/github/stars/ZIPREX420/freshrig?style=flat-square&color=00e5ff" alt="Stars"></a>
     <a href="https://github.com/ZIPREX420/freshrig/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ZIPREX420/freshrig?style=flat-square" alt="License"></a>
   </p>
 
   <p>
     <a href="https://github.com/ZIPREX420/freshrig/releases/latest">
-      <img src="https://img.shields.io/badge/Download%20Free-00d4aa?style=for-the-badge&logo=windows&logoColor=white" alt="Download">
+      <img src="https://img.shields.io/badge/Download%20Free-00e5ff?style=for-the-badge&logo=windows&logoColor=white" alt="Download">
     </a>
     <a href="https://ZIPREX420.github.io/freshrig/#pricing">
-      <img src="https://img.shields.io/badge/See%20Pricing-3b82f6?style=for-the-badge" alt="Pricing">
+      <img src="https://img.shields.io/badge/See%20Pricing-ff2bd6?style=for-the-badge" alt="Pricing">
     </a>
   </p>
 </div>
@@ -111,7 +111,7 @@ FreshRig Pro Business is designed for one-tech computer repair shops and small M
 
 ## ⭐ Founder's Lifetime — first 500 only
 
-For the first 30 days of v2.0, FreshRig is offering a **$149 one-time** lifetime license:
+For the launch window of v2, FreshRig is offering a **$149 one-time** lifetime license:
 
 - Lifetime updates to the desktop app — every future major version included.
 - **No subscription, ever** — for these 500 customers only.

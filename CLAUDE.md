@@ -17,7 +17,8 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - `src/config/` — App constants (`app.ts`)
 
 ## Key patterns & Requirements
-- **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.4.2**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
+- **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.5.0**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
+- **Route IDs / folder naming:** Every route is camelCase English (`quickSetup`, `customSetup`, `contextMenu`, etc.); folders under `src/components/` are kebab-case English (`quick-setup/`, `custom-setup/`, `context_menu/`). The earlier Dutch identifiers (`snelsetup`, `aangepaste`) are retired — tombstone re-exports at `docs/_archive/deprecated-folders/` exist only because the sandbox filesystem disallowed deletion; no in-app code imports them.
 - **Brand assets:** The logo is a raster mark and the single source of truth (it replaced the old hand-drawn SVG monogram in v2.4.2). Full-res masters live in `brand/` — `logo-source.png` (original framed render), `logo-icon.png` (framed rounded tile with transparent corners — the icon-generation master), `logo-mark.png` (frameless neon "FR"). `src/assets/brand/logo.png` is the app-bundled copy imported by `<BrandMark>`; `site/assets/{logo,logo-mark,og-image}.png` back the landing page. The desktop icon family in `src-tauri/icons/` is regenerated from `brand/logo-icon.png` via `npx @tauri-apps/cli icon`. `src-tauri/icons/app-icon.svg` is the retired legacy monogram, kept only as a record.
 - **Tauri IPC:** Frontend calls `invoke('command_name')`, backend uses `#[tauri::command]` in `src-tauri/src/lib.rs`.
 - **Rust ↔ TS:** Rust uses snake_case, TypeScript uses camelCase — Tauri auto-converts field names.

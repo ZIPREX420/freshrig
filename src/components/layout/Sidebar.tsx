@@ -28,8 +28,8 @@ import { preloadModule } from "../../lib";
 // the click still works; the chunk just loads on demand instead of warmed.
 const ROUTE_PRELOADERS: Record<string, () => Promise<unknown>> = {
   // Hub pages (new in v2.4)
-  snelsetup:   () => import("../snelsetup/SnelsetupPage"),
-  aangepaste:  () => import("../aangepaste/AangepasteSetupPage"),
+  quickSetup:  () => import("../quick-setup/QuickSetupPage"),
+  customSetup: () => import("../custom-setup/CustomSetupPage"),
   tools:       () => import("../tools/ToolsPage"),
   // Existing pages — still routable from the Tools hub or shortcuts
   drivers:     () => import("../drivers/DriversPage"),
@@ -68,14 +68,14 @@ interface NavItem {
   businessOnly?: boolean;
 }
 
-// v2.4 hub-and-spoke nav (mockup-aligned). Each item is a top-level
-// destination that either shows a hero hex page directly (Snelsetup,
-// Aangepaste) or routes into a sub-hub (Tools). About / Changelog /
-// Help / Upgrade all live inside Settings now.
+// Hub-and-spoke nav. Each item is a top-level destination that either
+// shows a hero hex page directly (Quick Setup, Custom Setup) or routes
+// into a sub-hub (Tools). About / Changelog / Help / Upgrade all live
+// inside Settings now.
 const PRIMARY_NAV: NavItem[] = [
   { id: "dashboard",  label: "Home",         icon: Home,       shortcut: "Ctrl+1" },
-  { id: "snelsetup",  label: "Quick setup",  icon: Zap,        shortcut: "Ctrl+2" },
-  { id: "aangepaste", label: "Custom setup", icon: Layers,     shortcut: "Ctrl+3" },
+  { id: "quickSetup",  label: "Quick setup",  icon: Zap,        shortcut: "Ctrl+2" },
+  { id: "customSetup", label: "Custom setup", icon: Layers,     shortcut: "Ctrl+3" },
   { id: "profiles",   label: "Profiles",     icon: BookMarked, shortcut: "Ctrl+4" },
   { id: "tools",      label: "Tools",        icon: Wrench,     shortcut: "Ctrl+5" },
   { id: "fleet",      label: "Fleet",        icon: Server,     tier: "business", businessOnly: true },
@@ -101,7 +101,7 @@ export function Sidebar({ currentView, onNavigate, onShowShortcuts }: SidebarPro
         <BrandMark size={32} />
         <div>
           <BrandWordmark className="text-[15px] leading-tight" />
-          <p className="text-[10px] text-[var(--text-muted)] mt-0.5 tracking-[0.18em] uppercase">Setup any PC</p>
+          <p className="text-[10px] text-[var(--text-muted)] mt-0.5 tracking-[0.18em] uppercase">PC setup, simplified</p>
         </div>
       </div>
 
