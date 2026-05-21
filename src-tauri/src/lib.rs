@@ -340,11 +340,10 @@ pub fn run() {
             commands::linux::hardware::get_windows_build,
             #[cfg(target_os = "macos")]
             commands::macos::hardware::get_windows_build,
-            #[cfg(target_os = "windows")]
+            // License (cross-platform as of v2.6 — LemonSqueezy activation
+            // works on Windows, Linux, and macOS; see commands::license).
             commands::license::get_machine_fingerprint,
-            #[cfg(target_os = "windows")]
             commands::license::activate_license,
-            #[cfg(target_os = "windows")]
             commands::license::validate_license,
             #[cfg(target_os = "windows")]
             commands::drivers::get_driver_recommendations,

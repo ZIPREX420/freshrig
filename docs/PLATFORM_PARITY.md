@@ -26,8 +26,8 @@ contributors what to gate.
 | `get_driver_issues`                                | Full    | Full        | Full        | Win=`Get-PnpDevice`; Linux=`lspci -k`; macOS reports kernel-extension issues. |
 | `get_windows_build`                                | Full    | Full (stub) | Full (stub) | Linux/macOS return distro string. |
 | **License** |
-| `get_machine_fingerprint`                          | Full    | **Missing** | **Missing** | Module is `#[cfg(target_os = "windows")]`. **Pro activation does not work outside Windows.** Tracking issue: see PLATFORM_PARITY follow-ups. |
-| `activate_license` / `validate_license`            | Full    | **Missing** | **Missing** | Same. |
+| `get_machine_fingerprint`                          | Full    | Full        | Full        | Cross-platform as of v2.6. Fingerprint = SHA-256 of: Win MachineGuid+CPU+SMBIOS; Linux machine-id+`/proc/cpuinfo`+DMI product_uuid; macOS IOPlatformUUID+cpu brand+hw.model. |
+| `activate_license` / `validate_license`            | Full    | Full        | Full        | Pure `reqwest` HTTP to the LemonSqueezy API — activates on every OS. |
 | **Drivers** |
 | `get_driver_recommendations`                       | Full    | Full        | Partial     | macOS surfaces a single "Software Update" entry when `softwareupdate --list` shows Driver/Firmware updates. |
 | `install_driver`                                   | Full    | Full        | Stub        | macOS returns an error pointing the user at System Settings; frontend should route via `installAction.value` (DirectDownload URL) instead. **Linux:** prefers `ubuntu-drivers install` on Ubuntu derivatives; refreshes the package index before install. |

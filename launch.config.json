@@ -1,0 +1,19 @@
+{
+  "_comment": "FreshRig launch configuration — single source of truth for the paid launch. Fill in the LemonSqueezy values, then run `npm run go-live`. Store ID, product ID, variant IDs and checkout URLs are all PUBLIC (they ship in the binary and on the landing page), so this file is safe to commit. See docs/launch/README.md for the full runbook.",
+  "releaseVersion": "2.6.0",
+  "lemonSqueezy": {
+    "storeId": 0,
+    "productId": 0,
+    "proVariantIds": [],
+    "businessVariantIds": []
+  },
+  "checkoutUrls": {
+    "proMonthly": "",
+    "proAnnual": "",
+    "founderLifetime": "",
+    "businessMonthly": "",
+    "businessAnnual": ""
+  },
+  "domain": "",
+  "founderSpotsRemaining": 500
+}

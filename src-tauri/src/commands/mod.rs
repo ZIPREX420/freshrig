@@ -3,6 +3,9 @@ pub mod branding;
 pub mod bulk_deploy;
 pub mod fleet;
 pub mod integrations;
+// License — LemonSqueezy activation. Cross-platform as of v2.6: the machine
+// fingerprint has Windows/Linux/macOS implementations in license.rs.
+pub mod license;
 pub mod platform_info;
 pub mod presets;
 pub mod profile_sync;
@@ -44,8 +47,6 @@ pub mod drivers;
 pub mod hardware;
 #[cfg(target_os = "windows")]
 pub mod installed_apps;
-#[cfg(target_os = "windows")]
-pub mod license;
 #[cfg(target_os = "windows")]
 pub mod network;
 #[cfg(target_os = "windows")]

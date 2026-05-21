@@ -43,7 +43,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
   - **Services Manager** — `commands::services::get_services`, `set_service_start_type`, `get_service_presets`, `apply_service_preset`
   - **Context Menu Editor** — `commands::context_menu::get_classic_menu_status`, `toggle_classic_menu`, `get_shell_extensions`, `toggle_shell_extension`
   - **System Health Report** — `commands::report::generate_health_report`
-- **LemonSqueezy Licensing:** `commands::license::get_machine_fingerprint` (SHA-256 of MachineGuid + CPU ID + SMBIOS UUID), `activate_license` → `POST https://api.lemonsqueezy.com/v1/licenses/activate` (form-urlencoded), `validate_license` → `POST /v1/licenses/validate`. Frontend runs 6-hour revalidation tick from `App.tsx` with 14-day grace on network failure. `EXPECTED_STORE_ID` / `EXPECTED_PRODUCT_ID` in `src-tauri/src/commands/license.rs` must be filled before first real sale — when `0`, store/product match is skipped (dev-friendly).
+- **LemonSqueezy Licensing:** `commands::license` is **cross-platform** (registered for all OSes in `commands/mod.rs` + `lib.rs`). `get_machine_fingerprint` is a SHA-256 of three host components per OS — Windows: MachineGuid + CPU ID + SMBIOS UUID (WMI/registry); Linux: `/etc/machine-id` + `/proc/cpuinfo` model name + DMI `product_uuid`; macOS: `IOPlatformUUID` + CPU brand string + `hw.model`. `activate_license` → `POST https://api.lemonsqueezy.com/v1/licenses/activate` (form-urlencoded), `validate_license` → `POST /v1/licenses/validate`. Frontend runs 6-hour revalidation tick from `App.tsx` with 14-day grace on network failure. `EXPECTED_STORE_ID` / `EXPECTED_PRODUCT_ID` / `EXPECTED_PRO_VARIANT_IDS` / `EXPECTED_BUSINESS_VARIANT_IDS` in `src-tauri/src/commands/license.rs` must be filled before first real sale — when `0`/empty, store/product/variant matching is skipped (dev-friendly) and the `release_gate` test blocks tagged release builds.
 - **Trial mode:** `useLicenseStore.startTrial()` sets `trialStartedAt` and grants Pro access locally for `TRIAL_DAYS` (7 days as of v2.0+; was 14 in v1.x). `isPro()` returns true if tier is "pro" OR trial is still within the window. Trial can only be started once per install; after expiry, user must purchase. No credit card is required to start the trial.
 - **SMART data:** Drive health comes from `Get-PhysicalDisk` + `Get-StorageReliabilityCounter` in `ROOT\Microsoft\Windows\Storage` WMI namespace via PowerShell wrapped with `silent_cmd`. Fields are `Option<T>` because older SATA and USB-attached drives may not populate the counter. Derivation: `Wear >= 90` or predict-failure → "Fail"; `Wear >= 70` or temp >= 60°C → "Warning"; else "OK".
 - **Privacy ConsentStore path encoding:** Registry path `HKCU\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\<capability>\NonPackaged\<path>` uses `#` to encode `\` in the Win32 path (e.g. `C:#Program Files#App#app.exe`). The `privacy::get_app_permissions` helper decodes `#` → `\` when parsing app paths.
@@ -153,6 +153,12 @@ The UI is a control-panel for power users — Discord meets HWiNFO meets Tron. D
 - Per-page rollout strategy: wrap new pages first, backfill existing pages incrementally — don't try to translate everything at once.
 
 ## Release process
+
+Automated by `scripts/launch.mjs` (single source of truth: `launch.config.json`):
+- **Ordinary release:** `npm run release -- patch|minor|major` — bumps all 4 version files, scaffolds the `src/data/changelog.ts` entry, runs `tsc`.
+- **Paid-launch release:** `npm run launch:check` then `npm run go-live` — wires the LemonSqueezy store/product/variant IDs into `license.rs`, the checkout URLs into `app.ts`, removes the CI pre-launch gate carve-out, updates the landing page, and bumps the version. See `docs/launch/` for the full runbook.
+
+Manual fallback steps if not using the scripts:
 1. Bump version in 4 files: `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `package.json`, `src/config/app.ts`.
 2. Run `cargo generate-lockfile --manifest-path src-tauri/Cargo.toml`.
 3. Commit: `git commit -m "chore: release vX.Y.Z"`.
@@ -169,6 +175,6 @@ The UI is a control-panel for power users — Discord meets HWiNFO meets Tron. D
 - `.github/FUNDING.yml` — GitHub Sponsors
 
 ## Slash commands
-- `/project:release [patch|minor|major]` — Bump version, commit, and prepare tag.
+- `/project:release [patch|minor|major]` — Bump version, commit, and prepare tag (delegates to `npm run release`).
 - `/project:fix <issue-number>` — Read a GitHub issue and implement a fix.
 - `/project:feature <description>` — Create a feature branch and implement.

@@ -30,7 +30,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "launch:check": "node scripts/launch.mjs check",
+    "go-live": "node scripts/launch.mjs go-live",
+    "release": "node scripts/launch.mjs release"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",

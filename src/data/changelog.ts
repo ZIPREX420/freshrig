@@ -1,4 +1,25 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.5.1": `### FreshRig v2.5.1 — Security patch 🔒
+
+A security maintenance release — no user-facing feature changes.
+
+**Dependency security fix.**
+Upgraded \`lettre\` to 0.11.22, resolving RUSTSEC-2026-0141 — a TLS hostname-verification weakness in the SMTP transport. FreshRig uses that transport for the Pro Business maintenance-contract email notifications. Updating is recommended for all users.
+
+**CI.**
+Lockfile alignment fix for the release pipeline.
+
+The auto-updater will pull this for all v2.5.0 installs on their next check.
+`,
+  "2.5.0": `### FreshRig v2.5.0 — Mockup-aligned UI redesign 🎨
+
+The v2.4 layout overhaul, polished to pixel-match the reference mockups. Same FreshRig under the hood — every IPC command, store, route, and saved profile carries over unchanged.
+
+**Refined surfaces.**
+The Dashboard, the Quick / Custom Setup hubs, and the Tools grid were re-spaced and re-typed to match the final mockups. Spacing, hierarchy, and the cyber/neon palette are now consistent end to end.
+
+No business-logic, IPC, route, or data-shape changes.
+`,
   "2.4.2": `### FreshRig v2.4.2 — New logo 🎨
 
 FreshRig has a fresh face. The neon "FR" mark was redrawn as a proper framed app icon and threaded through every surface — app, installer, and landing page.

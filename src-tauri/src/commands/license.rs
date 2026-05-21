@@ -1,9 +1,14 @@
 // Copyright (c) 2026 Seppe Willemsens (ZIPREX420). MIT License.
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+
+#[cfg(target_os = "windows")]
 use std::collections::HashMap;
+#[cfg(target_os = "windows")]
 use winreg::enums::HKEY_LOCAL_MACHINE;
+#[cfg(target_os = "windows")]
 use winreg::RegKey;
+#[cfg(target_os = "windows")]
 use wmi::WMIConnection;
 
 // LemonSqueezy store/product gating.
@@ -104,6 +109,7 @@ struct LsLicenseKey {
     key: Option<String>,
 }
 
+#[cfg(target_os = "windows")]
 fn read_machine_guid() -> String {
     RegKey::predef(HKEY_LOCAL_MACHINE)
         .open_subkey(r"SOFTWARE\Microsoft\Cryptography")
@@ -111,6 +117,7 @@ fn read_machine_guid() -> String {
         .unwrap_or_else(|_| "unknown".to_string())
 }
 
+#[cfg(target_os = "windows")]
 fn read_cpu_id() -> String {
     let wmi = match WMIConnection::new() {
         Ok(c) => c,
@@ -130,6 +137,7 @@ fn read_cpu_id() -> String {
         .unwrap_or_else(|| "unknown".to_string())
 }
 
+#[cfg(target_os = "windows")]
 fn read_smbios_uuid() -> String {
     let wmi = match WMIConnection::new() {
         Ok(c) => c,
@@ -149,12 +157,100 @@ fn read_smbios_uuid() -> String {
         .unwrap_or_else(|| "unknown".to_string())
 }
 
+// ───────── Machine fingerprint (cross-platform) ─────────
+//
+// Returns a stable (component_a, component_b, component_c) triple unique to
+// the host. The SHA-256 of the combination becomes the LemonSqueezy
+// `instance_name`, pinning a license to a device. Each component degrades to
+// "unknown" if unreadable — the hash of the combination is what matters, so
+// a single missing component never breaks activation.
+
+#[cfg(target_os = "windows")]
+fn read_machine_components() -> (String, String, String) {
+    (read_machine_guid(), read_cpu_id(), read_smbios_uuid())
+}
+
+#[cfg(target_os = "linux")]
+fn read_machine_components() -> (String, String, String) {
+    // Stable install id — present on every systemd/dbus Linux.
+    let machine_id = std::fs::read_to_string("/etc/machine-id")
+        .or_else(|_| std::fs::read_to_string("/var/lib/dbus/machine-id"))
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".to_string());
+
+    // CPU model name from /proc/cpuinfo — contributes entropy, not unique.
+    let cpu = std::fs::read_to_string("/proc/cpuinfo")
+        .ok()
+        .and_then(|txt| {
+            txt.lines()
+                .find(|l| l.starts_with("model name"))
+                .and_then(|l| l.split(':').nth(1))
+                .map(|s| s.trim().to_string())
+        })
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".to_string());
+
+    // DMI product UUID — root-readable on most systems; degrades gracefully.
+    let product_uuid = std::fs::read_to_string("/sys/class/dmi/id/product_uuid")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".to_string());
+
+    (machine_id, cpu, product_uuid)
+}
+
+#[cfg(target_os = "macos")]
+fn read_machine_components() -> (String, String, String) {
+    use std::process::Command;
+
+    fn run(program: &str, args: &[&str]) -> String {
+        Command::new(program)
+            .args(args)
+            .output()
+            .ok()
+            .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
+            .unwrap_or_default()
+    }
+
+    // IOPlatformUUID — stable hardware id for the Mac.
+    let platform_uuid = run("ioreg", &["-rd1", "-c", "IOPlatformExpertDevice"])
+        .lines()
+        .find(|l| l.contains("IOPlatformUUID"))
+        .and_then(|l| l.split('=').nth(1))
+        .map(|s| s.trim().trim_matches('"').to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".to_string());
+
+    let cpu = {
+        let v = run("sysctl", &["-n", "machdep.cpu.brand_string"]);
+        let t = v.trim();
+        if t.is_empty() {
+            "unknown".to_string()
+        } else {
+            t.to_string()
+        }
+    };
+
+    let model = {
+        let v = run("sysctl", &["-n", "hw.model"]);
+        let t = v.trim();
+        if t.is_empty() {
+            "unknown".to_string()
+        } else {
+            t.to_string()
+        }
+    };
+
+    (platform_uuid, cpu, model)
+}
+
 #[tauri::command]
 pub async fn get_machine_fingerprint() -> Result<String, String> {
     tokio::task::spawn_blocking(|| {
-        let guid = read_machine_guid();
-        let cpu = read_cpu_id();
-        let uuid = read_smbios_uuid();
+        let (guid, cpu, uuid) = read_machine_components();
         let combined = format!("{}|{}|{}", guid, cpu, uuid);
         let mut hasher = Sha256::new();
         hasher.update(combined.as_bytes());
