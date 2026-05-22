@@ -10,19 +10,34 @@
 // Mirrors the SaveProfileDialog modal frame (backdrop, escape close,
 // fade-in, header/body/footer rhythm) so the visual language stays
 // consistent across the Profiles page.
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, X, Lock, ShieldCheck, KeyRound } from "lucide-react";
-import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
-import * as zxcvbnEnPackage from "@zxcvbn-ts/language-en";
+import type { ZxcvbnResult } from "@zxcvbn-ts/core";
 
-// One-time setup — module-load is fine; zxcvbn-ts re-uses the configured
-// dictionary across all calls.
-zxcvbnOptions.setOptions({
-  translations: zxcvbnEnPackage.translations,
-  dictionary: {
-    ...zxcvbnEnPackage.dictionary,
-  },
-});
+// zxcvbn + its English dictionary are ~1 MB. They load on demand the first
+// time the encrypt dialog needs a strength score — never at cold start and
+// never on the Profiles route. The `import type` above is erased at build
+// time, so it adds nothing to any bundle; the dynamic import() below is what
+// pulls the code, and only when this dialog actually computes a score.
+let zxcvbnFn: ((pass: string) => ZxcvbnResult) | null = null;
+let zxcvbnLoading: Promise<void> | null = null;
+
+function loadZxcvbn(): Promise<void> {
+  if (zxcvbnFn) return Promise.resolve();
+  if (!zxcvbnLoading) {
+    zxcvbnLoading = Promise.all([
+      import("@zxcvbn-ts/core"),
+      import("@zxcvbn-ts/language-en"),
+    ]).then(([core, en]) => {
+      core.zxcvbnOptions.setOptions({
+        translations: en.translations,
+        dictionary: { ...en.dictionary },
+      });
+      zxcvbnFn = core.zxcvbn;
+    });
+  }
+  return zxcvbnLoading;
+}
 
 interface PassphraseDialogProps {
   mode: "encrypt" | "decrypt";
@@ -66,13 +81,28 @@ export function PassphraseDialog({
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  const strength = useMemo(() => {
-    if (!isEncrypt || pass.length === 0) return null;
-    try {
-      return zxcvbn(pass);
-    } catch {
-      return null;
+  // Strength is async now — zxcvbn loads lazily on first use (see loadZxcvbn).
+  // Until it resolves, `strength` is null and the Encrypt button stays
+  // disabled, exactly as it would for an empty passphrase.
+  const [strength, setStrength] = useState<ZxcvbnResult | null>(null);
+
+  useEffect(() => {
+    if (!isEncrypt || pass.length === 0) {
+      setStrength(null);
+      return;
     }
+    let cancelled = false;
+    loadZxcvbn().then(() => {
+      if (cancelled || !zxcvbnFn) return;
+      try {
+        setStrength(zxcvbnFn(pass));
+      } catch {
+        setStrength(null);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [pass, isEncrypt]);
 
   const confirmMismatch =

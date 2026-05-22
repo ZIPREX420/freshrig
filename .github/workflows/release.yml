@@ -192,6 +192,19 @@ jobs:
           releaseDraft: true
           prerelease: false
 
+      # Smoke test: prove the freshly built binary actually executes. Runs the
+      # deterministic headless apply-profile path (no display, no external
+      # deps, no network) and asserts a clean exit. Catches "compiles but
+      # won't start" regressions before the draft release is published.
+      - name: Smoke-test the built binary
+        shell: bash
+        run: |
+          BIN="src-tauri/target/release/freshrig"
+          if [ "$RUNNER_OS" = "Windows" ]; then BIN="${BIN}.exe"; fi
+          if [ ! -f "$BIN" ]; then echo "::error::built binary not found at $BIN"; exit 1; fi
+          "$BIN" --headless --task=apply-profile --profile-id=ci-smoke-test || { echo "::error::binary failed to run headless — possible compiles-but-won't-start regression"; exit 1; }
+          echo "Binary started and exited cleanly."
+
       - name: Generate SBOMs
         if: matrix.platform == 'windows-latest'
         # cargo-cyclonedx removed --output-file in 0.5.x and renamed the
