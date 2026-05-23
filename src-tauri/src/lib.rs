@@ -237,7 +237,11 @@ pub fn run() {
             let menu = Menu::with_items(app, &[&show_item, &sep1, &scan_item, &sep2, &quit_item])?;
 
             let _tray = TrayIconBuilder::new()
-                .icon(app.default_window_icon().ok_or("missing default window icon")?.clone())
+                .icon(
+                    app.default_window_icon()
+                        .ok_or("missing default window icon")?
+                        .clone(),
+                )
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app_handle: &AppHandle, event| match event.id.as_ref() {
