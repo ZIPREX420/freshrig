@@ -24,6 +24,8 @@ Everything else is real but cosmetic. **Don't let this doc become a backlog.** P
 
 The only items that should land in the same release as paid checkout.
 
+> **STATUS 2026-05-23 — ALL FOUR P0 ITEMS ARE COMPLETE.** Shipped in commit `2722501` ("P0 pre-launch improvements"): P0-1 lazy-loaded `@zxcvbn-ts`, P0-2 release smoke-test step, P0-3 PR template, P0-4 `default_window_icon` `.unwrap()` -> `ok_or`. The table below is retained for historical context.
+
 | # | Item | Effort | Files |
 |---|---|---|---|
 | P0-1 | **Lazy-load `EncryptedSyncSection` + passphrase dialog.** Move the `@zxcvbn-ts` import behind a dynamic `import()` inside the dialog component so it's not in the entry bundle. Expected gain: -1.0 MB unpacked / -500 KB gzipped from cold-start payload. | S | `src/components/profiles/EncryptedSyncSection.tsx`, `vite.config.ts` |
