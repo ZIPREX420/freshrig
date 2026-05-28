@@ -47,25 +47,25 @@
     "@zxcvbn-ts/language-en": "^3.0.2",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.40.0",
-    "lucide-react": "^1.16.0",
+    "lucide-react": "^1.17.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-error-boundary": "^6.1.1",
+    "react-error-boundary": "^6.1.2",
     "react-hotkeys-hook": "^5.3.2",
     "react-markdown": "^10.1.0",
     "recharts": "^2.15.0",
     "sonner": "^2.0.7",
-    "zustand": "^5.0.13"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "@tauri-apps/cli": "^2.11.2",
     "@types/canvas-confetti": "^1.9.0",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.12"
+    "vite": "^8.0.14"
   }
 }
