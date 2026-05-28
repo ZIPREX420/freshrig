@@ -22,7 +22,113 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Single-writer draft creation. Historically the draft release was found-or-
+  # created independently by EACH matrix leg inside tauri-action. With parallel
+  # legs (windows + ubuntu) that is a race: whichever leg lost the lookup raced
+  # against the other's create and errored at "Looking for a draft release with
+  # tag vX.Y.Z..." (this is exactly what sank Release #39 / v2.5.2). Creating
+  # the draft exactly once here, up front, and feeding its numeric release_id to
+  # the matrix legs removes the race entirely — the legs only ever UPLOAD, they
+  # never create. Draft (manual-publish) behaviour is preserved: draft:true.
+  # ---------------------------------------------------------------------------
+  create-release:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    outputs:
+      release_id: ${{ steps.find_or_create.outputs.release_id }}
+      release_tag: ${{ steps.compute.outputs.release_tag }}
+      app_version: ${{ steps.compute.outputs.app_version }}
+    steps:
+      - name: Compute RELEASE_TAG and APP_VERSION
+        id: compute
+        shell: bash
+        run: |
+          # On a tag-trigger (push), GITHUB_REF_NAME is the tag (e.g. v2.0.2).
+          # On workflow_dispatch, GITHUB_REF_NAME is the branch we ran from
+          # (usually `main`), so fall back to the input.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "release_tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "app_version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Find or create the draft release
+        id: find_or_create
+        uses: actions/github-script@v7
+        env:
+          RELEASE_TAG: ${{ steps.compute.outputs.release_tag }}
+          APP_VERSION: ${{ steps.compute.outputs.app_version }}
+        with:
+          script: |
+            const tag = process.env.RELEASE_TAG;
+            const version = process.env.APP_VERSION;
+            const repo = `${context.repo.owner}/${context.repo.repo}`;
+            const downloadBase = `https://github.com/${repo}/releases/download/${tag}`;
+            const blobBase = `https://github.com/${repo}/blob/main`;
+
+            const body = [
+              '## Download',
+              '',
+              '### Windows 10 / 11',
+              `- **[FreshRig_${version}_x64-setup.exe](${downloadBase}/FreshRig_${version}_x64-setup.exe)** -- recommended NSIS installer (~7 MB)`,
+              '',
+              '### Linux',
+              `- **[FreshRig_${version}_amd64.AppImage](${downloadBase}/FreshRig_${version}_amd64.AppImage)** -- universal, runs on any distro (~85 MB). \`chmod +x\` then run.`,
+              `- **[FreshRig_${version}_amd64.deb](${downloadBase}/FreshRig_${version}_amd64.deb)** -- Debian / Ubuntu / Mint / Pop!_OS (~12 MB). \`sudo apt install ./FreshRig_${version}_amd64.deb\``,
+              `- **[FreshRig-${version}-1.x86_64.rpm](${downloadBase}/FreshRig-${version}-1.x86_64.rpm)** -- Fedora / RHEL / openSUSE (~12 MB). \`sudo dnf install ./FreshRig-${version}-1.x86_64.rpm\``,
+              '- Arch / EndeavourOS -- AUR package planned. For now, use the AppImage.',
+              '',
+              '### macOS',
+              `Code is implemented behind \`#[cfg(target_os = "macos")]\` but signed builds are not produced yet -- see the \`macOS support\` section in [CLAUDE.md](${blobBase}/CLAUDE.md) for the re-enable steps.`,
+              '',
+              '---',
+              '',
+              '### Verifying signatures',
+              'Each binary ships with a matching `.sig` file. Verify with the public key in the repo or the Tauri updater key embedded in the app.',
+              '',
+              '### Auto-updater manifest',
+              "`latest.json` is consumed by the in-app updater -- don't download manually.",
+              '',
+              "### What's new",
+              `See the in-app **What's New** modal on first launch, or read [\`src/data/changelog.ts\`](${blobBase}/src/data/changelog.ts).`,
+              '',
+              '### SBOM',
+              '`sbom-rust.cdx.json` and `sbom-npm.cdx.json` -- CycloneDX Software Bill of Materials for the Rust and npm dependency graphs respectively.',
+            ].join('\n');
+
+            // Reuse an existing draft/published release for this tag if one
+            // already exists (idempotent re-runs); otherwise create the draft.
+            let release;
+            const all = await github.paginate(github.rest.repos.listReleases, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+            release = all.find(r => r.tag_name === tag);
+
+            if (release) {
+              core.info(`Reusing existing release ${release.id} for ${tag} (draft=${release.draft}).`);
+            } else {
+              const created = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name: `FreshRig ${tag}`,
+                body,
+                draft: true,
+                prerelease: false,
+              });
+              release = created.data;
+              core.info(`Created draft release ${release.id} for ${tag}.`);
+            }
+            core.setOutput('release_id', release.id);
+
   release:
+    needs: create-release
     permissions:
       contents: write
     strategy:
@@ -35,6 +141,9 @@ jobs:
         # env vars once Apple Developer secrets are configured.
         platform: [windows-latest, ubuntu-22.04]
     runs-on: ${{ matrix.platform }}
+    env:
+      RELEASE_TAG: ${{ needs.create-release.outputs.release_tag }}
+      APP_VERSION: ${{ needs.create-release.outputs.app_version }}
     steps:
       - uses: actions/checkout@v6
 
@@ -107,20 +216,6 @@ jobs:
         run: |
           cargo test --release --manifest-path src-tauri/Cargo.toml release_gate::lemonsqueezy_ids_set_for_release
 
-      - name: Compute RELEASE_TAG and APP_VERSION
-        shell: bash
-        run: |
-          # On a tag-trigger (push), GITHUB_REF_NAME is the tag (e.g. v2.0.2).
-          # On workflow_dispatch, GITHUB_REF_NAME is the branch we ran from
-          # (usually `main`), so fall back to the input.
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ inputs.tag }}"
-          else
-            TAG="${GITHUB_REF_NAME}"
-          fi
-          echo "RELEASE_TAG=${TAG}" >> "$GITHUB_ENV"
-          echo "APP_VERSION=${TAG#v}" >> "$GITHUB_ENV"
-
       # Defence against the v2.3.0 release artifact gap (4-of-11 assets shipped):
       # when TAURI_SIGNING_PRIVATE_KEY is empty/missing, tauri-action silently
       # skips signing AND latest.json generation, producing a release the
@@ -147,6 +242,11 @@ jobs:
       # produced on disk (logs confirm); the 0.5.x action just couldn't
       # coordinate the cross-platform signature manifest.
       #
+      # The matrix legs no longer find-or-create the release — `create-release`
+      # made the draft once and passed its numeric id here via `releaseId`.
+      # This is what removes the v2.5.2 matrix race. Each leg only UPLOADS its
+      # bundles to the existing draft.
+      #
       # `args: ''` lets tauri-action read tauri.conf.json's full
       # `bundle.targets` list (nsis on Windows, deb/rpm/appimage on Linux,
       # dmg/app on macOS). Defaults work; the explicit `--bundles X,Y,Z`
@@ -159,38 +259,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           args: ''
-          tagName: ${{ env.RELEASE_TAG }}
-          releaseName: 'FreshRig ${{ env.RELEASE_TAG }}'
-          releaseBody: |
-            ## Download
-
-            ### Windows 10 / 11
-            - **[FreshRig_${{ env.APP_VERSION }}_x64-setup.exe](https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/FreshRig_${{ env.APP_VERSION }}_x64-setup.exe)** -- recommended NSIS installer (~7 MB)
-
-            ### Linux
-            - **[FreshRig_${{ env.APP_VERSION }}_amd64.AppImage](https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/FreshRig_${{ env.APP_VERSION }}_amd64.AppImage)** -- universal, runs on any distro (~85 MB). `chmod +x` then run.
-            - **[FreshRig_${{ env.APP_VERSION }}_amd64.deb](https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/FreshRig_${{ env.APP_VERSION }}_amd64.deb)** -- Debian / Ubuntu / Mint / Pop!_OS (~12 MB). `sudo apt install ./FreshRig_${{ env.APP_VERSION }}_amd64.deb`
-            - **[FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm](https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm)** -- Fedora / RHEL / openSUSE (~12 MB). `sudo dnf install ./FreshRig-${{ env.APP_VERSION }}-1.x86_64.rpm`
-            - Arch / EndeavourOS -- AUR package planned. For now, use the AppImage.
-
-            ### macOS
-            Code is implemented behind `#[cfg(target_os = "macos")]` but signed builds are not produced yet -- see the `macOS support` section in [CLAUDE.md](https://github.com/${{ github.repository }}/blob/main/CLAUDE.md) for the re-enable steps.
-
-            ---
-
-            ### Verifying signatures
-            Each binary ships with a matching `.sig` file. Verify with the public key in the repo or the Tauri updater key embedded in the app.
-
-            ### Auto-updater manifest
-            `latest.json` is consumed by the in-app updater -- don't download manually.
-
-            ### What's new
-            See the in-app **What's New** modal on first launch, or read [`src/data/changelog.ts`](https://github.com/${{ github.repository }}/blob/main/src/data/changelog.ts).
-
-            ### SBOM
-            `sbom-rust.cdx.json` and `sbom-npm.cdx.json` -- CycloneDX Software Bill of Materials for the Rust and npm dependency graphs respectively.
-          releaseDraft: true
-          prerelease: false
+          releaseId: ${{ needs.create-release.outputs.release_id }}
 
       # Smoke test: prove the freshly built binary actually executes. Runs the
       # deterministic headless apply-profile path (no display, no external
