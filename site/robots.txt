@@ -1,0 +1,10 @@
+# https://ZIPREX420.github.io/freshrig/
+# FreshRig — desktop app for hardware detection, driver setup, and system tuning.
+
+User-agent: *
+Allow: /
+
+# Default crawl delay; most modern bots ignore this. Kept conservative.
+Crawl-delay: 5
+
+Sitemap: https://ZIPREX420.github.io/freshrig/sitemap.xml

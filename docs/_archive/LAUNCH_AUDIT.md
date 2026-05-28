@@ -276,7 +276,7 @@ Both `0` skip the LemonSqueezy store/product matching guard (the comment in `lic
 | Mobile nav menu | Below 640px the right-side Download button hides; below 768px the Features/Pro/Pricing/FAQ links hide. No hamburger menu. Mobile users can scroll but can't jump. |
 | `https://freshrig.app` | Placeholder in `AboutPage.tsx:19`. Register the domain or remove. |
 | `https://discord.gg/freshrig` | Placeholder in `AboutPage.tsx:22`. Create or remove. |
-| `security@freshrig.app` | Placeholder in `SECURITY.md:11`. Provision the alias or replace with the real `seppewillemsens@icloud.com` only. |
+| `security@freshrig.app` | Placeholder in `SECURITY.md:11`. Provision the alias or replace with the real `<your-personal-mailbox>` only. |
 | Comparison table breadth | Currently FreshRig / Ninite / WinUtil / Manual. Adding Wintoys + linutil columns would broaden the cross-platform claim. |
 | WMI per-query timeouts | `commands/hardware.rs` wraps the entire batch in a 15s timeout. CLAUDE.md documents 5s per-query as the standard. Pre-existing pattern; not a regression. Worth a follow-up issue. |
 

@@ -54,10 +54,10 @@ These are the items that turn FreshRig from "ships and works" into "ships and st
 
 | # | Item | Effort | Why |
 |---|---|---|---|
-| P1-5 | **Add `cargo audit` to `ci.yml`** on PR (not just on tag push in release.yml). Use the same `audit.toml` copy step the release workflow already does. | S | Catches advisories before merge, not after release. |
+| ~~P1-5~~ ✅ | ~~**Add `cargo audit` to `ci.yml`** on PR (not just on tag push in release.yml). Use the same `audit.toml` copy step the release workflow already does.~~ Shipped in CI on Ubuntu leg (see `.github/workflows/ci.yml`). | S | Catches advisories before merge, not after release. |
 | P1-6 | **Add SLSA provenance attestation to `release.yml`.** Drop in `actions/attest-build-provenance@v2` after the bundle step. ~5 lines of YAML, zero secrets needed. | S | Real supply-chain transparency badge with negligible cost. |
 | P1-7 | **Add a hard bundle-size budget.** In `vite.config.ts`, configure a Rolldown `output.assetFileNames` cap, or in CI a `du -b dist/assets/*.js | sort -nr | head -1` check that fails if the biggest chunk exceeds (post-P0-1) say 300 KB. | S | Prevents the next "1 MB silently added to entry bundle" regression. |
-| P1-8 | **Dependabot grouping.** Add a `groups:` block per ecosystem so all patch-level cargo/npm updates land as one PR per week, not 15. | XS | Reduces review fatigue without losing security cadence. |
+| ~~P1-8~~ ✅ | ~~**Dependabot grouping.** Add a `groups:` block per ecosystem so all patch-level cargo/npm updates land as one PR per week, not 15.~~ Shipped (`commit 3c0493a`). | XS | Reduces review fatigue without losing security cadence. |
 | P1-9 | **Verify branch-protection on `main`** matches the CI required-status list. Has to be done in the GitHub UI; record the final state in `CONTRIBUTING.md`. | XS | Already implicitly assumed by the workflow; worth confirming once. |
 
 ### 1.3 Crash visibility
@@ -80,7 +80,7 @@ Items that compound over time but don't change a single user-visible behaviour.
 | P2-2 | **Auto-changelog draft.** In `scripts/launch.mjs cmdRelease`, parse the last 10 commits on `main` and pre-fill the changelog TODO with a conventional-commit-grouped draft the user edits down. | M | Saves 5 minutes per release; cuts the "ship without changelog" risk. |
 | P2-3 | **Pre-flight check before `git tag`.** In `scripts/launch.mjs`, add a `preflight` subcommand that asserts: clean working tree, no unpushed commits, all 4 version files agree, the changelog has a non-TODO entry for the target version. Run automatically inside `go-live`. | S | Catches the half-tagged release. |
 | P2-4 | **Templatize the landing-page nav + footer.** Right now nav and footer HTML are pasted into 4 files (`index/download/privacy/terms.html`). Move them to a `site/_partials/{nav,footer}.html` and use a tiny Node script in `pages.yml` to inline-include before deploy. Keeps GitHub Pages happy (static), kills the 4×-edit problem. | M | Cheap once, valuable forever. |
-| P2-5 | **Sitemap.xml + robots.txt for `site/`.** 4 URLs + 2 lines. Pure SEO hygiene. | XS | |
+| ~~P2-5~~ ✅ | ~~**Sitemap.xml + robots.txt for `site/`.** 4 URLs + 2 lines. Pure SEO hygiene.~~ Shipped in v2.5.2 (`site/robots.txt`, `site/sitemap.xml`). | XS | |
 | P2-6 | **Re-evaluation tracker for `audit.toml` suppressions.** Either a GitHub issue with `audit-suppression` label per family, or a dated table in `audit.toml` comments noting "re-check when Tauri ≥ 2.20" / etc. Currently the comments document *why* but not *when*. | S | |
 | P2-7 | **macOS re-enable runbook.** Single `docs/MACOS_REBUILD.md` with the 5-line workflow diff + the 8 secret names. Already partly in `CLAUDE.md` — extract to its own doc so it's the obvious search hit. | XS | |
 

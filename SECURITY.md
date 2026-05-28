@@ -4,14 +4,14 @@
 
 **Do NOT create a public GitHub issue for security vulnerabilities.**
 
-### Preferred: GitHub Security Advisory
-Use GitHub's [Security Advisory feature](https://github.com/ZIPREX420/freshrig/security/advisories/new).
+### How to report
 
-### Alternative: Email
-Send details to **seppewillemsens@icloud.com** (dedicated security@freshrig.app coming soon).
+Report privately via GitHub's [Security Advisory feature](https://github.com/ZIPREX420/freshrig/security/advisories/new). GitHub keeps the advisory and your contact details private until a fix is published, then mints a CVE if appropriate.
+
+> A dedicated `security@freshrig.app` mailbox will be wired up once the `freshrig.app` domain is live. Until then, the private Security Advisory is the only supported reporting channel.
 
 ### What to Include
-- Description, reproduction steps, impact assessment, suggested fix, your contact info.
+- Description, reproduction steps, impact assessment, suggested fix, your preferred contact handle.
 
 ### Response Timeline
 | Stage | Timeframe |

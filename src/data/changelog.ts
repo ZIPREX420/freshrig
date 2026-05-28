@@ -1,4 +1,19 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.5.2": `### FreshRig v2.5.2 — Polish + security hygiene 🧹
+
+A small polish release rolling up the security-and-launch improvements that landed since v2.5.1. No user-facing feature changes.
+
+**Security policy hygiene.**
+Vulnerability reports now route exclusively through GitHub's private Security Advisory channel — the personal mailbox previously listed in \`SECURITY.md\` has been removed. A dedicated \`security@freshrig.app\` alias will be wired up alongside the domain.
+
+**Landing-page SEO.**
+Added \`robots.txt\` and \`sitemap.xml\` so search engines index every public page. Open Graph and Twitter Card tags are now present on every subpage (Download, Privacy, Terms) — not just the homepage. The JSON-LD \`softwareVersion\` now stays in sync with the release tag.
+
+**Carries the v2.5.1 security patch.**
+Includes the \`lettre\` 0.11.22 TLS hostname-verification fix (RUSTSEC-2026-0141) that ships in the SMTP transport used by Pro Business maintenance-contract emails. Recommended for all v2.5.0 users.
+
+The auto-updater will pull this for all v2.5.0 and v2.5.1 installs on their next check.
+`,
   "2.5.1": `### FreshRig v2.5.1 — Security patch 🔒
 
 A security maintenance release — no user-facing feature changes.

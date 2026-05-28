@@ -12,7 +12,7 @@ GitHub Pages serves HTTPS).
 ## 2. Email aliases (Cloudflare Email Routing — free)
 
 In the Cloudflare dashboard → Email → Email Routing, create two routes
-forwarding to `seppewillemsens@icloud.com`:
+forwarding to `<your-personal-mailbox>`:
 
 - `sales@freshrig.app` → used by the landing page Site-License contact and the
   Business CTA, and `SITE_CONTACT_URL` in `src/config/app.ts`.
