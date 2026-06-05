@@ -58,7 +58,7 @@ jobs:
 
       - name: Find or create the draft release
         id: find_or_create
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           RELEASE_TAG: ${{ steps.compute.outputs.release_tag }}
           APP_VERSION: ${{ steps.compute.outputs.app_version }}
