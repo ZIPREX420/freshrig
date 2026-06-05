@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { errMessage } from "../../lib";
 import { motion, AnimatePresence } from "framer-motion";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -148,7 +149,7 @@ function CleanupPageInner() {
       setSelected(new Set(result.filter((c) => c.enabledByDefault).map((c) => c.id)));
       setPhase("results");
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to scan for junk files");
+      toast.error(errMessage(e, "Failed to scan for junk files"));
       setPhase("idle");
     } finally {
       scanUnlistenRef.current?.();
@@ -177,7 +178,7 @@ function CleanupPageInner() {
       const freed = result.reduce((s, r) => s + r.bytesFreed, 0);
       toast.success(`Freed ${formatBytes(freed)}`);
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Cleanup failed");
+      toast.error(errMessage(e, "Cleanup failed"));
       setPhase("results");
     } finally {
       cleanUnlistenRef.current?.();

@@ -7,3 +7,5 @@
 export { isTauri } from "./runtime";
 export { invokeOrToast, type InvokeOptions } from "./invoke";
 export { lazyNamed, preloadModule } from "./lazy";
+export { errMessage } from "./errors";
+export { runAction } from "./action";

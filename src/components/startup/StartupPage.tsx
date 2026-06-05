@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { errMessage } from "../../lib";
 import { motion, AnimatePresence } from "framer-motion";
 import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
@@ -103,7 +104,7 @@ export function StartupPage() {
       const result = await invoke<StartupEntry[]>("get_startup_entries");
       setEntries(result);
     } catch (e) {
-      setError(typeof e === "string" ? e : "Failed to load startup entries");
+      setError(errMessage(e, "Failed to load startup entries"));
     } finally {
       setLoading(false);
     }
@@ -138,7 +139,7 @@ export function StartupPage() {
         setEntries((prev) =>
           prev.map((x) => (x.id === entry.id ? { ...x, enabled: !next } : x)),
         );
-        toast.error(typeof e === "string" ? e : "Failed to toggle entry");
+        toast.error(errMessage(e, "Failed to toggle entry"));
       } finally {
         setTogglingId(null);
       }

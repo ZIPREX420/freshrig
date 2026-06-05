@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { errMessage, runAction } from "../../lib";
 import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import {
@@ -57,28 +58,18 @@ function QuickActions() {
   const [resetting, setResetting] = useState(false);
 
   const handleFlush = useCallback(async () => {
-    setFlushing(true);
-    try {
-      await invoke("network_reset_dns");
-      toast.success("DNS cache flushed");
-    } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to flush DNS");
-    } finally {
-      setFlushing(false);
-    }
+    await runAction(setFlushing, () => invoke("network_reset_dns"), {
+      success: "DNS cache flushed",
+      failure: "Failed to flush DNS",
+    });
   }, []);
 
   const handleFullReset = useCallback(async () => {
-    setResetting(true);
-    try {
-      await invoke("network_reset_full");
-      toast.success("Network stack reset — reboot required");
-      setConfirmReset(false);
-    } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to reset network");
-    } finally {
-      setResetting(false);
-    }
+    const ok = await runAction(setResetting, () => invoke("network_reset_full"), {
+      success: "Network stack reset — reboot required",
+      failure: "Failed to reset network",
+    });
+    if (ok) setConfirmReset(false);
   }, []);
 
   return (
@@ -209,7 +200,7 @@ function DnsConfiguration() {
         if (list.length > 0) setSelected(list[0].name);
       } catch (e) {
         setInterfaces([]);
-        toast.error(typeof e === "string" ? e : "Failed to load interfaces");
+        toast.error(errMessage(e, "Failed to load interfaces"));
       }
     })();
   }, []);
@@ -229,19 +220,16 @@ function DnsConfiguration() {
       toast.error("Primary DNS is required");
       return;
     }
-    setApplying(true);
-    try {
-      await invoke("set_dns_servers", {
-        interfaceName: selected,
-        primary: primary.trim(),
-        secondary: secondary.trim() || null,
-      });
-      toast.success(`DNS updated on ${selected}`);
-    } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to apply DNS");
-    } finally {
-      setApplying(false);
-    }
+    await runAction(
+      setApplying,
+      () =>
+        invoke("set_dns_servers", {
+          interfaceName: selected,
+          primary: primary.trim(),
+          secondary: secondary.trim() || null,
+        }),
+      { success: `DNS updated on ${selected}`, failure: "Failed to apply DNS" },
+    );
   }, [selected, primary, secondary]);
 
   return (
@@ -380,7 +368,7 @@ function WifiPasswords() {
       setProfiles(list);
     } catch (e) {
       setProfiles([]);
-      toast.error(typeof e === "string" ? e : "Failed to read Wi-Fi profiles");
+      toast.error(errMessage(e, "Failed to read Wi-Fi profiles"));
     } finally {
       setLoading(false);
     }

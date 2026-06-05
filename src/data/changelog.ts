@@ -1,4 +1,22 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.5.3": `### FreshRig v2.5.3 — Internal cleanup + dependency carry 🧹
+
+A maintenance release with no user-facing behavior change — an internal refactor that makes the frontend easier to maintain, folded in with the dependency and CI updates that landed since v2.5.2.
+
+**Refactor.**
+Two shared frontend helpers were lifted into \`src/lib\`: \`errMessage\` replaces the error-to-toast coercion that was copy-pasted across 32 call sites in 9 pages, and \`runAction\` captures the busy-flag + toast lifecycle for one-shot backend calls (now used by the Network tools). Behavior is identical — the code is just less repetitive and easier to onboard into.
+
+**npm updates.**
+Rolls up the grouped npm dependency bumps that landed since v2.5.2.
+
+**Cargo update.**
+\`rusqlite\` 0.32.1 → 0.40.0 plus the grouped cargo dependency updates.
+
+**CI fix.**
+The release workflow now creates the draft release once in a needs-ordered job, fixing a matrix race that could duplicate the draft.
+
+The auto-updater will pull this for all v2.5.x installs on their next check.
+`,
   "2.5.2": `### FreshRig v2.5.2 — Polish + security hygiene 🧹
 
 A small polish release rolling up the security-and-launch improvements that landed since v2.5.1. No user-facing feature changes.

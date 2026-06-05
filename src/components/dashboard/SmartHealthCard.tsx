@@ -6,6 +6,7 @@
 // scheduled background check.
 
 import { useCallback, useEffect, useState } from "react";
+import { errMessage } from "../../lib";
 import {
   Activity,
   AlertTriangle,
@@ -89,7 +90,7 @@ export function SmartHealthCard() {
       // Save snapshot to history so the trend chart has data.
       void invoke("save_smart_history", { readings: list }).catch(() => {});
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "SMART check failed");
+      toast.error(errMessage(e, "SMART check failed"));
       setReadings([]);
     } finally {
       setLoading(false);
@@ -115,7 +116,7 @@ export function SmartHealthCard() {
       const msg = await invoke<string>("enable_smart_schedule", { isPro });
       toast.success(msg);
     } catch (e) {
-      const msg = typeof e === "string" ? e : "Failed to schedule";
+      const msg = errMessage(e, "Failed to schedule");
       if (msg === "PRO_REQUIRED") {
         toast.error("Scheduled monitoring is a Pro feature.");
       } else {

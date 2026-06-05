@@ -7,6 +7,7 @@
 // Lives as the "Drift" tab inside PrivacyPage.
 
 import { useCallback, useEffect, useState } from "react";
+import { errMessage } from "../../lib";
 import {
   Camera,
   ChevronDown,
@@ -96,7 +97,7 @@ export function PrivacyDriftPanel() {
       const list = await invoke<DriftEntry[]>("check_privacy_drift");
       setDrift(list);
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to check drift");
+      toast.error(errMessage(e, "Failed to check drift"));
     } finally {
       setRefreshing(false);
     }
@@ -116,7 +117,7 @@ export function PrivacyDriftPanel() {
       setDrift([]);
       toast.success("Baseline captured. We'll alert you if anything drifts.");
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to capture baseline");
+      toast.error(errMessage(e, "Failed to capture baseline"));
     } finally {
       setCreating(false);
     }
@@ -129,7 +130,7 @@ export function PrivacyDriftPanel() {
       toast.success("Reapplied baseline values. Refreshing drift.");
       await refresh();
     } catch (e) {
-      const msg = typeof e === "string" ? e : "Failed to reapply baseline";
+      const msg = errMessage(e, "Failed to reapply baseline");
       if (msg === "PRO_REQUIRED") {
         toast.error("One-click reapply is a Pro feature.");
       } else {
@@ -150,7 +151,7 @@ export function PrivacyDriftPanel() {
       await invoke("export_baseline", { targetPath: path });
       toast.success("Baseline exported.");
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to export baseline");
+      toast.error(errMessage(e, "Failed to export baseline"));
     }
   };
 
@@ -166,7 +167,7 @@ export function PrivacyDriftPanel() {
       toast.success("Baseline imported. Checking drift…");
       await refresh();
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to import baseline");
+      toast.error(errMessage(e, "Failed to import baseline"));
     }
   };
 

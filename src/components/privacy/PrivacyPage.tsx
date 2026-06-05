@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { errMessage } from "../../lib";
 import { motion, AnimatePresence } from "framer-motion";
 import { invoke } from "@tauri-apps/api/core";
 import { load, type Store } from "@tauri-apps/plugin-store";
@@ -225,7 +226,7 @@ function SettingsTab() {
       const list = await invoke<PrivacySetting[]>("get_privacy_settings");
       setSettings(list);
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to load privacy settings");
+      toast.error(errMessage(e, "Failed to load privacy settings"));
     }
   }, []);
 
@@ -269,7 +270,7 @@ function SettingsTab() {
         toast.success(`${setting.name} — ${next ? "enabled" : "disabled"}`);
         await fetchSettings();
       } catch (e) {
-        toast.error(typeof e === "string" ? e : "Failed to apply setting");
+        toast.error(errMessage(e, "Failed to apply setting"));
       } finally {
         setPendingIds((prev) => {
           const next2 = new Set(prev);
@@ -401,7 +402,7 @@ function PermissionsTab() {
       const list = await invoke<AppPermission[]>("get_app_permissions");
       setPermissions(list);
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to load app permissions");
+      toast.error(errMessage(e, "Failed to load app permissions"));
     }
   }, []);
 
@@ -429,7 +430,7 @@ function PermissionsTab() {
         toast.success(`Revoked ${capabilityMeta[perm.capability]?.label ?? perm.capability} for ${perm.appName}`);
         await fetchPermissions();
       } catch (e) {
-        toast.error(typeof e === "string" ? e : "Failed to revoke permission");
+        toast.error(errMessage(e, "Failed to revoke permission"));
       } finally {
         setRevoking(null);
       }
@@ -615,7 +616,7 @@ function AuditTab() {
       const list = await invoke<PrivacySetting[]>("get_privacy_settings");
       setSettings(list);
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to load privacy settings");
+      toast.error(errMessage(e, "Failed to load privacy settings"));
     }
   }, []);
 

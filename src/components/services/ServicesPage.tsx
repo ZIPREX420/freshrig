@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { errMessage } from "../../lib";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { toast } from "sonner";
@@ -64,7 +65,7 @@ function ServicesPageInner() {
       setServices(list);
     } catch (e) {
       setServices([]);
-      toast.error(typeof e === "string" ? e : "Failed to load services");
+      toast.error(errMessage(e, "Failed to load services"));
     }
   }, []);
 
@@ -162,7 +163,7 @@ function PresetCards({
         await onApplied();
         setPreview(null);
       } catch (e) {
-        toast.error(typeof e === "string" ? e : "Failed to apply preset");
+        toast.error(errMessage(e, "Failed to apply preset"));
       } finally {
         setApplying(false);
       }
@@ -368,7 +369,7 @@ function ServicesTable({
         onMutate({ ...entry, startType: next });
         toast.success(`${entry.displayName} → ${next}`);
       } catch (e) {
-        toast.error(typeof e === "string" ? e : "Failed to update service");
+        toast.error(errMessage(e, "Failed to update service"));
       } finally {
         setPending((prev) => {
           const n = new Set(prev);

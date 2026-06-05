@@ -5,6 +5,7 @@
 // shared SQLite db.
 
 import { useCallback, useEffect, useState } from "react";
+import { errMessage } from "../../lib";
 import {
   Camera,
   Check,
@@ -63,7 +64,7 @@ function WatchdogPageInner() {
       const list = await invoke<Snapshot[]>("list_snapshots");
       setSnapshots(list);
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to list snapshots");
+      toast.error(errMessage(e, "Failed to list snapshots"));
     }
   }, []);
 
@@ -83,7 +84,7 @@ function WatchdogPageInner() {
       setLabel("");
       await refresh();
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to capture snapshot");
+      toast.error(errMessage(e, "Failed to capture snapshot"));
     } finally {
       setTaking(false);
     }
@@ -97,7 +98,7 @@ function WatchdogPageInner() {
       if (diff && (diff.beforeId === id || diff.afterId === id)) setDiff(null);
       await refresh();
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to delete snapshot");
+      toast.error(errMessage(e, "Failed to delete snapshot"));
     }
   };
 
@@ -115,7 +116,7 @@ function WatchdogPageInner() {
       const d = await invoke<SnapshotDiff>("diff_snapshots", { beforeId, afterId });
       setDiff(d);
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to compare snapshots");
+      toast.error(errMessage(e, "Failed to compare snapshots"));
     } finally {
       setDiffing(false);
     }

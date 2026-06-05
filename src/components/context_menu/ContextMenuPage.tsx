@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { errMessage } from "../../lib";
 import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import {
@@ -51,7 +52,7 @@ function ClassicMenuToggle() {
       const enabled = await invoke<boolean>("get_classic_menu_status");
       setClassicEnabled(enabled);
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to read classic menu status");
+      toast.error(errMessage(e, "Failed to read classic menu status"));
     }
   }, []);
 
@@ -70,7 +71,7 @@ function ClassicMenuToggle() {
         next ? "Classic menu enabled — Explorer restarted" : "Windows 11 menu restored — Explorer restarted",
       );
     } catch (e) {
-      toast.error(typeof e === "string" ? e : "Failed to toggle classic menu");
+      toast.error(errMessage(e, "Failed to toggle classic menu"));
     } finally {
       setToggling(false);
     }
@@ -143,7 +144,7 @@ function ShellExtensionsPanel() {
       setExtensions(list);
     } catch (e) {
       setExtensions([]);
-      toast.error(typeof e === "string" ? e : "Failed to scan shell extensions");
+      toast.error(errMessage(e, "Failed to scan shell extensions"));
     } finally {
       setLoading(false);
     }
@@ -164,7 +165,7 @@ function ShellExtensionsPanel() {
         );
         toast.success(`${ext.name} ${block ? "blocked" : "unblocked"} — restart Explorer to apply`);
       } catch (e) {
-        toast.error(typeof e === "string" ? e : "Failed to toggle extension");
+        toast.error(errMessage(e, "Failed to toggle extension"));
       } finally {
         setPending((prev) => {
           const next = new Set(prev);
