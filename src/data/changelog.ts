@@ -1,4 +1,13 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.5.4": `### FreshRig v2.5.4 — Internal cleanup 🧹
+
+A maintenance release with no user-facing change.
+
+**Refactor.**
+The WMI \`extract_u32\` helper, previously duplicated byte-for-byte in the hardware and report modules, now lives once in a shared \`commands/wmi_util.rs\`. Behavior is identical — this just removes a copy. (\`extract_string\`, which has different fallbacks in each module, was deliberately left alone.)
+
+The auto-updater will pull this for all v2.5.x installs on their next check.
+`,
   "2.5.3": `### FreshRig v2.5.3 — Internal cleanup + dependency carry 🧹
 
 A maintenance release with no user-facing behavior change — an internal refactor that makes the frontend easier to maintain, folded in with the dependency and CI updates that landed since v2.5.2.
