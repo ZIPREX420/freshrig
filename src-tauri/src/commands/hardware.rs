@@ -3,6 +3,7 @@ use winreg::enums::HKEY_LOCAL_MACHINE;
 use winreg::RegKey;
 use wmi::WMIConnection;
 
+use crate::commands::wmi_util::extract_u32;
 use crate::models::hardware::*;
 
 /// Read the real VRAM from the registry (64-bit QWORD), which avoids the
@@ -482,16 +483,6 @@ fn extract_string(map: &HashMap<String, wmi::Variant>, key: &str) -> String {
         Some(wmi::Variant::Null) => "Unknown".to_string(),
         Some(other) => format!("{:?}", other),
         None => "Unknown".to_string(),
-    }
-}
-
-fn extract_u32(map: &HashMap<String, wmi::Variant>, key: &str) -> Option<u32> {
-    match map.get(key) {
-        Some(wmi::Variant::UI4(n)) => Some(*n),
-        Some(wmi::Variant::I4(n)) => Some(*n as u32),
-        Some(wmi::Variant::UI2(n)) => Some(*n as u32),
-        Some(wmi::Variant::String(s)) => s.parse().ok(),
-        _ => None,
     }
 }
 

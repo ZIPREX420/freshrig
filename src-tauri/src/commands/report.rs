@@ -1,4 +1,5 @@
 // Copyright (c) 2026 Seppe Willemsens (ZIPREX420). MIT License.
+use crate::commands::wmi_util::extract_u32;
 use crate::util::silent_cmd;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -103,16 +104,6 @@ fn extract_string(map: &HashMap<String, wmi::Variant>, key: &str) -> String {
         Some(wmi::Variant::String(s)) => s.clone(),
         Some(wmi::Variant::Null) => String::new(),
         _ => String::new(),
-    }
-}
-
-fn extract_u32(map: &HashMap<String, wmi::Variant>, key: &str) -> Option<u32> {
-    match map.get(key) {
-        Some(wmi::Variant::UI4(n)) => Some(*n),
-        Some(wmi::Variant::I4(n)) => Some(*n as u32),
-        Some(wmi::Variant::UI2(n)) => Some(*n as u32),
-        Some(wmi::Variant::String(s)) => s.parse().ok(),
-        _ => None,
     }
 }
 

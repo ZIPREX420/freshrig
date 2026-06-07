@@ -63,3 +63,5 @@ pub mod services;
 pub mod startup;
 #[cfg(target_os = "windows")]
 pub mod winget_search;
+#[cfg(target_os = "windows")]
+pub mod wmi_util;
