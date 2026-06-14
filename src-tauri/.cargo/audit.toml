@@ -48,6 +48,12 @@ ignore = [
     # transitively by several Tauri build-script deps. Build-time only,
     # never compiled into the shipped binary.
     "RUSTSEC-2024-0370",
+    # `RUSTSEC-2026-0173` — `proc-macro-error2` v2.0.1 unmaintained (flagged
+    # 2026-06-07). The successor to proc-macro-error 1.x, now also flagged.
+    # Build-time only: pulled transitively via `age` → `i18n-embed-fl` (a
+    # proc-macro crate), so it never lands in the shipped binary. Status flag,
+    # no CVE — same disposition as RUSTSEC-2024-0370 above.
+    "RUSTSEC-2026-0173",
 
     # ── unic-* family ────────────────────────────────────────────────────
     # Pulled by `urlpattern` → `tauri-utils` (Tauri 2.x). The whole `unic`
