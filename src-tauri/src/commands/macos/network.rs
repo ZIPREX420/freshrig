@@ -5,6 +5,13 @@
 use crate::commands::macos::util::{run_cmd_lossy, run_elevated};
 use crate::models::network::{NetworkInterface, WifiProfile};
 
+/// Accepts only valid IPv4/IPv6 literals. DNS values are interpolated into a
+/// shell string run with administrator privileges, so reject anything that is
+/// not a bare IP. A value that parses as IpAddr has no shell metacharacter.
+fn is_ip_literal(s: &str) -> bool {
+    s.trim().parse::<std::net::IpAddr>().is_ok()
+}
+
 #[tauri::command]
 pub async fn network_reset_dns() -> Result<(), String> {
     tokio::task::spawn_blocking(|| {
@@ -35,6 +42,18 @@ pub async fn set_dns_servers(
     primary: String,
     secondary: Option<String>,
 ) -> Result<(), String> {
+    // SEC (command injection): primary/secondary are interpolated into a shell
+    // string executed with administrator privileges (run_elevated). Validate
+    // as IP literals so caller text cannot inject an elevated command. DNS
+    // servers are always IPs.
+    if !is_ip_literal(&primary) {
+        return Err(format!("Invalid primary DNS address: {}", primary));
+    }
+    if let Some(s) = secondary.as_deref() {
+        if !s.trim().is_empty() && !is_ip_literal(s) {
+            return Err(format!("Invalid secondary DNS address: {}", s));
+        }
+    }
     tokio::task::spawn_blocking(move || {
         let port = match hardware_port_for_device(&interface_name) {
             Some(p) => p,

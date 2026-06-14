@@ -4,6 +4,13 @@ use crate::util::silent_cmd;
 use std::collections::HashMap;
 use wmi::WMIConnection;
 
+/// Accepts only valid IPv4/IPv6 literals. DNS values are interpolated into an
+/// elevated PowerShell command, so anything that is not a bare IP is rejected
+/// here. A string that parses as IpAddr has no shell/PowerShell metacharacter.
+fn is_ip_literal(s: &str) -> bool {
+    s.trim().parse::<std::net::IpAddr>().is_ok()
+}
+
 fn run_checked(program: &str, args: &[&str]) -> Result<String, String> {
     let out = silent_cmd(program)
         .args(args)
@@ -46,6 +53,18 @@ pub async fn set_dns_servers(
     primary: String,
     secondary: Option<String>,
 ) -> Result<(), String> {
+    // SEC (command injection): primary/secondary are interpolated into an
+    // elevated PowerShell command below. Validate as IP literals so a value
+    // containing a quote, ';', or ')' cannot break out of the quoted string
+    // and run an injected elevated command. DNS servers are always IPs.
+    if !is_ip_literal(&primary) {
+        return Err(format!("Invalid primary DNS address: {}", primary));
+    }
+    if let Some(s) = secondary.as_deref() {
+        if !s.trim().is_empty() && !is_ip_literal(s) {
+            return Err(format!("Invalid secondary DNS address: {}", s));
+        }
+    }
     tokio::task::spawn_blocking(move || {
         let addresses = match secondary.as_deref() {
             Some(s) if !s.trim().is_empty() => format!("'{}','{}'", primary, s),
@@ -171,4 +190,21 @@ pub async fn get_wifi_passwords() -> Result<Vec<WifiProfile>, String> {
     })
     .await
     .map_err(|e| format!("Task failed: {}", e))?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_ip_literal;
+
+    #[test]
+    fn dns_validation_accepts_ips_rejects_injection() {
+        assert!(is_ip_literal("8.8.8.8"));
+        assert!(is_ip_literal("1.1.1.1"));
+        assert!(is_ip_literal("2606:4700:4700::1111"));
+        assert!(!is_ip_literal("8.8.8.8'); Stop-Service WinDefend; #"));
+        assert!(!is_ip_literal("'); calc; ('"));
+        assert!(!is_ip_literal("9.9.9.9 && calc"));
+        assert!(!is_ip_literal(""));
+        assert!(!is_ip_literal("evil.example.com"));
+    }
 }

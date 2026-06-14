@@ -6,6 +6,13 @@ use std::fs;
 use crate::commands::linux::util::{is_root, run_cmd, run_cmd_lossy, run_elevated, which};
 use crate::models::network::{NetworkInterface, WifiProfile};
 
+/// Accepts only valid IPv4/IPv6 literals. DNS values flow into an nmcli
+/// argument and a systemd-resolved drop-in written via `pkexec tee`, so reject
+/// anything that is not a bare IP (also blocks newline-injected directives).
+fn is_ip_literal(s: &str) -> bool {
+    s.trim().parse::<std::net::IpAddr>().is_ok()
+}
+
 #[tauri::command]
 pub async fn network_reset_dns() -> Result<(), String> {
     tokio::task::spawn_blocking(|| {
@@ -57,6 +64,18 @@ pub async fn set_dns_servers(
     primary: String,
     secondary: Option<String>,
 ) -> Result<(), String> {
+    // SEC (injection): primary/secondary flow into an nmcli argument and into a
+    // systemd-resolved drop-in written via `pkexec tee`. Validate as IP
+    // literals so a newline or shell metacharacter cannot inject extra resolved
+    // directives or arguments. DNS servers are always IPs.
+    if !is_ip_literal(&primary) {
+        return Err(format!("Invalid primary DNS address: {}", primary));
+    }
+    if let Some(s) = secondary.as_deref() {
+        if !s.trim().is_empty() && !is_ip_literal(s) {
+            return Err(format!("Invalid secondary DNS address: {}", s));
+        }
+    }
     tokio::task::spawn_blocking(move || {
         // If NetworkManager is around and the interface maps to a connection,
         // use nmcli — that's what the system treats as source of truth.

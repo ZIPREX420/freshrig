@@ -58,7 +58,7 @@ jobs:
 
       - name: Find or create the draft release
         id: find_or_create
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           RELEASE_TAG: ${{ steps.compute.outputs.release_tag }}
           APP_VERSION: ${{ steps.compute.outputs.app_version }}
@@ -145,9 +145,9 @@ jobs:
       RELEASE_TAG: ${{ needs.create-release.outputs.release_tag }}
       APP_VERSION: ${{ needs.create-release.outputs.app_version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           # Pinned to current LTS minor; bumped via Dependabot. 22.12.0 is
           # the minimum Vite 8 supports (22.11 fails with "Vite requires
@@ -155,7 +155,7 @@ jobs:
           node-version: '22.22.2'
           cache: 'npm'
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable @ 2026-03-27
 
       # NO rust-cache here — releases must be hermetic. Caching `target/`
       # across runs caused v2.4.0 to ship only the .deb on Linux: stale
@@ -252,7 +252,7 @@ jobs:
       # dmg/app on macOS). Defaults work; the explicit `--bundles X,Y,Z`
       # override that was here briefly interacted badly with rpmbuild and
       # has been removed. rpm is installed via the Linux deps step above.
-      - uses: tauri-apps/tauri-action@v0.6.2
+      - uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -288,7 +288,7 @@ jobs:
 
       - name: Upload SBOMs to release
         if: matrix.platform == 'windows-latest'
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3
         with:
           files: |
             sbom-rust.cdx.json
