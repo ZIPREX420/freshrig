@@ -53,7 +53,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 - **SBOM:** CI generates CycloneDX SBOMs for both Rust and npm dependencies.
 
 ## Known upstream issues
-- **Suppressed cargo audit findings:** 18 transitive RustSec advisories grouped into three families, all upstream-Tauri issues we cannot patch at our layer:
+- **Suppressed cargo audit findings:** 19 transitive RustSec advisories grouped into three families, all upstream-Tauri issues we cannot patch at our layer:
   - **gtk-rs 0.18 family (11 IDs)** — `RUSTSEC-2024-0411` … `0420` (atk, atk-sys, gdk, gdk-sys, gdkwayland-sys, gdkx11, gdkx11-sys, gtk, gtk-sys, gtk3-macros — unmaintained warnings) plus `RUSTSEC-2024-0429` (glib 0.18.5 unsoundness). Linux-only via Tauri's `wry` → `webkit2gtk` → gtk-rs 0.18; clears when Tauri bumps to gtk-rs 0.20+ (GTK4).
   - **unic-* family (5 IDs)** — `RUSTSEC-2025-0075`, `0080`, `0081`, `0098`, `0100` (unic-char-range, unic-common, unic-char-property, unic-ucd-version, unic-ucd-ident — unmaintained, all flagged 2025-10-18). Pulled via `urlpattern` → `tauri-utils`. Clears when Tauri replaces `urlpattern`.
   - **proc-macro-error 1.x (1 ID)** — `RUSTSEC-2024-0370` unmaintained. Build-script transitive, never in shipped binary.
