@@ -55,3 +55,15 @@ pub enum InstallStatus {
     Failed,
     Skipped,
 }
+
+/// REL-02: aggregate result of an `install_apps` batch. Per-app progress
+/// still streams via `install-progress` events; this return value gives the
+/// awaiting caller a synchronous pass/fail signal instead of the old
+/// `Ok(())`-even-when-every-install-failed contract. Fields hold app ids.
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct InstallSummary {
+    pub installed: Vec<String>,
+    pub failed: Vec<String>,
+    pub skipped: Vec<String>,
+}

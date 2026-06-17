@@ -7,7 +7,7 @@ import {
   Palette,
   Briefcase,
 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { toast } from "sonner";
 import { useAppStore } from "../../stores/appStore";
 import type { PresetProfile } from "../../types/presets";
@@ -27,7 +27,7 @@ export function PresetSelector() {
   const { selectedIds, catalog } = useAppStore();
 
   useEffect(() => {
-    invoke<PresetProfile[]>("get_presets")
+    api.getPresets()
       .then(setPresets)
       .catch(() => {});
   }, []);

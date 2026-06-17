@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { errMessage } from "../../lib";
-import { invoke } from "@tauri-apps/api/core";
+import { errMessage, api } from "../../lib";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 import {
@@ -61,7 +60,7 @@ function ServicesPageInner() {
 
   const loadServices = useCallback(async () => {
     try {
-      const list = await invoke<ServiceEntry[]>("get_services");
+      const list = await api.getServices();
       setServices(list);
     } catch (e) {
       setServices([]);
@@ -71,7 +70,7 @@ function ServicesPageInner() {
 
   const loadPresets = useCallback(async () => {
     try {
-      const list = await invoke<ServicePreset[]>("get_service_presets");
+      const list = await api.getServicePresets();
       setPresets(list);
     } catch {
       // Non-fatal — presets are purely additive.
@@ -148,7 +147,7 @@ function PresetCards({
       setApplying(true);
       setProgress([]);
       try {
-        const results = await invoke<ServicePresetResult[]>("apply_service_preset", {
+        const results = await api.applyServicePreset({
           presetId: preset.id,
         });
         const ok = results.filter((r) => r.success).length;
@@ -362,7 +361,7 @@ function ServicesTable({
       if (next === entry.startType) return;
       setPending((prev) => new Set(prev).add(entry.name));
       try {
-        await invoke("set_service_start_type", {
+        await api.setServiceStartType({
           name: entry.name,
           startType: next,
         });
@@ -395,7 +394,7 @@ function ServicesTable({
       let done = 0;
       for (const svc of targets) {
         try {
-          await invoke("set_service_start_type", {
+          await api.setServiceStartType({
             name: svc.name,
             startType: "Manual",
           });

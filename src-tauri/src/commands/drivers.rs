@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use wmi::WMIConnection;
 
 use crate::models::drivers::*;
-use crate::util::silent_cmd;
+use crate::util::{is_valid_winget_id, run_winget};
 
 fn extract_string(map: &HashMap<String, wmi::Variant>, key: &str) -> Option<String> {
     match map.get(key) {
@@ -360,16 +360,24 @@ pub async fn get_driver_recommendations() -> Result<Vec<DriverRecommendation>, S
 #[tauri::command]
 pub async fn install_driver(winget_id: String) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
-        let output = silent_cmd("cmd")
-            .args([
-                "/C",
-                &format!(
-                    "chcp 65001 >nul && winget install --id {} --exact --source winget --silent --accept-package-agreements --accept-source-agreements --disable-interactivity",
-                    winget_id
-                ),
-            ])
-            .output()
-            .map_err(|e| format!("Failed to run winget: {}", e))?;
+        // SEC-02: validate the caller-supplied id against the winget-id
+        // allowlist, then run through the `run_winget` choke point.
+        if !is_valid_winget_id(&winget_id) {
+            return Err(format!("Refused: '{}' is not a valid package id", winget_id));
+        }
+        let output = run_winget(&[
+            "install",
+            "--id",
+            winget_id.as_str(),
+            "--exact",
+            "--source",
+            "winget",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity",
+        ])
+        .map_err(|e| format!("Failed to run winget: {}", e))?;
 
         let stdout = String::from_utf8_lossy(&output.stdout).to_string();
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();

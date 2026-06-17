@@ -6,7 +6,7 @@
 // run without installing anything.
 
 import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { open as openFolderDialog } from "@tauri-apps/plugin-dialog";
 import { toast } from "sonner";
 import { Loader2, Usb } from "lucide-react";
@@ -24,7 +24,7 @@ export function PortableSection() {
       if (!picked || typeof picked !== "string") return;
       setBusy(true);
       try {
-        await invoke("bootstrap_portable_dir", {
+        await api.bootstrapPortableDir({
           targetPath: picked,
           isBusiness,
         });

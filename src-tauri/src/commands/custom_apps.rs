@@ -7,7 +7,7 @@ use tokio::io::AsyncWriteExt;
 
 use crate::models::custom_apps::*;
 use crate::portable;
-use crate::util::silent_cmd;
+use crate::util::{silent_cmd, split_args};
 
 fn custom_apps_path() -> PathBuf {
     portable::get_data_dir().join("custom-apps.json")
@@ -141,15 +141,20 @@ pub async fn download_and_install_custom_app(
         }
     }
 
-    // Install
-    let install_cmd = if filename.to_lowercase().ends_with(".msi") {
-        format!("msiexec /i \"{}\" {}", dest_path.display(), app.silent_args)
+    // SEC-02: build an argument vector instead of a `cmd /C` shell string, so
+    // neither the download path nor the user-configured silent args are
+    // re-parsed by the shell. `silent_args` is tokenized with `split_args`
+    // (honoring quoted segments) rather than handed to cmd.exe.
+    let mut command = if filename.to_lowercase().ends_with(".msi") {
+        let mut c = silent_cmd("msiexec");
+        c.arg("/i").arg(&dest_path);
+        c
     } else {
-        format!("\"{}\" {}", dest_path.display(), app.silent_args)
+        silent_cmd(&dest_path.to_string_lossy())
     };
+    command.args(split_args(&app.silent_args));
 
-    let output = silent_cmd("cmd")
-        .args(["/C", &install_cmd])
+    let output = command
         .output()
         .map_err(|e| format!("Install failed: {}", e))?;
 

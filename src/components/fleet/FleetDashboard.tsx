@@ -5,7 +5,7 @@
 // profile deployment panel and per-machine detail drawer.
 
 import { useEffect, useMemo, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import {
   open as openFileDialog,
   save as saveFileDialog,
@@ -46,7 +46,7 @@ export function FleetDashboard() {
   const refresh = async () => {
     setLoading(true);
     try {
-      const list = await invoke<Machine[]>("list_machines");
+      const list = await api.listMachines();
       setMachines(list);
     } catch (err) {
       toast.error(`Could not list machines: ${err}`);
@@ -95,7 +95,7 @@ export function FleetDashboard() {
         filters: [{ name: "FreshRig endpoint", extensions: ["json"] }],
       });
       if (!picked || typeof picked !== "string") return;
-      const m = await invoke<Machine>("import_endpoint_summary", {
+      const m = await api.importEndpointSummary({
         path: picked,
         isBusiness,
       });
@@ -115,7 +115,7 @@ export function FleetDashboard() {
 
   const onExportSelfBundle = async () => {
     try {
-      const json = await invoke<string>("export_endpoint_summary");
+      const json = await api.exportEndpointSummary();
       const path = await saveFileDialog({
         defaultPath: "freshrig-endpoint.json",
         filters: [{ name: "FreshRig endpoint", extensions: ["json"] }],
@@ -152,7 +152,7 @@ export function FleetDashboard() {
       return;
     }
     try {
-      await invoke("delete_machine", { id, isBusiness });
+      await api.deleteMachine({ id, isBusiness });
       toast.success(`Removed ${hostname}`);
       if (selectedId === id) setSelectedId(null);
       await refresh();

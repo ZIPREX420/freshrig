@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { errMessage } from "../../lib";
+import { errMessage, api } from "../../lib";
 import { motion, AnimatePresence } from "framer-motion";
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 import {
@@ -144,7 +143,7 @@ function CleanupPageInner() {
           setScanProgress((prev) => ({ ...prev, [event.payload.categoryId]: event.payload }));
         },
       );
-      const result = await invoke<CleanupCategory[]>("scan_cleanup");
+      const result = await api.scanCleanup();
       setCategories(result);
       setSelected(new Set(result.filter((c) => c.enabledByDefault).map((c) => c.id)));
       setPhase("results");
@@ -170,7 +169,7 @@ function CleanupPageInner() {
           setCleanProgress((prev) => ({ ...prev, [event.payload.categoryId]: event.payload }));
         },
       );
-      const result = await invoke<CleanupResult[]>("run_cleanup", {
+      const result = await api.runCleanup({
         categoryIds: Array.from(selected),
       });
       setResults(result);

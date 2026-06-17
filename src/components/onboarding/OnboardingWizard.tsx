@@ -15,7 +15,7 @@ import {
   Palette,
   Briefcase,
 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { toast } from "sonner";
 import { APP_NAME, APP_TAGLINE } from "../../config/app";
 import { useAppStore } from "../../stores/appStore";
@@ -53,7 +53,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   useEffect(() => {
     if (step === 1 && !hardware) {
       setHwLoading(true);
-      invoke<HardwareSummaryBrief>("get_hardware_summary")
+      api.getHardwareSummary()
         .then(setHardware)
         .catch(() => {})
         .finally(() => setHwLoading(false));
@@ -63,7 +63,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   // Fetch presets on step 2
   useEffect(() => {
     if (step === 2 && presets.length === 0) {
-      invoke<PresetProfile[]>("get_presets")
+      api.getPresets()
         .then(setPresets)
         .catch(() => {});
     }

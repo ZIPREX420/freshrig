@@ -2,7 +2,7 @@ use tauri::Emitter;
 
 use crate::data::app_catalog;
 use crate::models::apps::*;
-use crate::util::silent_cmd;
+use crate::util::{is_valid_winget_id, run_winget, silent_cmd};
 
 #[tauri::command]
 pub async fn get_app_catalog() -> Result<Vec<AppEntry>, String> {
@@ -11,15 +11,18 @@ pub async fn get_app_catalog() -> Result<Vec<AppEntry>, String> {
 
 #[tauri::command]
 pub async fn get_free_disk_space_gb() -> Result<f64, String> {
-    let output = silent_cmd("powershell")
-        .args(["-NoProfile", "-Command", "(Get-PSDrive C).Free / 1GB"])
-        .output()
-        .map_err(|e| format!("Failed to check disk space: {}", e))?;
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    stdout
-        .trim()
-        .parse::<f64>()
-        .map_err(|e| format!("Failed to parse disk space: {}", e))
+    // PERF-03: query the already-present `sysinfo` crate instead of spawning a
+    // PowerShell process. Preserves the original behavior — free bytes on the
+    // C: system drive, returned in GiB — without a subprocess.
+    use sysinfo::Disks;
+    let disks = Disks::new_with_refreshed_list();
+    let free_bytes = disks
+        .list()
+        .iter()
+        .find(|d| d.mount_point().to_string_lossy().starts_with("C:"))
+        .map(|d| d.available_space())
+        .ok_or_else(|| "C: drive not found".to_string())?;
+    Ok(free_bytes as f64 / 1_073_741_824.0)
 }
 
 #[tauri::command]
@@ -35,9 +38,7 @@ pub async fn check_network_connectivity() -> Result<bool, String> {
 
 #[tauri::command]
 pub async fn check_winget_available() -> Result<bool, String> {
-    let result = silent_cmd("cmd")
-        .args(["/C", "chcp 65001 >nul && winget --version"])
-        .output();
+    let result = run_winget(&["--version"]);
 
     match result {
         Ok(output) => Ok(output.status.success()),
@@ -49,8 +50,11 @@ pub async fn check_winget_available() -> Result<bool, String> {
 pub async fn install_apps(
     app_handle: tauri::AppHandle,
     app_ids: Vec<String>,
-) -> Result<(), String> {
+) -> Result<InstallSummary, String> {
     let catalog = app_catalog::get_default_catalog();
+    let mut installed: Vec<String> = Vec::new();
+    let mut failed: Vec<String> = Vec::new();
+    let mut skipped: Vec<String> = Vec::new();
 
     for app_id in &app_ids {
         let app_name = catalog
@@ -70,15 +74,31 @@ pub async fn install_apps(
             },
         );
 
-        let output = silent_cmd("cmd")
-            .args([
-                "/C",
-                &format!(
-                    "chcp 65001 >nul && winget install --id {} --silent --accept-package-agreements --accept-source-agreements",
-                    app_id
-                ),
-            ])
-            .output();
+        // SEC-02: reject ids outside the winget-id allowlist before they can
+        // reach the shell, then run through the `run_winget` choke point — no
+        // raw interpolation of caller data into a `cmd /C` string.
+        if !is_valid_winget_id(app_id) {
+            let _ = app_handle.emit(
+                "install-progress",
+                InstallProgress {
+                    app_id: app_id.clone(),
+                    app_name: app_name.clone(),
+                    status: InstallStatus::Failed,
+                    message: format!("Refused: '{}' is not a valid package id", app_id),
+                },
+            );
+            skipped.push(app_id.clone());
+            continue;
+        }
+
+        let output = run_winget(&[
+            "install",
+            "--id",
+            app_id.as_str(),
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+        ]);
 
         match output {
             Ok(result) => {
@@ -92,6 +112,7 @@ pub async fn install_apps(
                             message: format!("{} installed successfully", app_name),
                         },
                     );
+                    installed.push(app_id.clone());
                 } else {
                     let stderr = String::from_utf8_lossy(&result.stderr);
                     let stdout = String::from_utf8_lossy(&result.stdout);
@@ -119,6 +140,7 @@ pub async fn install_apps(
                             message: error_msg,
                         },
                     );
+                    failed.push(app_id.clone());
                 }
             }
             Err(e) => {
@@ -131,9 +153,14 @@ pub async fn install_apps(
                         message: format!("Failed to execute winget: {}", e),
                     },
                 );
+                failed.push(app_id.clone());
             }
         }
     }
 
-    Ok(())
+    Ok(InstallSummary {
+        installed,
+        failed,
+        skipped,
+    })
 }
