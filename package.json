@@ -45,9 +45,11 @@
     "@tauri-apps/plugin-updater": "^2.10.1",
     "@zxcvbn-ts/core": "^4.1.1",
     "@zxcvbn-ts/language-en": "^3.0.2",
+    "@zxcvbn-ts/core": "^3.0.4",
+    "@zxcvbn-ts/language-en": "^4.1.0",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.40.0",
-    "lucide-react": "^1.17.0",
+    "lucide-react": "^1.18.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-error-boundary": "^6.1.2",
@@ -58,7 +60,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.0",
+    "@tailwindcss/vite": "^4.3.1",
     "@tauri-apps/cli": "^2.11.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/react": "^19.2.17",

@@ -78,7 +78,7 @@ jobs:
           # cargo-audit v0.22+ honours `audit.toml` only at
           # `$CARGO_HOME/audit.toml` — there is no flag for an arbitrary
           # config path (`--config` is not a valid option). Copy our
-          # suppression file (the source-of-truth for the 18 transitive
+          # suppression file (the source-of-truth for the 19 transitive
           # advisories Tauri currently surfaces; see
           # src-tauri/.cargo/audit.toml + CLAUDE.md "Known upstream
           # issues") into the discovery path so the ignore list is
