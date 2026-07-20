@@ -115,18 +115,8 @@ mod tests {
     #[test]
     fn winget_id_rejects_injection_payloads() {
         for id in [
-            "",
-            "a b",
-            "id\"",
-            "id&calc",
-            "id|calc",
-            "id&&calc",
-            "id;calc",
-            "%TEMP%",
-            "id>out",
-            "id^",
-            "id\ncalc",
-            "id`calc",
+            "", "a b", "id\"", "id&calc", "id|calc", "id&&calc", "id;calc", "%TEMP%", "id>out",
+            "id^", "id\ncalc", "id`calc",
         ] {
             assert!(!is_valid_winget_id(id), "should reject {id:?}");
         }
