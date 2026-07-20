@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
-use crate::util::silent_cmd;
+use crate::util::{is_valid_winget_id, quote_for_cmd, run_winget};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,9 +27,7 @@ pub struct WingetPackageDetails {
 static WINGET_JSON_SUPPORT: OnceLock<bool> = OnceLock::new();
 
 fn detect_winget_json_support() -> bool {
-    let output = silent_cmd("cmd")
-        .args(["/C", "chcp 65001 >nul && winget --info"])
-        .output();
+    let output = run_winget(&["--info"]);
 
     match output {
         Ok(out) => {
@@ -166,19 +164,22 @@ pub async fn search_winget_packages(query: String) -> Result<Vec<WingetSearchRes
         return Ok(vec![]);
     }
 
-    let sanitized = query.replace('"', "");
+    let quoted = quote_for_cmd(&query);
 
     // Try JSON output first if supported
     if supports_json() {
-        let json_output = silent_cmd("cmd")
-            .args([
-                "/C",
-                &format!(
-                    "chcp 65001 >nul && winget search \"{}\" --source winget --accept-source-agreements --disable-interactivity --count 20 --output json",
-                    sanitized
-                ),
-            ])
-            .output();
+        let json_output = run_winget(&[
+            "search",
+            quoted.as_str(),
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity",
+            "--count",
+            "20",
+            "--output",
+            "json",
+        ]);
 
         if let Ok(out) = json_output {
             let stdout = String::from_utf8_lossy(&out.stdout);
@@ -189,16 +190,17 @@ pub async fn search_winget_packages(query: String) -> Result<Vec<WingetSearchRes
     }
 
     // Fall back to table parsing
-    let output = silent_cmd("cmd")
-        .args([
-            "/C",
-            &format!(
-                "chcp 65001 >nul && winget search \"{}\" --source winget --accept-source-agreements --disable-interactivity --count 20",
-                sanitized
-            ),
-        ])
-        .output()
-        .map_err(|e| format!("Failed to run winget: {}", e))?;
+    let output = run_winget(&[
+        "search",
+        quoted.as_str(),
+        "--source",
+        "winget",
+        "--accept-source-agreements",
+        "--disable-interactivity",
+        "--count",
+        "20",
+    ])
+    .map_err(|e| format!("Failed to run winget: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
     parse_winget_table_output(&stdout)
@@ -261,19 +263,24 @@ fn parse_winget_table_output(output: &str) -> Result<Vec<WingetSearchResult>, St
 
 #[tauri::command]
 pub async fn get_winget_package_info(package_id: String) -> Result<WingetPackageDetails, String> {
-    let sanitized = package_id.replace('"', "");
+    // SEC-02: package ids are Publisher.Package identifiers — validate against
+    // the allowlist instead of interpolating caller text into the shell.
+    if !is_valid_winget_id(&package_id) {
+        return Err(format!("Invalid package id: {}", package_id));
+    }
 
     // Try JSON output first if supported
     if supports_json() {
-        let json_output = silent_cmd("cmd")
-            .args([
-                "/C",
-                &format!(
-                    "chcp 65001 >nul && winget show --id {} -e --accept-source-agreements --disable-interactivity --output json",
-                    sanitized
-                ),
-            ])
-            .output();
+        let json_output = run_winget(&[
+            "show",
+            "--id",
+            package_id.as_str(),
+            "-e",
+            "--accept-source-agreements",
+            "--disable-interactivity",
+            "--output",
+            "json",
+        ]);
 
         if let Ok(out) = json_output {
             let stdout = String::from_utf8_lossy(&out.stdout);
@@ -284,16 +291,15 @@ pub async fn get_winget_package_info(package_id: String) -> Result<WingetPackage
     }
 
     // Fall back to text parsing
-    let output = silent_cmd("cmd")
-        .args([
-            "/C",
-            &format!(
-                "chcp 65001 >nul && winget show --id {} -e --accept-source-agreements --disable-interactivity",
-                sanitized
-            ),
-        ])
-        .output()
-        .map_err(|e| format!("Failed to run winget show: {}", e))?;
+    let output = run_winget(&[
+        "show",
+        "--id",
+        package_id.as_str(),
+        "-e",
+        "--accept-source-agreements",
+        "--disable-interactivity",
+    ])
+    .map_err(|e| format!("Failed to run winget show: {}", e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
     parse_winget_show_output(&stdout)

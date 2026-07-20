@@ -6,7 +6,7 @@
 // shop_name + phone in the header band, custom_url + "Powered by" footer).
 
 import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { open as openFileDialog } from "@tauri-apps/plugin-dialog";
 import { toast } from "sonner";
 import {
@@ -28,7 +28,7 @@ export function BrandingSection() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    invoke<Branding>("get_branding")
+    api.getBranding()
       .then((b) => {
         setBranding(b);
       })
@@ -46,7 +46,7 @@ export function BrandingSection() {
       });
       if (!picked || typeof picked !== "string") return;
       try {
-        await invoke("validate_logo", { path: picked });
+        await api.validateLogo({ path: picked });
       } catch (err) {
         toast.error(`Logo rejected: ${err}`);
         return;
@@ -60,7 +60,7 @@ export function BrandingSection() {
   const onSave = async () => {
     setSaving(true);
     try {
-      await invoke("set_branding", { branding, isPro: isBusiness });
+      await api.setBranding({ branding, isPro: isBusiness });
       toast.success("Branding saved");
     } catch (err) {
       toast.error(`Save failed: ${err}`);

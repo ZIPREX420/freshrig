@@ -17,7 +17,7 @@ import {
   Usb,
 } from "lucide-react";
 import { toast } from "sonner";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useSettingsStore, type AccentColor } from "../../stores/settingsStore";
 import { SUPPORTED_LOCALES, type Locale } from "../../i18n";
@@ -68,9 +68,9 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
 
   const handleClearProfiles = async () => {
     try {
-      const profiles = await invoke<{ filePath: string }[]>("list_profiles");
+      const profiles = await api.listProfiles();
       for (const p of profiles) {
-        await invoke("delete_profile", { filePath: p.filePath });
+        await api.deleteProfile({ filePath: p.filePath });
       }
       await fetchProfiles();
       toast.success("All profiles cleared");
@@ -88,7 +88,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
 
   const handleExportDiagnostics = async () => {
     try {
-      const hw = await invoke<Record<string, unknown>>("get_hardware_summary");
+      const hw = await api.getHardwareSummary();
       const lines = [
         `${APP_NAME} Diagnostic Report`,
         `Version: ${APP_VERSION}`,

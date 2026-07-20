@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Seppe Willemsens (ZIPREX420). MIT License.
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../lib";
 import { TRIAL_DAYS } from "../config/app";
 
 export type LicenseTier = "free" | "pro" | "business";
@@ -17,17 +17,6 @@ export function isValidLicenseFormat(key: string): boolean {
   if (!key.startsWith("FR-")) return false;
   if (key.length < 10) return false;
   return /^FR-[A-Z0-9]{5}-[A-Z0-9]{5}$/.test(key);
-}
-
-interface LicenseResponse {
-  valid: boolean;
-  tier: LicenseTier;
-  instanceId: string | null;
-  licenseKey: string | null;
-  customerName: string | null;
-  customerEmail: string | null;
-  expiresAt: string | null;
-  error: string | null;
 }
 
 interface LicenseState {
@@ -118,8 +107,8 @@ export const useLicenseStore = create<LicenseState>()(
           return { ok: false, error: "License activation requires the desktop app" };
         }
         try {
-          const fingerprint = await invoke<string>("get_machine_fingerprint");
-          const resp = await invoke<LicenseResponse>("activate_license", {
+          const fingerprint = await api.getMachineFingerprint();
+          const resp = await api.activateLicense({
             licenseKey: trimmed,
             fingerprint,
           });
@@ -151,7 +140,7 @@ export const useLicenseStore = create<LicenseState>()(
 
         const attemptAt = new Date().toISOString();
         try {
-          const resp = await invoke<LicenseResponse>("validate_license", {
+          const resp = await api.validateLicense({
             licenseKey: state.licenseKey,
             instanceId: state.instanceId,
           });

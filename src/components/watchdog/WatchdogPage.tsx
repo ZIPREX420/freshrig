@@ -5,7 +5,7 @@
 // shared SQLite db.
 
 import { useCallback, useEffect, useState } from "react";
-import { errMessage } from "../../lib";
+import { errMessage, api } from "../../lib";
 import {
   Camera,
   Check,
@@ -16,7 +16,6 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import { Card } from "../ui/Card";
 import { ProFeatureGate } from "../ui/ProFeatureGate";
@@ -61,7 +60,7 @@ function WatchdogPageInner() {
 
   const refresh = useCallback(async () => {
     try {
-      const list = await invoke<Snapshot[]>("list_snapshots");
+      const list = await api.listSnapshots();
       setSnapshots(list);
     } catch (e) {
       toast.error(errMessage(e, "Failed to list snapshots"));
@@ -79,7 +78,7 @@ function WatchdogPageInner() {
     }
     setTaking(true);
     try {
-      const snap = await invoke<Snapshot>("take_snapshot", { label: label.trim() });
+      const snap = await api.takeSnapshot({ label: label.trim() });
       toast.success(`Snapshot "${snap.label}" captured.`);
       setLabel("");
       await refresh();
@@ -92,7 +91,7 @@ function WatchdogPageInner() {
 
   const onDelete = async (id: string) => {
     try {
-      await invoke("delete_snapshot", { id });
+      await api.deleteSnapshot({ id });
       if (beforeId === id) setBeforeId(null);
       if (afterId === id) setAfterId(null);
       if (diff && (diff.beforeId === id || diff.afterId === id)) setDiff(null);
@@ -113,7 +112,7 @@ function WatchdogPageInner() {
     }
     setDiffing(true);
     try {
-      const d = await invoke<SnapshotDiff>("diff_snapshots", { beforeId, afterId });
+      const d = await api.diffSnapshots({ beforeId, afterId });
       setDiff(d);
     } catch (e) {
       toast.error(errMessage(e, "Failed to compare snapshots"));

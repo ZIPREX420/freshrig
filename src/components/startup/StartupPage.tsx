@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { errMessage } from "../../lib";
+import { errMessage, api } from "../../lib";
 import { motion, AnimatePresence } from "framer-motion";
-import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import {
   Rocket,
@@ -101,7 +100,7 @@ export function StartupPage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await invoke<StartupEntry[]>("get_startup_entries");
+      const result = await api.getStartupEntries();
       setEntries(result);
     } catch (e) {
       setError(errMessage(e, "Failed to load startup entries"));
@@ -126,7 +125,7 @@ export function StartupPage() {
         prev.map((e) => (e.id === entry.id ? { ...e, enabled: next } : e)),
       );
       try {
-        await invoke("toggle_startup_entry", {
+        await api.toggleStartupEntry({
           id: entry.id,
           name: entry.name,
           enabled: next,

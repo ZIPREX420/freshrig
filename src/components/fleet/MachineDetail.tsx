@@ -5,7 +5,7 @@
 // frequency, email recipient, action checkboxes, and "Run now".
 
 import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { toast } from "sonner";
 import {
   Calendar,
@@ -46,7 +46,7 @@ export function MachineDetail({ id, onClose, onChanged }: Props) {
   const refresh = async () => {
     setLoading(true);
     try {
-      const b = await invoke<EndpointBundle>("get_machine_detail", { id });
+      const b = await api.getMachineDetail({ id });
       setBundle(b);
     } catch (err) {
       toast.error(`Could not load machine: ${err}`);
@@ -228,7 +228,7 @@ function ContractSection({
       if (enabled) {
         const id = existing?.id ?? `con_${Math.random().toString(36).slice(2, 10)}`;
         const nextRunIso = computeNextRun(frequency);
-        await invoke("create_contract", {
+        await api.createContract({
           contract: {
             id,
             machineId: bundle.machine.id,
@@ -242,7 +242,7 @@ function ContractSection({
         });
         toast.success("Contract saved");
       } else if (existing) {
-        await invoke("delete_contract", { id: existing.id, isBusiness });
+        await api.deleteContract({ id: existing.id, isBusiness });
         toast.success("Contract removed");
       }
       await onRefresh();
@@ -256,7 +256,7 @@ function ContractSection({
   const onRunNow = async () => {
     if (!existing) return;
     try {
-      await invoke("run_contract_now", { id: existing.id, isBusiness });
+      await api.runContractNow({ id: existing.id, isBusiness });
       toast.success("Contract run queued");
       await onRefresh();
     } catch (err) {

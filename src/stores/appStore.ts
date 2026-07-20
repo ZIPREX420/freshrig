@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../lib";
 import { listen } from "@tauri-apps/api/event";
 import type { AppEntry, AppCategory, InstallProgress } from "../types/apps";
 import type { CustomAppEntry } from "../types/custom_apps";
@@ -113,7 +113,7 @@ export const useAppStore = create<AppState>((set, get) => {
 
     checkWinget: async () => {
       try {
-        const available = await invoke<boolean>("check_winget_available");
+        const available = await api.checkWingetAvailable();
         set({ wingetAvailable: available });
       } catch {
         set({ wingetAvailable: false });
@@ -169,7 +169,7 @@ export const useAppStore = create<AppState>((set, get) => {
       set({ isInstalling: true, installProgress: initialProgress });
 
       try {
-        await invoke("install_apps", { appIds });
+        await api.installApps({ appIds });
       } catch (err) {
         console.error("Install failed:", err);
         set({ isInstalling: false });
@@ -221,7 +221,7 @@ export const useAppStore = create<AppState>((set, get) => {
       try {
         const wingetIds = catalog.map((a) => a.id);
         const catalogNames = catalog.map((a) => a.name);
-        const foundIds = await invoke<string[]>("check_apps_installed", {
+        const foundIds = await api.checkAppsInstalled({
           wingetIds,
           catalogNames,
         });
@@ -244,19 +244,19 @@ export const useAppStore = create<AppState>((set, get) => {
     },
 
     addCustomApp: async (app: CustomAppEntry) => {
-      await invoke("save_custom_app", { app });
+      await api.saveCustomApp({ app });
       await get().fetchCustomApps();
     },
 
     removeCustomApp: async (id: string) => {
-      await invoke("delete_custom_app", { appId: id });
+      await api.deleteCustomApp({ appId: id });
       await get().fetchCustomApps();
     },
 
     installCustomApp: async (app: CustomAppEntry) => {
       set({ customAppInstalling: app.id });
       try {
-        await invoke("download_and_install_custom_app", { app });
+        await api.downloadAndInstallCustomApp({ app });
       } finally {
         set({ customAppInstalling: null });
       }
@@ -273,7 +273,7 @@ export const useAppStore = create<AppState>((set, get) => {
 
     checkDiskSpace: async () => {
       try {
-        const gb = await invoke<number>("get_free_disk_space_gb");
+        const gb = await api.getFreeDiskSpaceGb();
         set({ diskSpaceGb: gb });
         return gb;
       } catch {
@@ -283,7 +283,7 @@ export const useAppStore = create<AppState>((set, get) => {
 
     checkNetwork: async () => {
       try {
-        const ok = await invoke<boolean>("check_network_connectivity");
+        const ok = await api.checkNetworkConnectivity();
         set({ networkAvailable: ok });
         return ok;
       } catch {
@@ -309,7 +309,7 @@ export const useAppStore = create<AppState>((set, get) => {
       set({ installProgress: newProgress, isInstalling: true });
 
       const appIds = failedIds.filter((id) => catalog.some((a) => a.id === id));
-      invoke("install_apps", { appIds }).catch((err) => {
+      api.installApps({ appIds }).catch((err) => {
         console.error("Retry failed:", err);
         set({ isInstalling: false });
       });

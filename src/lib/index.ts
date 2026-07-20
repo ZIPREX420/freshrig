@@ -9,3 +9,5 @@ export { invokeOrToast, type InvokeOptions } from "./invoke";
 export { lazyNamed, preloadModule } from "./lazy";
 export { errMessage } from "./errors";
 export { runAction } from "./action";
+export { api } from "./api";
+export type { LicenseResponse, WingetPackageDetails } from "./api";

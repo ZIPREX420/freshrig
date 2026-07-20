@@ -5,7 +5,7 @@
 // has been saved and only sends new values when the operator types one.
 
 import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { toast } from "sonner";
 import {
   Briefcase,
@@ -33,7 +33,7 @@ export function IntegrationsSection() {
   const [testing, setTesting] = useState<WebhookProvider | null>(null);
 
   useEffect(() => {
-    invoke<IntegrationConfig>("get_integrations")
+    api.getIntegrations()
       .then(setCfg)
       .catch(() => {
         // Keep defaults.
@@ -52,9 +52,9 @@ export function IntegrationsSection() {
   const onSave = async () => {
     setSaving(true);
     try {
-      await invoke("set_integrations", { config: cfg, isBusiness });
+      await api.setIntegrations({ config: cfg, isBusiness });
       // Refresh to pick up the masked secrets.
-      const fresh = await invoke<IntegrationConfig>("get_integrations");
+      const fresh = await api.getIntegrations();
       setCfg(fresh);
       toast.success("Integrations saved");
     } catch (err) {
@@ -67,7 +67,7 @@ export function IntegrationsSection() {
   const onTest = async (provider: WebhookProvider) => {
     setTesting(provider);
     try {
-      await invoke("test_webhook", { provider });
+      await api.testWebhook({ provider });
       toast.success(`${provider} connection looks good`);
     } catch (err) {
       toast.error(`Test failed: ${err}`);

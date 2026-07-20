@@ -16,7 +16,7 @@
 // are unrestricted; gating is a UI affordance.
 
 import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import {
   open as openFileDialog,
   save as saveFileDialog,
@@ -120,7 +120,7 @@ export function EncryptedSyncSection() {
     try {
       if (pending.kind === "export") {
         if (!activeProfile) throw new Error("no active profile");
-        await invoke("export_profile_encrypted", {
+        await api.exportProfileEncrypted({
           profileJson: JSON.stringify(activeProfile),
           passphrase,
           outputPath: pending.outputPath,
@@ -128,7 +128,7 @@ export function EncryptedSyncSection() {
         toast.success(`Encrypted profile saved to ${pending.outputPath}`);
         setPending(null);
       } else {
-        const json = await invoke<string>("import_profile_encrypted", {
+        const json = await api.importProfileEncrypted({
           inputPath: pending.inputPath,
           passphrase,
         });
@@ -158,9 +158,7 @@ export function EncryptedSyncSection() {
   const onDetect = async () => {
     setDetectLoading(true);
     try {
-      const list = await invoke<DetectedProfile[]>(
-        "detect_cloud_synced_profiles",
-      );
+      const list = await api.detectCloudSyncedProfiles();
       setDetected(list);
       if (list.length === 0) {
         toast.info(

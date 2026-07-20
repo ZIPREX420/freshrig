@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { load, Store } from "@tauri-apps/plugin-store";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../lib";
 import type { AppCategory } from "../types/apps";
 import type { Locale } from "../i18n";
 
@@ -99,7 +99,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       return;
     }
     try {
-      const portable = await invoke<boolean>("check_portable_mode").catch(() => false);
+      const portable = await api.checkPortableMode().catch(() => false);
       const store = await load("settings.json", { autoSave: true, defaults: {} });
       const saved: Partial<AppSettings> = {};
       for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof AppSettings)[]) {

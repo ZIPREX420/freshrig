@@ -26,7 +26,7 @@ import {
   Layers,
   Wrench,
 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { toast } from "sonner";
 import { useAppStore } from "../../stores/appStore";
 import { useUpdateStore } from "../../stores/updateStore";
@@ -81,7 +81,7 @@ export function CommandPalette({ onClose, onNavigate }: CommandPaletteProps) {
   useEffect(() => {
     previousFocusRef.current = document.activeElement as HTMLElement | null;
     inputRef.current?.focus();
-    invoke<PresetProfile[]>("get_presets")
+    api.getPresets()
       .then(setPresets)
       .catch(() => {});
     return () => {
@@ -239,7 +239,7 @@ export function CommandPalette({ onClose, onNavigate }: CommandPaletteProps) {
       category: "Actions",
       icon: ShieldAlert,
       action: () => {
-        invoke("create_restore_point")
+        api.createRestorePoint()
           .then(() => toast.success("Restore point created"))
           .catch(() => toast.error("Failed to create restore point"));
       },
