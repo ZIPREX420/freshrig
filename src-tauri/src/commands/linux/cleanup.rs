@@ -343,10 +343,9 @@ fn parse_size_suffix(s: &str) -> Option<u64> {
         (rest, 1024 * 1024)
     } else if let Some(rest) = trimmed.strip_suffix('G') {
         (rest, 1024 * 1024 * 1024)
-    } else if let Some(rest) = trimmed.strip_suffix('T') {
-        (rest, 1024u64.pow(4))
     } else {
-        return None;
+        let rest = trimmed.strip_suffix('T')?;
+        (rest, 1024u64.pow(4))
     };
     num_str.parse::<f64>().ok().map(|n| (n * mul as f64) as u64)
 }
