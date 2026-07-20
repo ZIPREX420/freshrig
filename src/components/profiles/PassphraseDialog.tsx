@@ -29,11 +29,13 @@ function loadZxcvbn(): Promise<void> {
       import("@zxcvbn-ts/core"),
       import("@zxcvbn-ts/language-en"),
     ]).then(([core, en]) => {
-      core.zxcvbnOptions.setOptions({
+      // zxcvbn-ts v4 replaced the zxcvbnOptions singleton + top-level
+      // zxcvbn() with a factory instance (ZxcvbnFactory#check).
+      const factory = new core.ZxcvbnFactory({
         translations: en.translations,
         dictionary: { ...en.dictionary },
       });
-      zxcvbnFn = core.zxcvbn;
+      zxcvbnFn = (pass: string) => factory.check(pass);
     });
   }
   return zxcvbnLoading;
