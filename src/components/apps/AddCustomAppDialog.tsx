@@ -54,7 +54,10 @@ export function AddCustomAppDialog({ onClose, onSave }: AddCustomAppDialogProps)
     setSilentArgs(INSTALLER_DEFAULT_ARGS[type]);
   };
 
-  const canSave = name.trim() && downloadUrl.startsWith("https://") && !urlError;
+  const hashValid = /^[0-9a-fA-F]{64}$/.test(expectedHash.trim());
+  const showHashError = expectedHash.trim().length > 0 && !hashValid;
+  const canSave =
+    name.trim() && downloadUrl.startsWith("https://") && !urlError && hashValid;
 
   const handleSubmit = () => {
     if (!canSave) return;
@@ -97,8 +100,9 @@ export function AddCustomAppDialog({ onClose, onSave }: AddCustomAppDialogProps)
           <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-warning/10 border border-warning/20">
             <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
             <p className="text-xs text-warning">
-              Custom apps are downloaded from external sources. Only add apps from publishers you
-              trust. Hash verification is strongly recommended.
+              Custom apps are downloaded from external sources and run with elevated privileges.
+              Only add apps from publishers you trust. A SHA-256 hash is required so each download
+              is verified before it runs.
             </p>
           </div>
 
@@ -170,17 +174,26 @@ export function AddCustomAppDialog({ onClose, onSave }: AddCustomAppDialogProps)
 
           {/* SHA256 Hash */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-text-primary">SHA256 Hash</label>
+            <label className="text-sm font-medium text-text-primary">
+              SHA256 Hash <span className="text-error">*</span>
+            </label>
             <input
               type="text"
               value={expectedHash}
               onChange={(e) => setExpectedHash(e.target.value)}
-              placeholder="Optional — paste SHA256 hash for verification"
-              className="w-full px-3 py-2 rounded-lg bg-bg-tertiary border border-border text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/50 font-mono"
+              placeholder="Paste the publisher's SHA256 checksum (64 hex characters)"
+              className={`w-full px-3 py-2 rounded-lg bg-bg-tertiary border text-sm text-text-primary placeholder:text-text-muted focus:outline-none transition-colors font-mono ${
+                showHashError ? "border-error" : "border-border focus:border-accent/50"
+              }`}
             />
-            <p className="text-[11px] text-text-muted">
-              If provided, the download will be verified against this hash before installation.
-            </p>
+            {showHashError ? (
+              <p className="text-xs text-error">Enter a valid SHA-256 hash (64 hex characters).</p>
+            ) : (
+              <p className="text-[11px] text-text-muted">
+                Required. The download is verified against this hash and the install is blocked if
+                it doesn't match.
+              </p>
+            )}
           </div>
 
           {/* Description */}
