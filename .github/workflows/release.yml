@@ -131,6 +131,8 @@ jobs:
     needs: create-release
     permissions:
       contents: write
+      id-token: write      # OIDC → Sigstore, for build provenance
+      attestations: write  # upload the provenance attestation
     strategy:
       fail-fast: false
       matrix:
@@ -273,6 +275,27 @@ jobs:
           if [ ! -f "$BIN" ]; then echo "::error::built binary not found at $BIN"; exit 1; fi
           "$BIN" --headless --task=apply-profile --profile-id=ci-smoke-test || { echo "::error::binary failed to run headless — possible compiles-but-won't-start regression"; exit 1; }
           echo "Binary started and exited cleanly."
+
+      # SLSA build provenance: a signed attestation binding each shipped
+      # installer to this exact workflow run + commit. Anyone can verify with:
+      #   gh attestation verify <file> --repo ZIPREX420/freshrig
+      # Per-OS steps because the bundle paths differ and a glob that matches
+      # nothing makes the action error. Needs id-token + attestations perms
+      # (set on this job above).
+      - name: Attest build provenance (Windows)
+        if: matrix.platform == 'windows-latest'
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: 'src-tauri/target/release/bundle/nsis/*-setup.exe'
+
+      - name: Attest build provenance (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/rpm/*.rpm
+            src-tauri/target/release/bundle/appimage/*.AppImage
 
       - name: Generate SBOMs
         if: matrix.platform == 'windows-latest'
