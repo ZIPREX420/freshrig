@@ -7,7 +7,7 @@
 // Lives as the "Drift" tab inside PrivacyPage.
 
 import { useCallback, useEffect, useState } from "react";
-import { errMessage } from "../../lib";
+import { errMessage, api } from "../../lib";
 import {
   Camera,
   ChevronDown,
@@ -18,7 +18,6 @@ import {
   ShieldCheck,
   Upload,
 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
 import { open as openFileDialog, save as saveFileDialog } from "@tauri-apps/plugin-dialog";
 import { toast } from "sonner";
 import { Card } from "../ui/Card";
@@ -94,7 +93,7 @@ export function PrivacyDriftPanel() {
   const refresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const list = await invoke<DriftEntry[]>("check_privacy_drift");
+      const list = await api.checkPrivacyDrift();
       setDrift(list);
     } catch (e) {
       toast.error(errMessage(e, "Failed to check drift"));
@@ -112,7 +111,7 @@ export function PrivacyDriftPanel() {
   const onCapture = async () => {
     setCreating(true);
     try {
-      const b = await invoke<PrivacyBaseline>("create_privacy_baseline");
+      const b = await api.createPrivacyBaseline();
       setBaseline(b);
       setDrift([]);
       toast.success("Baseline captured. We'll alert you if anything drifts.");
@@ -126,7 +125,7 @@ export function PrivacyDriftPanel() {
   const onReapply = async () => {
     setReapplying(true);
     try {
-      await invoke("reapply_privacy_baseline", { isPro });
+      await api.reapplyPrivacyBaseline({ isPro });
       toast.success("Reapplied baseline values. Refreshing drift.");
       await refresh();
     } catch (e) {
@@ -148,7 +147,7 @@ export function PrivacyDriftPanel() {
         filters: [{ name: "FreshRig baseline", extensions: ["json"] }],
       });
       if (!path) return;
-      await invoke("export_baseline", { targetPath: path });
+      await api.exportBaseline({ targetPath: path });
       toast.success("Baseline exported.");
     } catch (e) {
       toast.error(errMessage(e, "Failed to export baseline"));
@@ -162,7 +161,7 @@ export function PrivacyDriftPanel() {
         filters: [{ name: "FreshRig baseline", extensions: ["json"] }],
       });
       if (!path || typeof path !== "string") return;
-      const b = await invoke<PrivacyBaseline>("import_baseline", { path });
+      const b = await api.importBaseline({ path });
       setBaseline(b);
       toast.success("Baseline imported. Checking drift…");
       await refresh();

@@ -6,7 +6,7 @@
 // scheduled background check.
 
 import { useCallback, useEffect, useState } from "react";
-import { errMessage } from "../../lib";
+import { errMessage, api } from "../../lib";
 import {
   Activity,
   AlertTriangle,
@@ -19,7 +19,6 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import {
   CartesianGrid,
@@ -77,18 +76,18 @@ export function SmartHealthCard() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const ok = await invoke<boolean>("check_smartctl_available");
+      const ok = await api.checkSmartctlAvailable();
       setAvailable(ok);
       if (!ok) {
-        const cmd = await invoke<string>("get_smart_install_command");
+        const cmd = await api.getSmartInstallCommand();
         setInstallCmd(cmd);
         setReadings([]);
         return;
       }
-      const list = await invoke<SmartReading[]>("read_smart_data");
+      const list = await api.readSmartData();
       setReadings(list);
       // Save snapshot to history so the trend chart has data.
-      void invoke("save_smart_history", { readings: list }).catch(() => {});
+      void api.saveSmartHistory({ readings: list }).catch(() => {});
     } catch (e) {
       toast.error(errMessage(e, "SMART check failed"));
       setReadings([]);
@@ -113,7 +112,7 @@ export function SmartHealthCard() {
   const onSchedule = async () => {
     setScheduling(true);
     try {
-      const msg = await invoke<string>("enable_smart_schedule", { isPro });
+      const msg = await api.enableSmartSchedule({ isPro });
       toast.success(msg);
     } catch (e) {
       const msg = errMessage(e, "Failed to schedule");
@@ -254,7 +253,7 @@ function TrendModal({ diskId, onClose }: { diskId: string; onClose: () => void }
   const [series, setSeries] = useState<SmartReading[] | null>(null);
 
   useEffect(() => {
-    invoke<SmartReading[]>("get_smart_trend", { diskId, lastN: 30 })
+    api.getSmartTrend({ diskId, lastN: 30 })
       .then(setSeries)
       .catch(() => setSeries([]));
   }, [diskId]);

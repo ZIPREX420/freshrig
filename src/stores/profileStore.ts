@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../lib";
 import type { RigProfile, ProfileSummary, SourceHardware } from "../types/profiles";
 import type { AppEntry } from "../types/apps";
 
@@ -40,7 +40,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
   fetchProfiles: async () => {
     set({ loading: true, error: null });
     try {
-      const profiles = await invoke<ProfileSummary[]>("list_profiles");
+      const profiles = await api.listProfiles();
       set({ profiles, loading: false });
     } catch (err) {
       set({ error: String(err), loading: false });
@@ -48,28 +48,28 @@ export const useProfileStore = create<ProfileState>((set) => ({
   },
 
   saveProfile: async (profile: RigProfile) => {
-    const path = await invoke<string>("save_profile", { profile });
+    const path = await api.saveProfile({ profile });
     return path;
   },
 
   loadProfile: async (filePath: string) => {
-    const profile = await invoke<RigProfile>("load_profile", { filePath });
+    const profile = await api.loadProfile({ filePath });
     set({ activeProfile: profile });
     return profile;
   },
 
   deleteProfile: async (filePath: string) => {
-    await invoke("delete_profile", { filePath });
+    await api.deleteProfile({ filePath });
   },
 
   exportToFile: async (profile: RigProfile) => {
-    const path = await invoke<string>("export_profile_to_file", { profile });
+    const path = await api.exportProfileToFile({ profile });
     return path;
   },
 
   importFromFile: async () => {
     try {
-      const profile = await invoke<RigProfile>("import_profile_from_file");
+      const profile = await api.importProfileFromFile();
       set({ importPreview: profile, showImportPreview: true });
       return profile;
     } catch (err) {
@@ -79,22 +79,22 @@ export const useProfileStore = create<ProfileState>((set) => ({
   },
 
   exportAsText: async (profile: RigProfile, catalog: AppEntry[]) => {
-    const text = await invoke<string>("export_profile_as_text", { profile, catalog });
+    const text = await api.exportProfileAsText({ profile, catalog });
     return text;
   },
 
   generateShareCode: async (profile: RigProfile) => {
-    const code = await invoke<string>("compress_profile", { profile });
+    const code = await api.compressProfile({ profile });
     return code;
   },
 
   importFromShareCode: async (code: string) => {
-    const profile = await invoke<RigProfile>("decompress_profile", { encoded: code });
+    const profile = await api.decompressProfile({ encoded: code });
     return profile;
   },
 
   getHardwareSnapshot: async () => {
-    const hw = await invoke<SourceHardware>("get_current_hardware_snapshot");
+    const hw = await api.getCurrentHardwareSnapshot();
     return hw;
   },
 

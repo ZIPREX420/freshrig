@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { errMessage } from "../../lib";
+import { errMessage, api } from "../../lib";
 import { motion, AnimatePresence } from "framer-motion";
-import { invoke } from "@tauri-apps/api/core";
 import { load, type Store } from "@tauri-apps/plugin-store";
 import { toast } from "sonner";
 import {
@@ -223,7 +222,7 @@ function SettingsTab() {
 
   const fetchSettings = useCallback(async () => {
     try {
-      const list = await invoke<PrivacySetting[]>("get_privacy_settings");
+      const list = await api.getPrivacySettings();
       setSettings(list);
     } catch (e) {
       toast.error(errMessage(e, "Failed to load privacy settings"));
@@ -258,7 +257,7 @@ function SettingsTab() {
       const next = !setting.currentValue;
       setPendingIds((prev) => new Set(prev).add(setting.id));
       try {
-        await invoke("apply_privacy_setting", {
+        await api.applyPrivacySetting({
           settingId: setting.id,
           enablePrivacy: next,
         });
@@ -399,7 +398,7 @@ function PermissionsTab() {
 
   const fetchPermissions = useCallback(async () => {
     try {
-      const list = await invoke<AppPermission[]>("get_app_permissions");
+      const list = await api.getAppPermissions();
       setPermissions(list);
     } catch (e) {
       toast.error(errMessage(e, "Failed to load app permissions"));
@@ -423,7 +422,7 @@ function PermissionsTab() {
         const appKey = perm.appPath
           ? perm.appPath.replace(/\\/g, "#")
           : perm.appName;
-        await invoke("revoke_app_permission", {
+        await api.revokeAppPermission({
           appKey,
           capability: perm.capability,
         });
@@ -613,7 +612,7 @@ function AuditTab() {
 
   const fetchSettings = useCallback(async () => {
     try {
-      const list = await invoke<PrivacySetting[]>("get_privacy_settings");
+      const list = await api.getPrivacySettings();
       setSettings(list);
     } catch (e) {
       toast.error(errMessage(e, "Failed to load privacy settings"));
@@ -652,7 +651,7 @@ function AuditTab() {
     let failed = 0;
     for (const s of stats.unfixed) {
       try {
-        await invoke("apply_privacy_setting", {
+        await api.applyPrivacySetting({
           settingId: s.id,
           enablePrivacy: true,
         });

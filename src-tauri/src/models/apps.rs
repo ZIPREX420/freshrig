@@ -55,3 +55,22 @@ pub enum InstallStatus {
     Failed,
     Skipped,
 }
+
+/// REL-02: aggregate result of an `install_apps` batch. Per-app progress
+/// still streams via `install-progress` events; this return value gives the
+/// awaiting caller a synchronous pass/fail signal instead of the old
+/// `Ok(())`-even-when-every-install-failed contract. Fields hold app ids.
+//
+// Constructed only by the Windows `install_apps` twin; the Linux/macOS twins
+// still return `()`, so on those targets this is defined-but-unused. It must
+// stay defined on every platform (Windows IPC return type + mirrored in
+// src/lib/api.ts), so silence dead_code where it isn't built rather than
+// gating the type itself.
+#[cfg_attr(not(target_os = "windows"), allow(dead_code))]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct InstallSummary {
+    pub installed: Vec<String>,
+    pub failed: Vec<String>,
+    pub skipped: Vec<String>,
+}

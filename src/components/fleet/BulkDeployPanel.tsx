@@ -7,7 +7,7 @@
 // Backend writes one deploy bundle per machine via `create_deployment_bundle`.
 
 import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { open as openFolderDialog } from "@tauri-apps/plugin-dialog";
 import { openPath } from "@tauri-apps/plugin-opener";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useLicenseStore } from "../../stores/licenseStore";
 import type { Machine } from "../../types/fleet";
-import type { ProfileSummary, RigProfile } from "../../types/profiles";
+import type { ProfileSummary } from "../../types/profiles";
 
 interface BulkDeployPanelProps {
   machines: Machine[];
@@ -38,7 +38,7 @@ export function BulkDeployPanel({ machines, onClose }: BulkDeployPanelProps) {
   const [lastResult, setLastResult] = useState<{ outputDir: string; count: number } | null>(null);
 
   useEffect(() => {
-    invoke<ProfileSummary[]>("list_profiles")
+    api.listProfiles()
       .then(setProfiles)
       .catch(() => {
         // Profiles command is Windows-only — leave list empty silently.
@@ -69,20 +69,17 @@ export function BulkDeployPanel({ machines, onClose }: BulkDeployPanelProps) {
     }
     setBusy(true);
     try {
-      const profile = await invoke<RigProfile>("load_profile", {
+      const profile = await api.loadProfile({
         filePath: selectedFile,
       });
       const profileId = profile.metadata.name.replace(/[^a-zA-Z0-9_-]+/g, "_");
-      const result = await invoke<{ outputDir: string; machineCount: number }>(
-        "create_deployment_bundle",
-        {
-          profileId,
-          profileJson: JSON.stringify(profile),
-          targetMachines: machines,
-          outputDir,
-          isBusiness,
-        },
-      );
+      const result = await api.createDeploymentBundle({
+        profileId,
+        profileJson: JSON.stringify(profile),
+        targetMachines: machines,
+        outputDir,
+        isBusiness,
+      });
       setLastResult({ outputDir: result.outputDir, count: result.machineCount });
       toast.success(`Deployed to ${result.machineCount} machine(s)`);
     } catch (err) {

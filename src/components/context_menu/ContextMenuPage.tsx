@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { errMessage } from "../../lib";
-import { invoke } from "@tauri-apps/api/core";
+import { errMessage, api } from "../../lib";
 import { toast } from "sonner";
 import {
   Menu as MenuIcon,
@@ -49,7 +48,7 @@ function ClassicMenuToggle() {
 
   const load = useCallback(async () => {
     try {
-      const enabled = await invoke<boolean>("get_classic_menu_status");
+      const enabled = await api.getClassicMenuStatus();
       setClassicEnabled(enabled);
     } catch (e) {
       toast.error(errMessage(e, "Failed to read classic menu status"));
@@ -65,7 +64,7 @@ function ClassicMenuToggle() {
     const next = !classicEnabled;
     setToggling(true);
     try {
-      await invoke("toggle_classic_menu", { enable: next });
+      await api.toggleClassicMenu({ enable: next });
       setClassicEnabled(next);
       toast.success(
         next ? "Classic menu enabled — Explorer restarted" : "Windows 11 menu restored — Explorer restarted",
@@ -140,7 +139,7 @@ function ShellExtensionsPanel() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await invoke<ShellExtension[]>("get_shell_extensions");
+      const list = await api.getShellExtensions();
       setExtensions(list);
     } catch (e) {
       setExtensions([]);
@@ -159,7 +158,7 @@ function ShellExtensionsPanel() {
       const block = !ext.isBlocked;
       setPending((prev) => new Set(prev).add(ext.clsid));
       try {
-        await invoke("toggle_shell_extension", { clsid: ext.clsid, block });
+        await api.toggleShellExtension({ clsid: ext.clsid, block });
         setExtensions((prev) =>
           (prev ?? []).map((e) => (e.clsid === ext.clsid ? { ...e, isBlocked: block } : e)),
         );

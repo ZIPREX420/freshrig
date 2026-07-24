@@ -18,7 +18,7 @@ FreshRig is a cross-platform desktop app (Tauri v2 + React + TypeScript) at `C:\
 
 ## Key patterns & Requirements
 - **App Config:** Never hardcode "FreshRig" in UI code — always use `src/config/app.ts`. Current version: **2.5.0**. `PRO_PURCHASE_URL`, `PRO_PRICE_LABEL`, `TRIAL_DAYS` also live in `app.ts`.
-- **Route IDs / folder naming:** Every route is camelCase English (`quickSetup`, `customSetup`, `contextMenu`, etc.); folders under `src/components/` are kebab-case English (`quick-setup/`, `custom-setup/`, `context_menu/`). The earlier Dutch identifiers (`snelsetup`, `aangepaste`) are retired — tombstone re-exports at `docs/_archive/deprecated-folders/` exist only because the sandbox filesystem disallowed deletion; no in-app code imports them.
+- **Route IDs / folder naming:** Every route is camelCase English (`quickSetup`, `customSetup`, `contextMenu`, etc.); folders under `src/components/` are kebab-case English (`quick-setup/`, `custom-setup/`, `context_menu/`). The earlier Dutch identifiers (`snelsetup`, `aangepaste`) are retired and fully removed; no in-app code imports them.
 - **Brand assets:** The logo is a raster mark and the single source of truth (it replaced the old hand-drawn SVG monogram in v2.4.2). Full-res masters live in `brand/` — `logo-source.png` (original framed render), `logo-icon.png` (framed rounded tile with transparent corners — the icon-generation master), `logo-mark.png` (frameless neon "FR"). `src/assets/brand/logo.png` is the app-bundled copy imported by `<BrandMark>`; `site/assets/{logo,logo-mark,og-image}.png` back the landing page. The desktop icon family in `src-tauri/icons/` is regenerated from `brand/logo-icon.png` via `npx @tauri-apps/cli icon`. `src-tauri/icons/app-icon.svg` is the retired legacy monogram, kept only as a record.
 - **Tauri IPC:** Frontend calls `invoke('command_name')`, backend uses `#[tauri::command]` in `src-tauri/src/lib.rs`.
 - **Rust ↔ TS:** Rust uses snake_case, TypeScript uses camelCase — Tauri auto-converts field names.
@@ -178,3 +178,110 @@ Manual fallback steps if not using the scripts:
 - `/project:release [patch|minor|major]` — Bump version, commit, and prepare tag (delegates to `npm run release`).
 - `/project:fix <issue-number>` — Read a GitHub issue and implement a fix.
 - `/project:feature <description>` — Create a feature branch and implement.
+
+---
+
+# Consolidated project context
+
+*Folded in 2026-07-24 from the retired docs set (IMPROVEMENT_PLAN, PLATFORM_PARITY, TASKS, LAUNCH_CHECKLIST, docs/launch/\*, docs/security/2026-06-14-hardening-pass, docs/_archive/\*). Those files were deleted after their still-relevant content landed here. Historical/superseded material was dropped. The dated architecture record `docs/ARCHITECTURE_CHANGES_2026-06-14.md` is kept as a standalone file.*
+
+## Paid-launch runbook (v2.6.0)
+
+Single source of truth: `launch.config.json` (repo root) + `scripts/launch.mjs`. **Do every step in ONE commit before the first paid tag** — half-wiring either breaks releases or ships a disarmed gate.
+
+1. Fill `launch.config.json` (7 LemonSqueezy numbers + 5 checkout URLs + domain), then `npm run launch:check` (validates, reports what's missing).
+2. `npm run go-live` wires it all and runs `tsc` (never commits/tags):
+   - `src-tauri/src/commands/license.rs` → `EXPECTED_STORE_ID`, `EXPECTED_PRODUCT_ID`, `EXPECTED_PRO_VARIANT_IDS`, `EXPECTED_BUSINESS_VARIANT_IDS`.
+   - `src/config/app.ts` → 5 checkout URLs, removes the `PRICING_PAGE_URL` placeholder.
+   - `.github/workflows/release.yml` → removes the `v2.3`/`v2.4`/`v2.5` license-gate carve-out so the release-readiness test enforces real IDs on every future tag.
+   - `site/index.html` → JSON-LD version, founder counter, Founder + Pro CTAs → real checkout (Business stays "Contact Sales").
+   - Version bump (all sources) + `src/data/changelog.ts` entry.
+3. Validate Rust natively: `cargo generate-lockfile`, `cargo clippy -- -D warnings`, `cargo fmt --check`, `npm run build`.
+4. Domain (if registered): `node scripts/launch.mjs cname`.
+5. Commit + `git tag v2.6.0` → triggers the release workflow.
+
+**Safety net:** `license.rs`'s `release_gate::lemonsqueezy_ids_set_for_release` test fails a *release* build while the IDs are `0`. It is carved out for `v2.3`–`v2.5` in `release.yml`; `go-live` removes that carve-out. **Consequence:** tagging `v2.6.0+` without real IDs will fail the gate by design — so a plain patch release must stay in the `v2.5.x` line until launch.
+
+### Phase 4 — domain & email
+Register **`freshrig.app`** (Cloudflare Registrar ~$14/yr; `.app` is HSTS-preloaded → HTTPS mandatory, fine for Pages). Cloudflare Email Routing (free): `sales@freshrig.app` (landing Site-License + Business CTA + `SITE_CONTACT_URL`) and `security@freshrig.app` (`SECURITY.md`); drop the "coming soon" note once verified. Custom domain: set `"domain"` in `launch.config.json` → `node scripts/launch.mjs cname` writes `site/CNAME` → Cloudflare DNS apex `A` → `185.199.108.153`/`.109`/`.110`/`.111.153` + `www` CNAME → `ziprex420.github.io` (all **DNS-only / grey cloud**) → repo Settings → Pages → custom domain → Enforce HTTPS. **Don't commit `site/CNAME` before the DNS records exist** (Pages fails its check). After live: swap `github.io` absolute URLs in `site/index.html` (og:image/og:url/canonical/JSON-LD) + `README.md` (cosmetic/SEO, not a blocker).
+
+### Phase 5 — legal & admin (longest lead time; start alongside Phase 3)
+*Not legal/tax advice — confirm with a boekhouder / ondernemingsloket (Securex, Liantis, Xerius).* Belgian **bijberoep** registration → KBO/BCE number; VAT (BTW) registration; join a sociaal verzekeringsfonds; budget ~€170–190 + social contributions; separate business bank account. VAT: LemonSqueezy is **merchant of record** (collects/remits most EU VAT — confirm the split in the LS dashboard); EU **OSS** scheme for any sales where you're liable; keep LS payout statements. Microsoft Store: Partner Center individual account ($19 one-time), submit for cert (post-launch OK). EU **Cyber Resilience Act** (~Sept 2026, not a blocker): vuln-reporting (`SECURITY.md` + GH advisories ✓), SBOMs ✓, document coordinated-disclosure + patch window. Pre-sale: review `site/privacy.html` (LS as data processor), `site/terms.html` (refund/license/Founder's-Lifetime: 500-cap / 30-day window), refund policy consistent with LS. **The code is ready independent of all of this — the bijberoep registration is the true long pole.**
+
+### External blockers (waiting-on)
+LemonSqueezy go-live (IDs + URLs) · Microsoft Store dev-account approval · Belgian bijberoep registration · domain `freshrig.app`.
+
+## Platform parity (living reference — update as part of "done" for any command change)
+
+Legend: **Full** = same outcome as Windows · **Partial** = works, capabilities differ · **Stub** = exists for ABI symmetry, returns empty/err (hide the affordance) · **Missing** = not registered (invoke throws).
+
+| Command (group) | Win | Linux | macOS | Notes |
+|---|---|---|---|---|
+| `get_platform_info` | Full | Full | Full | Distro family + package managers + elevation availability. |
+| `get_hardware_summary` | Full | Full | Full | WMI / `/proc`+lspci / `system_profiler`. |
+| `get_driver_issues` | Full | Full | Full | Win `Get-PnpDevice`; Linux `lspci -k`; macOS kext issues. |
+| `get_machine_fingerprint` / `activate_license` / `validate_license` | Full | Full | Full | Cross-platform since v2.6. Pure `reqwest` to LemonSqueezy. |
+| `get_driver_recommendations` | Full | Full | Partial | macOS: single "Software Update" entry. |
+| `install_driver` | Full | Full | Stub | macOS → System Settings (route via DirectDownload URL). Linux prefers `ubuntu-drivers` on Ubuntu. |
+| `get_app_catalog` / `install_apps` | Full | Full | Full | Catalogs separate per OS (IDs differ — don't share). Linux: pkexec + apt/dnf/pacman/zypper + Flatpak/Snap fallback. macOS: brew formulae+casks. |
+| `save_profile`/`load_profile`/`list_profiles` | Full | **Missing** | **Missing** | Windows-gated module. |
+| `export_profile_encrypted`/`import_profile_encrypted`/`detect_cloud_synced_profiles` | Full | Full | Full | age 0.11 + scrypt passphrase. |
+| `get_startup_entries`/`toggle_startup_entry` | Full | Full | Full | Win StartupApproved; Linux XDG+systemd user; macOS LaunchAgents+Login Items. |
+| `scan_cleanup`/`run_cleanup` | Full | Full | Full | Category sets differ per OS. |
+| `get_privacy_settings`/`apply_privacy_setting` | Full | Partial | Partial | Linux subset; macOS SIP/Gatekeeper/FileVault read-only, firewall+ad-tracking writeable. |
+| `get_app_permissions`/`revoke_app_permission` | Full | Partial | **Stub** | Linux Flatpak audit; macOS TCC needs Full Disk Access (unsigned → empty). |
+| `create_privacy_baseline`/`check_privacy_drift` | Full | **Missing** | **Missing** | Windows-registry snapshots; no *nix analog yet. |
+| `network_reset_dns`/`network_reset_full`/`set_dns_servers`/`get_network_interfaces` | Full | Full | Full | macOS `networksetup`/`dscacheutil`; Linux systemd-resolved drop-in or `nmcli`. |
+| `get_wifi_passwords` | Full | Partial | Partial | macOS Keychain GUI prompt per call; Linux reads NM system-connections (root). |
+| `get_services`/`set_service_start_type`/presets | Full | Full | Full | Linux `systemctl`; macOS `launchctl`; both honour a NEVER_DISABLE set. |
+| SMART monitor / Watchdog / Branding / Bulk-deploy / Fleet / Integrations | Full | Full | Full | Cross-platform (smartctl JSON; SQLite; pure Rust). |
+| winget search/info · `get_installed_apps` · debloat · context-menu · shell-extensions · custom_apps | Full | **Missing** | **Missing** | Windows-specific (winget / Uninstall registry / Win11 tweaks / Explorer). |
+
+**Frontend gating:** Sidebar filters via `windowsOnly` in `navGroups[]`; additionally fetch `get_platform_info` once at init (cache in a store) and gate on `elevationAvailable` / `os` / `packageManagers`. Hide Pro CTAs on Linux/macOS until license activation is proven cross-platform.
+
+**Add a platform-aware command:** model in `models/<feature>.rs` (`Serialize+Deserialize`, `camelCase`) → implement Windows `commands/<feature>.rs`, Linux `commands/linux/<feature>.rs`, macOS `commands/macos/<feature>.rs` → register all three in `lib.rs` `generate_handler!` behind `#[cfg(target_os=...)]` under the **same** command name → add the parity row → unit-test parsing helpers (text→struct compile without GTK and run on every CI leg; see `commands/linux/drivers.rs::tests`). Manual per-OS smoke: exercise Drivers/Apps/Cleanup/Privacy on Ubuntu 24.04, Fedora 41, Arch, macOS Apple-Silicon + Intel.
+
+## Roadmap & open backlog
+
+*P0 pre-launch items all shipped (commit `2722501`). Pick items by the test: "if a customer files a bug tomorrow, would this have caught or fixed it faster?"*
+
+**P1 — first 30 days (test the money paths + CI perimeter):** unit-test `commands::license` (activation / expiry / foreign-store reject / variant→tier ×5 / network path — highest ROI); `commands::fleet` SQLite `:memory:` state transitions; `commands::branding` + `commands::integrations` (secret `********` placeholder, `is_business:false → PRO_REQUIRED`); `docs/TESTING.md`; SLSA provenance (`actions/attest-build-provenance@v2`) in `release.yml`; hard bundle-size cap in CI; verify `main` branch-protection matches the required-checks list + record in `CONTRIBUTING.md`; in-app crash-log button (Settings → Diagnostics → open `<data_dir>/crash.log`). *(Done: cargo audit in ci.yml, Dependabot grouping, sitemap/robots.)*
+
+**P2 — first quarter (DX automation):** sidebar hover-preload; auto-changelog draft in `launch.mjs`; tag-preflight (clean tree / versions agree / changelog present) in `go-live`; templatize landing nav/footer into `site/_partials/`; dated re-eval tracker for `audit.toml` suppressions; `docs/MACOS_REBUILD.md` runbook.
+
+**P3 — defer unless needed:** `thiserror` typed errors (600-LOC refactor, no behaviour change); `tracing` structured logging; Lighthouse CI; Playwright/tauri-driver e2e; HMAC on the headless apply-profile marker.
+
+**Hardening backlog:** S-5 sweep remaining PowerShell `format!()` command-builders for unvalidated input (esp. `services.rs::apply_start_type_sync`; `network.rs::set_dns_servers` is now validated); P-1 `run_with_timeout` subprocess wrapper (30s default, per-call override for installs); S-6 add primary-NIC MAC to the fingerprint; S-8 updater endpoint mirror (Cloudflare R2 alongside GitHub Releases); S-9 Windows code signing (~$15/mo SignPath / Azure Trusted Signing → kills SmartScreen). **Architecture:** A-2 `SystemBackend` trait (compress ~1200 LOC of parallel command trees; migrate services→cleanup→hardware→network); A-4 `ts-rs` generated types with a CI drift gate; A-3 declarative `freshrig_command!` macro (one place, not `mod.rs` + `generate_handler!`). **Perf:** stream winget-install + cleanup-scan progress; memoize recharts data. **Frontend:** slice the 17-field `appStore` god-store; split 400+ LOC `AppsPage`. **Testing/ops:** backfill backend helper coverage; vitest + coverage gating; **macOS commit-or-cut** — fill the 11 `commands/macos/` stubs + re-enable CI, or strip the subtree until shipping is realistic.
+
+**Don't bother** (cost ≫ value at this size): Husky/lint-staged, ESLint+Prettier, CODE_OF_CONDUCT, codecov, Conventional-Commits enforcement, a root `CHANGELOG.md` (the changelog lives in `src/data/changelog.ts` and ships in-app — don't split it).
+
+## Security posture & open follow-ups
+
+**Baseline (2026-06-14 pass, all merged):** DNS input validation on all 3 OS twins (`is_ip_literal`, PR #69); 11 Actions SHA-pinned (PR #69); `RUSTSEC-2026-0173` suppressed (PR #70). **Verified clean with evidence:** XSS (React escaping; the one `dangerouslySetInnerHTML` is a static print-CSS string); SQLi (bound `params!`/`?1` everywhere); secrets (OS keyring, none hardcoded/git-tracked); log scrubbing (`scrub_sensitive_data`, unit-tested); SSRF (static vendor catalog; `custom_apps` HTTPS-enforced; fixed license/updater endpoints); headless apply-profile (charset-validated id, `0600`/per-user ACL, queue-only marker); deps (`npm audit` 0; `cargo audit --deny warnings` in CI); minisign-signed updates; minimal capabilities, no shell plugin.
+
+**Closed in v2.5.5:** MISC-1 (production CSP `script-src` now `'self'`) and LOW-1 (custom-app SHA-256 now mandatory + verified before elevated install).
+
+**Open follow-ups:** SEC-01 — Pro entitlement is client-side only → add server-side verification at launch. SITE-1 — landing pages load unpinned `cdn.tailwindcss.com` without SRI → precompile Tailwind to a static stylesheet. SEC-06 — the license-gate carve-out is removed by `go-live` (see runbook). Branch protection ("require checks before merge") on `main` is now enabled.
+
+## Marketing launch kit (ready-to-post copy)
+
+*Posting is manual. Launch only after one real purchase has gone through end-to-end. Sequence: Reddit soft-launch → Reddit main → Product Hunt → Show HN. Replace `LINK` with the live URL (`freshrig.app`, else `https://ZIPREX420.github.io/freshrig/`).*
+
+**Reddit soft-launch (r/SideProject, r/opensource)** — post only after 1–2 weeks of genuine participation; ~9:1 give-to-promote; builder-to-builders tone.
+- *Title:* I built a cross-platform "nuke-and-pave" PC setup tool in Rust/Tauri — hardware detection, driver finder, batch app install, debloat
+- *Body:* After one too many evenings rebuilding a fresh Windows install, I made FreshRig — one app that detects your hardware, points you at the right drivers, batch-installs your apps silently, and runs the cleanup/optimize/privacy passes you'd otherwise do by hand across a dozen tools. Cross-platform — Windows (winget), Linux (apt/dnf/pacman/zypper/Flatpak), macOS (Homebrew) — Tauri v2 + Rust + React. Open source (MIT), no telemetry. Free tier covers hardware dashboard, drivers, 15 essential apps, optimize, startup; paid Pro for heavier maintenance, Pro Business for repair shops. Repo and downloads: LINK. Happy to answer anything about the Tauri side — the cross-platform command abstraction was the interesting part.
+
+**Reddit main (r/pcmasterrace, r/buildapc, r/windows)** — Tue–Thu 12:00–15:00 CET; read each sub's self-promo rules.
+- *Title:* FreshRig — set up a fresh PC in minutes: auto-detect hardware, find drivers, batch-install apps, debloat. Free & open source.
+- *Body:* Fresh Windows install always means the same hours-long ritual: identify hardware, hunt drivers, download 20 installers one site at a time, then debloat. FreshRig collapses that into one app. Hardware dashboard (CPU/GPU/board/storage/network/audio auto-detected); Drivers (finds your vendors, routes to the right tool); Apps (catalog, batch-installed silently — winget / apt·dnf·pacman·zypper·Flatpak / Homebrew); Optimize/Startup (debloat tweaks in Safe/Moderate/Expert tiers, every change reversible with a restore point). Free, open source (MIT), no telemetry, no bundled junk. Win/Linux/macOS. Download: LINK. Solo project — feedback and bug reports very welcome.
+
+**Product Hunt** — launch Tue 00:01 PST; have logo, 3–5 screenshots, 30–60s demo ready.
+- *Name:* FreshRig · *Tagline (≤60):* Set up any PC in minutes, not hours
+- *Description:* FreshRig is the post-install toolkit for a fresh or cleaned PC. It detects your hardware, finds the right drivers, batch-installs your apps silently, and runs the cleanup, privacy, and optimization passes — all in one open-source app for Windows, Linux, and macOS. Built with Rust and Tauri. No telemetry.
+- *First maker comment:* Hi PH! I'm Seppe, a solo dev in Belgium. I built FreshRig because every fresh Windows install meant the same hours of driver-hunting and installer-downloading. It's free and open source; there's a Pro tier for deeper maintenance features and a Business tier aimed at one-tech repair shops. Ask me anything — especially about the Tauri cross-platform side.
+
+**Hacker News — Show HN** — midweek mornings US-Eastern; lead technical, no marketing tone.
+- *Title:* Show HN: FreshRig – cross-platform PC setup tool in Rust/Tauri
+- *Body:* FreshRig automates the post-install grind: hardware detection, driver discovery, silent batch app installs, debloat/optimize, privacy and SMART-disk checks. Tauri v2 app — Rust backend, React front end. The part I'd call out is the platform abstraction: every feature has Windows/Linux/macOS command twins behind a single `invoke()` name, so the front end is OS-agnostic (Windows WMI/winget; Linux /proc+lspci+native package managers; macOS system_profiler+Homebrew). MIT, no telemetry. Free + paid Pro/Business. Releases ship signed binaries + CycloneDX SBOMs. Repo: LINK. Feedback welcome — particularly from anyone who's fought Tauri's cross-platform bundling.
+
+**Pre-launch asset checklist:** 3–5 screenshots (Dashboard, Quick Setup, Tools, a Pro feature, Health Report) · 30–60s demo GIF/video · landing page live + buy buttons tested end-to-end · one real purchase completed & refunded as a dry run · README polished.

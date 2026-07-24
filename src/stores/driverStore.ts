@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../lib";
 import type { DriverRecommendation } from "../types/drivers";
 
 interface DriverState {
@@ -22,7 +22,7 @@ export const useDriverStore = create<DriverState>((set) => ({
   fetchRecommendations: async () => {
     set({ loading: true, error: null });
     try {
-      const recommendations = await invoke<DriverRecommendation[]>("get_driver_recommendations");
+      const recommendations = await api.getDriverRecommendations();
       set({ recommendations, loading: false });
     } catch (err) {
       set({
@@ -35,7 +35,7 @@ export const useDriverStore = create<DriverState>((set) => ({
   installDriver: async (wingetId: string) => {
     set({ installingDriverId: wingetId });
     try {
-      const message = await invoke<string>("install_driver", { wingetId });
+      const message = await api.installDriver({ wingetId });
       set((state) => {
         const newSet = new Set(state.installedDriverIds);
         newSet.add(wingetId);

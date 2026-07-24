@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../lib";
 import type { HardwareSummary, DriverIssue } from "../types/hardware";
 
 interface HardwareState {
@@ -20,8 +20,8 @@ export const useHardwareStore = create<HardwareState>((set) => ({
     set({ loading: true, error: null });
     try {
       const [summary, driverIssues] = await Promise.all([
-        invoke<HardwareSummary>("get_hardware_summary"),
-        invoke<DriverIssue[]>("get_driver_issues"),
+        api.getHardwareSummary(),
+        api.getDriverIssues(),
       ]);
       set({ summary, driverIssues, loading: false });
     } catch (err) {

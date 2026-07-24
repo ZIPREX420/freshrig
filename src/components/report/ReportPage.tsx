@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { toast } from "sonner";
 import {
   X,
@@ -59,7 +59,7 @@ export function ReportPage({ onClose }: ReportPageProps) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    invoke<ReportData>("generate_health_report", { appVersion: APP_VERSION })
+    api.generateHealthReport({ appVersion: APP_VERSION })
       .then((data) => {
         if (!cancelled) setReport(data);
       })
@@ -83,7 +83,7 @@ export function ReportPage({ onClose }: ReportPageProps) {
       return;
     }
     let cancelled = false;
-    invoke<Branding>("get_branding")
+    api.getBranding()
       .then((b) => {
         if (!cancelled) setBranding(b);
       })

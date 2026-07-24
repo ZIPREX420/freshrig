@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus, Check, Loader2, Info, ExternalLink } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../../lib";
 import { useAppStore } from "../../stores/appStore";
 
 interface WingetSearchResult {
@@ -42,7 +42,7 @@ export function WingetSearchResults({ results, isSearching }: WingetSearchResult
     setDetailsFor(packageId);
     setLoadingDetails(true);
     try {
-      const info = await invoke<WingetPackageDetails>("get_winget_package_info", {
+      const info = await api.getWingetPackageInfo({
         packageId,
       });
       setDetails(info);

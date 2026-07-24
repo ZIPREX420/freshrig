@@ -31,3 +31,9 @@ export interface InstallProgress {
   status: InstallStatus;
   message: string;
 }
+
+export interface InstallSummary {
+  installed: string[];
+  failed: string[];
+  skipped: string[];
+}

@@ -4,10 +4,8 @@ import { Toaster, toast } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { invoke } from "@tauri-apps/api/core";
 import { MotionConfig, AnimatePresence, motion } from "framer-motion";
 import { usePlatform } from "./hooks/usePlatform";
-import type { DriftEntry } from "./types/privacyDrift";
 import { AppLayout } from "./components/layout/AppLayout";
 import { UpdateBanner } from "./components/layout/UpdateBanner";
 import { Dashboard } from "./components/dashboard/Dashboard";
@@ -24,7 +22,7 @@ import { useSettingsStore } from "./stores/settingsStore";
 import { useUpdateStore } from "./stores/updateStore";
 import { useLicenseStore } from "./stores/licenseStore";
 import { APP_VERSION } from "./config/app";
-import { isTauri, lazyNamed, preloadModule } from "./lib";
+import { isTauri, lazyNamed, preloadModule, api } from "./lib";
 
 // Route-level code splitting. The Dashboard is eager (it's the default view
 // and almost always the first thing the user sees); the secondary routes
@@ -144,7 +142,7 @@ function App() {
     if (sessionStorage.getItem("freshrig.driftToastShown") === "1") return;
     const timer = setTimeout(async () => {
       try {
-        const drift = await invoke<DriftEntry[]>("check_privacy_drift");
+        const drift = await api.checkPrivacyDrift();
         if (drift.length === 0) return;
         sessionStorage.setItem("freshrig.driftToastShown", "1");
         toast(

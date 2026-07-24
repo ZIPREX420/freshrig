@@ -1,4 +1,19 @@
 export const CHANGELOG: Record<string, string> = {
+  "2.5.5": `### FreshRig v2.5.5 — Security hardening 🔒
+
+A security-focused release that tightens three areas of the app's attack surface. No change to everyday flows, with one deliberate exception noted below.
+
+**Stricter content security policy.**
+The production webview CSP no longer allows inline scripts (\`script-src 'self'\`), closing off a class of injection vector. Styling (\`style-src\`) and the dev-only CSP are unchanged.
+
+**Custom apps now require a checksum.**
+A custom app runs an installer with elevated privileges, so every entry must now carry a SHA-256 hash. The download is verified against it before anything runs, and the install is blocked on a mismatch — verification is no longer optional or skippable. Any custom app you saved earlier without a hash will need one added before it can install again.
+
+**Launch safeguard.**
+Added a launch checklist so the pre-launch licensing gate and its placeholder store IDs can't reach paying customers by accident. No effect on the app itself.
+
+The auto-updater will pull this for all v2.5.x installs on their next check.
+`,
   "2.5.4": `### FreshRig v2.5.4 — Internal cleanup 🧹
 
 A maintenance release with no user-facing change.

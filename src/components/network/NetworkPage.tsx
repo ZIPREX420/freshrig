@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { errMessage, runAction } from "../../lib";
-import { invoke } from "@tauri-apps/api/core";
+import { errMessage, runAction, api } from "../../lib";
 import { toast } from "sonner";
 import {
   Globe,
@@ -58,14 +57,14 @@ function QuickActions() {
   const [resetting, setResetting] = useState(false);
 
   const handleFlush = useCallback(async () => {
-    await runAction(setFlushing, () => invoke("network_reset_dns"), {
+    await runAction(setFlushing, () => api.networkResetDns(), {
       success: "DNS cache flushed",
       failure: "Failed to flush DNS",
     });
   }, []);
 
   const handleFullReset = useCallback(async () => {
-    const ok = await runAction(setResetting, () => invoke("network_reset_full"), {
+    const ok = await runAction(setResetting, () => api.networkResetFull(), {
       success: "Network stack reset — reboot required",
       failure: "Failed to reset network",
     });
@@ -195,7 +194,7 @@ function DnsConfiguration() {
   useEffect(() => {
     (async () => {
       try {
-        const list = await invoke<NetworkInterface[]>("get_network_interfaces");
+        const list = await api.getNetworkInterfaces();
         setInterfaces(list);
         if (list.length > 0) setSelected(list[0].name);
       } catch (e) {
@@ -223,7 +222,7 @@ function DnsConfiguration() {
     await runAction(
       setApplying,
       () =>
-        invoke("set_dns_servers", {
+        api.setDnsServers({
           interfaceName: selected,
           primary: primary.trim(),
           secondary: secondary.trim() || null,
@@ -364,7 +363,7 @@ function WifiPasswords() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await invoke<WifiProfile[]>("get_wifi_passwords");
+      const list = await api.getWifiPasswords();
       setProfiles(list);
     } catch (e) {
       setProfiles([]);

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { invoke } from "@tauri-apps/api/core";
+import { api } from "../lib";
 import { listen } from "@tauri-apps/api/event";
 import type { DebloatTweak, DebloatResult, TweakTier, TweakCategory } from "../types/debloat";
 
@@ -52,7 +52,7 @@ export const useDebloatStore = create<DebloatState>((set, get) => {
     fetchTweaks: async () => {
       set({ loading: true });
       try {
-        const tweaks = await invoke<DebloatTweak[]>("get_debloat_tweaks");
+        const tweaks = await api.getDebloatTweaks();
         set({ tweaks, loading: false });
       } catch {
         set({ loading: false });
@@ -83,7 +83,7 @@ export const useDebloatStore = create<DebloatState>((set, get) => {
 
     createRestorePoint: async () => {
       try {
-        await invoke<string>("create_restore_point");
+        await api.createRestorePoint();
         set({ restorePointCreated: true });
         return true;
       } catch {
@@ -97,7 +97,7 @@ export const useDebloatStore = create<DebloatState>((set, get) => {
 
       set({ isApplying: !dryRun, results: [] });
       try {
-        const results = await invoke<DebloatResult[]>("apply_debloat_tweaks", {
+        const results = await api.applyDebloatTweaks({
           tweakIds: [...selectedIds],
           dryRun,
         });
